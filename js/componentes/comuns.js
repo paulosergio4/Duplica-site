@@ -39,7 +39,7 @@ export function pillTipo(n) {
 
 /** Etiqueta da etapa: "Não chegou", "Chegou"... */
 export const pillEtapa = (b) => b.pago_em && b.etapa !== 'cancelado'
-  ? '<span class="pill p-pago">Pago</span>'
+  ? `<span class="pill p-pago">Pago${b.pago_forma && b.pago_forma !== 'Boleto' ? ' · ' + esc(b.pago_forma) : ''}</span>`
   : b.direto_financeiro
   ? `<span class="pill p-visto">Direto no financeiro · ${esc(b.direto_financeiro)}</span>`
   : `<span class="pill p-${b.etapa}">${NOME_ETAPA[b.etapa]}</span>`;

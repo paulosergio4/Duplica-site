@@ -28,8 +28,9 @@ export function proximaAcao(b) {
 /** Cancelar boleto ou nota (nota devolvida, cancelada, parcela renegociada) */
 export const podeCancelar = () => podeFiscal();
 
-/** Pode marcar como pago? Só Financeiro/gerente, só boleto com visto e ainda não pago */
-export const podePagar = (b) => podeFinanceiro() && b.etapa === 'visto' && !b.pago_em;
+/** Pode marcar como pago? Financeiro/gerente, boleto ainda não pago e não cancelado.
+ *  Com visto: pago no boleto (ou direto). Sem visto: só "pago direto" (Pix, transferência...) */
+export const podePagar = (b) => podeFinanceiro() && b.etapa !== 'cancelado' && !b.pago_em;
 
 /** Pode corrigir (voltar) a etapa atual deste boleto? */
 export function podeCorrigir(b) {

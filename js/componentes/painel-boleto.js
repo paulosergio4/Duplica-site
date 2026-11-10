@@ -46,19 +46,22 @@ export function painelHtml() {
 
   // boleto que chegou direto no financeiro (e-mail, DDA, em mãos): pulou o fiscal
   const direto = b.direto_financeiro;
-  const comoDireto = direto === 'E-mail' ? 'por e-mail' : direto === 'DDA' ? 'pelo DDA' : `em mãos, entregue por ${esc(b.entregue_por || '')}`;
+  const comoDireto = direto === 'E-mail' ? 'por e-mail' : direto === 'DDA' ? 'pelo DDA'
+    : direto === 'Em mãos' ? `em mãos, entregue por ${esc(b.entregue_por || '')}`
+    : `pago direto ao fornecedor (${esc(direto)})`;
+  const textoPago = b.pago_em ? `${b.pago_forma && b.pago_forma !== 'Boleto' ? `<b>${esc(b.pago_forma)}</b> · ` : ''}por ${esc(b.pago_por)} · ${dataHoraBR(b.pago_em)}` : '';
   const passos = direto ? [
     ['Nota lançada, boleto esperado', 'automático, pelo XML'],
     ['Chegou', b.chegou_em ? `<b>Recebido por ${esc(b.recebido_por)}</b> · marcado por ${esc(b.chegou_marcado_por)} · ${dataHoraBR(b.chegou_em)}` : 'não passou pelo fiscal'],
     ['Recebido direto pelo financeiro', `<b>${comoDireto}</b> · marcado por ${esc(b.visto_por)} · ${dataHoraBR(b.visto_em)}`],
-    ['Pago', b.pago_em ? `por ${esc(b.pago_por)} · ${dataHoraBR(b.pago_em)}` : 'a pagar'],
+    ['Pago', b.pago_em ? textoPago : 'a pagar'],
   ].map(([titulo, info], i) => `<li class="${(i === 1 && !b.chegou_em) || (i === 3 && !b.pago_em) ? '' : 'feito'}"><div class="trilho"><span class="dot"></span><span class="fio"></span></div>
       <div class="txt"><b>${titulo}</b><small>${info}</small></div></li>`).join('') : [
     ['Nota lançada, boleto esperado', 'automático, pelo XML'],
     ['Chegou', b.chegou_em ? `<b>Recebido por ${esc(b.recebido_por)}</b> · marcado por ${esc(b.chegou_marcado_por)} · ${dataHoraBR(b.chegou_em)}` : 'pendente'],
     ['Enviado ao financeiro', b.enviado_em ? `por ${esc(b.enviado_por)} · ${dataHoraBR(b.enviado_em)}` : 'pendente'],
     ['Visto do financeiro', b.visto_em ? `<b>Entregue por ${esc(b.entregue_por)}</b> · visto por ${esc(b.visto_por)} · ${dataHoraBR(b.visto_em)}` : 'pendente'],
-    ['Pago', b.pago_em ? `por ${esc(b.pago_por)} · ${dataHoraBR(b.pago_em)}` : 'pendente'],
+    ['Pago', b.pago_em ? textoPago : 'pendente'],
   ].map(([titulo, info], i) => `<li class="${i <= atual || (i === 4 && b.pago_em) ? 'feito' : ''}"><div class="trilho"><span class="dot"></span><span class="fio"></span></div>
       <div class="txt"><b>${titulo}</b><small>${info}</small></div></li>`).join('');
 
@@ -95,7 +98,7 @@ export function painelHtml() {
     <div class="field"><label>Comprovante</label>${foto}
       <input type="file" id="arquivo-foto" accept="image/jpeg,image/png,image/webp,application/pdf" hidden></div>
     ${correcao}
-    ${podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}Marcar como pago</button>` : ''}
+    ${podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}${b.etapa === 'visto' ? 'Marcar como pago' : 'Pago direto ao fornecedor (Pix, transferência…)'}</button>` : ''}
     ${podeCancelar() && b.etapa !== 'cancelado' ? `<button class="link-cancelar" type="button" data-acao="cancelar-boleto" data-id="${b.id}" style="align-self:flex-start">Cancelar este boleto</button>` : ''}
     <div class="field"><label>Histórico</label><div class="hist">${hist}</div></div>
   </aside></div>`;

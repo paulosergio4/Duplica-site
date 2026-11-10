@@ -151,8 +151,9 @@ export const apiSupabase = {
     return data;
   },
 
-  async marcarPago(ids) {
-    const { data, error } = await sb.rpc('marcar_pago', { ids });
+  /** forma: 'Boleto' (só com visto) ou pago direto ao fornecedor: 'Pix', 'Transferência', 'Dinheiro', 'Outro' */
+  async marcarPago(ids, forma = 'Boleto', obs = null) {
+    const { data, error } = await sb.rpc('marcar_pago', { ids, forma, obs: obs || null });
     falha(error);
     return data;
   },

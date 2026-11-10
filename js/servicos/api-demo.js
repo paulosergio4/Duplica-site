@@ -275,14 +275,17 @@ export const apiDemo = {
     return n;
   },
 
-  async marcarPago(ids) {
+  async marcarPago(ids, forma = 'Boleto', obs = null) {
     const p = eu(), d = carregar();
     if (!(p.papel === 'gerente' || p.setor === 'Financeiro')) throw new Error('Só o Financeiro marca boleto como pago.');
+    if (forma === 'Outro' && !(obs || '').trim()) throw new Error('Em "Outro", escreva como foi pago.');
+    const det = [forma === 'Boleto' ? null : `pago direto ao fornecedor por ${forma}`, (obs || '').trim() || null].filter(Boolean).join(' · ') || null;
     let n = 0;
-    for (const b of d.boletos.filter((x) => ids.includes(x.id) && !x.pago_em)) {
-      if (b.etapa !== 'visto') throw new Error('Dê o visto antes de marcar como pago.');
-      Object.assign(b, { pago_em: agora(), pago_por: p.nome });
-      reg(b.id, 'Pago', null, p);
+    for (const b of d.boletos.filter((x) => ids.includes(x.id) && !x.pago_em && x.etapa !== 'cancelado')) {
+      if (forma === 'Boleto' && b.etapa !== 'visto') throw new Error('Dê o visto antes de marcar como pago no boleto. Se foi pago por Pix ou transferência, escolha essa forma.');
+      if (b.etapa === 'visto') Object.assign(b, { pago_em: agora(), pago_por: p.nome, pago_forma: forma, etapa_antes_pago: null });
+      else Object.assign(b, { pago_em: agora(), pago_por: p.nome, pago_forma: forma, etapa_antes_pago: b.etapa, etapa: 'visto', direto_financeiro: forma, visto_por: p.nome, visto_em: agora() });
+      reg(b.id, 'Pago', det, p);
       n++;
     }
     salvar();
@@ -293,7 +296,8 @@ export const apiDemo = {
     const p = eu(), b = carregar().boletos.find((x) => x.id === boletoId);
     if (!(p.papel === 'gerente' || p.setor === 'Financeiro')) throw new Error('Só o Financeiro desfaz o pagamento.');
     if (!motivo || motivo.trim().length < 5) throw new Error('Escreva o motivo da correção.');
-    Object.assign(b, { pago_em: null, pago_por: null });
+    if (b.etapa_antes_pago) Object.assign(b, { etapa: b.etapa_antes_pago, direto_financeiro: null, visto_por: null, visto_em: null });
+    Object.assign(b, { pago_em: null, pago_por: null, pago_forma: null, etapa_antes_pago: null });
     reg(b.id, 'Corrigido', `desfez "Pago". Motivo: ${motivo.trim()}`, p);
     salvar();
   },

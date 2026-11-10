@@ -16,6 +16,7 @@ import { docNota } from './comuns.js';
 import { esc, brl, dataBR } from '../util/formato.js';
 import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js';
 import { modalEditarPessoaHtml } from '../telas/usuarios.js';
+import { modalPagarHtml } from '../telas/financeiro.js';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 
@@ -87,6 +88,7 @@ export function modalHtml() {
   if (!estado.modal) return '';
   if (estado.modal.tipo === 'avulso') return modalAvulsoHtml();
   if (estado.modal.tipo === 'editar-pessoa') return modalEditarPessoaHtml();
+  if (estado.modal.tipo === 'pagar') return modalPagarHtml();
   if (estado.modal.tipo === 'parcelas') return modalParcelasHtml();
   if (estado.modal.tipo === 'cancelar') return modalCancelarHtml(estado.modal.ids.map(boletoDe).filter(Boolean));
   if (estado.modal.tipo === 'direto') return modalDiretoHtml(estado.modal.ids.map(boletoDe).filter(Boolean));

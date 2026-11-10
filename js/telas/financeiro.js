@@ -26,7 +26,8 @@ function linhaVisto(b) {
     <div class="kv" style="width:110px"><small>Vencimento</small><b class="num">${dataBR(b.vencimento)}</b></div>
     <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
     <span style="width:130px;display:flex;justify-content:flex-end">${pillPrazo(b)}</span>
-    ${podeFinanceiro() ? `<button class="visto" type="button" data-acao="avancar" data-id="${b.id}" style="margin-left:auto">${ICONE.check()}Dar visto</button>` : aviso('Só o Financeiro dá o visto')}
+    ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" style="margin-left:auto" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
+      <button class="visto" type="button" data-acao="avancar" data-id="${b.id}">${ICONE.check()}Dar visto</button>` : aviso('Só o Financeiro dá o visto')}
   </div>`;
 }
 
@@ -120,12 +121,14 @@ export const telaFinanceiro = {
             <div class="kv" style="width:110px"><small>Vencimento</small><b class="num">${dataBR(b.vencimento)}</b></div>
             <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
             <div class="status">${pillEtapa(b)}${pillPrazo(b)}</div>
-            ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="direto" data-id="${b.id}" style="margin-left:auto">Chegou direto aqui</button>` : ''}</div>`).join('');
+            ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" style="margin-left:auto" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
+            <button class="bg" type="button" data-acao="direto" data-id="${b.id}">Chegou direto aqui</button>` : ''}</div>`).join('');
       }).join('');
       if (!blocoDireto) blocoDireto = vazio('Nenhum boleto pendente com esse fornecedor ou número de nota.');
     }
     const secaoDireto = `<section class="secao"><div class="secao-h"><h2>Boleto chegou direto aqui?</h2>
         <span style="font-size:12px;color:var(--terra);font-weight:600">e-mail, DDA ou em mãos</span></div>
+      <div style="padding:14px 20px 0;font-size:13px;color:var(--terra)">Pagou direto ao fornecedor (Pix, transferência) sem o boleto? Busque aqui e use <b>Pago direto</b>.</div>
       <div style="padding:14px 20px;border-bottom:1px solid var(--linha)"><div class="busca"><label for="busca-direto" class="sr">Buscar boleto que chegou direto</label>
         <input id="busca-direto" placeholder="Digite o fornecedor ou o número da nota" value="${esc(estado.buscaDireto || '')}">${ICONE.busca()}</div></div>
       ${q.length >= 2 ? `<div class="rolagem">${blocoDireto}</div>` : vazio('Busque o boleto que o fornecedor mandou direto para o financeiro. Ao marcar, ele já fica com visto e sai dos pendentes do Fiscal.')}</section>`;
@@ -147,17 +150,55 @@ export const telaFinanceiro = {
 };
 
 registrarCampo('busca-direto', (el) => { estado.buscaDireto = el.value; desenhar(); });
-/** Marca como pago e avisa; o boleto sai de "A pagar" (dá para desfazer em Detalhes → Corrigir marcação) */
+/** Abre a janela "Marcar como pago" (forma de pagamento: boleto, Pix, transferência...) */
 function pagar(ids) {
+  if (!ids.length) return;
+  estado.modal = { tipo: 'pagar', ids };
+  desenhar();
+}
+
+/** Grava o pagamento escolhido na janela; o boleto sai dos pendentes (desfaz em Detalhes → Corrigir marcação) */
+function confirmarPago() {
   return executar(async () => {
-    const n = await estado.api.marcarPago(ids);
+    const forma = document.getElementById('pg-forma').value;
+    const obs = document.getElementById('pg-obs').value.trim();
+    const n = await estado.api.marcarPago(estado.modal.ids, forma, obs);
+    estado.modal = null;
     await recarregar();
-    avisar(n === 1 ? 'Boleto marcado como pago.' : `${n} boletos marcados como pagos.`);
+    const como = forma === 'Boleto' ? '' : ` (${forma})`;
+    avisar(n === 1 ? `Boleto marcado como pago${como}.` : `${n} boletos marcados como pagos${como}.`);
   });
+}
+
+/** Janela "Marcar como pago" (desenhada por componentes/modal-pessoa.js) */
+export function modalPagarHtml() {
+  const bs = estado.modal.ids.map((i) => estado.boletos.find((b) => b.id === i)).filter(Boolean);
+  if (!bs.length) return '';
+  const n = notaDe(bs[0].nota_id), f = filialDe(n.filial_id), varios = bs.length > 1;
+  const total = bs.reduce((s, b) => s + Number(b.valor), 0);
+  const todosComVisto = bs.every((b) => b.etapa === 'visto');
+  const formas = [['Boleto', 'Boleto (pagou o boleto)'], ['Pix', 'Pix direto ao fornecedor'], ['Transferência', 'Transferência (TED/DOC) direto ao fornecedor'],
+    ['Dinheiro', 'Dinheiro'], ['Outro', 'Outro']];
+  const opcoes = formas.map(([v, t], i) => `<option value="${v}"${v === 'Boleto' && !todosComVisto ? ' disabled' : ''}${(todosComVisto ? i === 0 : v === 'Pix') ? ' selected' : ''}>${t}</option>`).join('');
+  return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <h2 id="m-t">${varios ? `Marcar os ${bs.length} boletos como pagos` : 'Marcar como pago'}</h2>
+    <p class="resumo"><b>${esc(n.fornecedor)}</b> · ${esc(f?.nome || '')}<br>${docNota(n)} · ${varios
+      ? `parcelas ${bs.map((b) => `${b.parcela}/${b.total_parcelas}`).join(', ')} · total <span class="num">${brl(total)}</span>`
+      : `parcela ${bs[0].parcela}/${bs[0].total_parcelas} · <span class="num">${brl(bs[0].valor)}</span> · vence ${dataBR(bs[0].vencimento)}`}</p>
+    <div class="field"><label for="pg-forma">Como foi pago</label><select class="inp" id="pg-forma">${opcoes}</select>
+      ${todosComVisto ? '' : '<span class="dica-campo">O boleto ainda não teve visto: só dá para marcar como pago direto ao fornecedor (Pix, transferência…). Ele sai dos pendentes do Fiscal e do Financeiro.</span>'}</div>
+    <div class="field"><label for="pg-obs">Observação (opcional; obrigatória em "Outro")</label>
+      <input class="inp" id="pg-obs" placeholder="ex.: Pix enviado pela Rafaela, comprovante no WhatsApp"></div>
+    <div class="botoes">
+      <button class="visto" type="button" data-acao="confirmar-pago" style="flex:1">${ICONE.check()}Confirmar pagamento</button>
+      <button class="bg" type="button" data-acao="fechar-modal" style="height:46px">Cancelar</button>
+    </div>
+  </div></div>`;
 }
 
 registrarAcoes({
   'ordem-fin': (el) => { estado.ordemFin = el.dataset.ordem; desenhar(); },
   'marcar-pago': (el) => pagar([el.dataset.id]),
   'marcar-pago-nota': (el) => pagar(estado.boletos.filter((b) => b.nota_id === el.dataset.nota && b.etapa === 'visto' && !b.pago_em).map((b) => b.id)),
+  'confirmar-pago': () => confirmarPago(),
 });
