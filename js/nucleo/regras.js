@@ -1,0 +1,50 @@
+// =====================================================================
+// DUPLICA · nucleo/regras.js
+// Quem pode fazer o quê, NA TELA (para mostrar ou esconder botões).
+// A regra que vale de verdade está no banco (sql/02_funcoes.sql);
+// se mudar uma regra lá, mude aqui também.
+// =====================================================================
+import { estado } from './estado.js';
+
+const eu = () => estado.perfil || {};
+
+export const ehGerente = () => eu().papel === 'gerente';
+export const ehAdminSetor = () => eu().papel === 'admin_setor';
+
+/** Fiscal: adicionar XML, "Chegou", "Enviar ao financeiro" */
+export const podeFiscal = () => ehGerente() || eu().setor === 'Fiscal';
+
+/** Financeiro: "Dar visto" */
+export const podeFinanceiro = () => ehGerente() || eu().setor === 'Financeiro';
+
+/** Texto do botão da próxima etapa do boleto, ou '' se a pessoa não pode */
+export function proximaAcao(b) {
+  if (b.etapa === 'esperado' && podeFiscal()) return 'Chegou';
+  if (b.etapa === 'chegou' && podeFiscal()) return 'Enviar ao financeiro';
+  if (b.etapa === 'enviado' && podeFinanceiro()) return 'Dar visto';
+  return '';
+}
+
+/** Cancelar boleto ou nota (nota devolvida, cancelada, parcela renegociada) */
+export const podeCancelar = () => podeFiscal();
+
+/** Pode marcar como pago? Só Financeiro/gerente, só boleto com visto e ainda não pago */
+export const podePagar = (b) => podeFinanceiro() && b.etapa === 'visto' && !b.pago_em;
+
+/** Pode corrigir (voltar) a etapa atual deste boleto? */
+export function podeCorrigir(b) {
+  if (b.etapa === 'cancelado') return podeCancelar();
+  if (b.etapa === 'chegou' || b.etapa === 'enviado') return podeFiscal();
+  if (b.etapa === 'visto') return podeFinanceiro();   // se já estiver pago, a correção desfaz o pagamento
+  return false;
+}
+
+/** Pode ativar/desativar esta pessoa? */
+export function podeAlterarPessoa(alvo) {
+  if (alvo.id === eu().id || alvo.papel === 'gerente') return false;
+  if (ehGerente()) return true;
+  return ehAdminSetor() && alvo.setor === eu().setor && alvo.papel === 'usuario';
+}
+
+export const NOME_PAPEL = { gerente: 'Gerente geral', admin_setor: 'Admin do setor', usuario: 'Usuário' };
+export const NOME_ETAPA = { esperado: 'Não chegou', chegou: 'Chegou', enviado: 'No financeiro', visto: 'Visto do financeiro', cancelado: 'Cancelado' };

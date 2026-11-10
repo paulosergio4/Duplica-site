@@ -1,0 +1,102 @@
+/* =====================================================================
+   DUPLICA · layout.css
+   Estrutura das páginas: login, menu lateral, área principal, cartões,
+   filtros e a lista de notas/boletos.
+   ===================================================================== */
+/* login */
+.login{min-height:100vh;display:flex;flex-wrap:wrap}
+.login-hero{flex:1 1 420px;background:var(--petroleo);color:var(--creme);padding-block:56px 40px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.login-hero h1{margin:0;font-size:clamp(32px,4.4vw,46px);line-height:1.08;font-weight:800;letter-spacing:-1px;max-width:14ch}
+.login-hero p{margin:0;font-size:17px;line-height:1.6;color:var(--salvia);max-width:48ch}
+.trilha{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.trilha span{padding:7px 12px;border-radius:999px;border:1px solid var(--nevoa)}
+.trilha span.fim{background:var(--creme);color:var(--petroleo);border-color:var(--creme)}
+.trilha i{color:var(--nevoa);font-style:normal}
+.login-side{flex:1 1 420px;display:flex;align-items:center;justify-content:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login-card{width:100%;max-width:400px;background:var(--creme);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 50px rgba(51,75,90,.18)}
+.login-card h2{margin:0;font-size:26px;font-weight:800;color:var(--petroleo)}
+.dica{margin:0;padding:12px;border-radius:10px;background:var(--cinza-bg);font-size:13px;line-height:1.5;color:var(--terra)}
+.dica b{color:var(--petroleo)}
+.marca{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:800;letter-spacing:-.5px}
+
+/* app */
+.app{min-height:100vh;display:flex;flex-wrap:wrap}
+.menu{flex:1 1 240px;max-width:100%;background:var(--petroleo);color:var(--creme);padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:flex;flex-direction:column;gap:20px}
+.empresa{padding:12px;border-radius:12px;background:rgba(255,255,255,.07);display:flex;flex-direction:column;gap:2px}
+.empresa small{font-size:12px;color:var(--salvia)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{width:100%;min-height:46px;padding:0 14px;border:0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;color:var(--creme);font-weight:600;text-align:left}
+.nav button:hover{background:rgba(255,255,255,.08)}
+.nav button[aria-current="page"]{background:var(--creme);color:var(--petroleo);font-weight:800}
+.badge{min-width:22px;padding:2px 7px;border-radius:999px;background:var(--alerta);color:#fff;font-size:12px;font-weight:700;text-align:center}
+.eu{margin-top:8px;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,.07)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--salvia);color:var(--petroleo);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.eu div{display:flex;flex-direction:column;flex:1;min-width:0}
+.eu small{font-size:12px;color:var(--salvia)}
+.sair{width:44px;height:44px;border:0;border-radius:10px;background:transparent;color:var(--creme);display:flex;align-items:center;justify-content:center}
+.sair:hover{background:rgba(255,255,255,.1)}
+main{flex:999 1 560px;min-width:0;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px),2.5vw);padding-right:max(16px,env(safe-area-inset-right,0px),2.5vw);display:flex;flex-direction:column;gap:22px}
+.topo{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.eyebrow{font-size:12px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:1.2px}
+.topo h1{margin:4px 0 0;font-size:clamp(26px,3vw,32px);font-weight:800;color:var(--petroleo);letter-spacing:-.5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.card{text-align:left;padding:18px;border-radius:16px;display:flex;flex-direction:column;gap:6px;background:var(--creme);border:1.5px solid transparent}
+.card:hover{border-color:var(--nevoa)}
+.card.on{border-color:var(--petroleo)}
+.card.alerta{background:var(--alerta-row);border-color:var(--alerta)}
+.card span{font-size:13px;font-weight:700;color:var(--terra)}
+.card strong{font-size:34px;font-weight:800;line-height:1}
+.card small{font-size:12px;color:var(--terra)}
+.filtros{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.busca{flex:1 1 260px;position:relative}
+.busca input{width:100%;height:46px;padding:0 14px 0 42px;border-radius:12px;border:1.5px solid var(--nevoa);background:var(--creme)}
+.busca svg{position:absolute;left:14px;top:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{height:40px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;border:1.5px solid var(--nevoa);background:var(--creme);color:var(--petroleo)}
+.chips button[aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:var(--creme)}
+.corpo{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.lista{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.nota{background:var(--creme);border-radius:16px;overflow:hidden}
+.nota-h{padding:18px 20px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;border-bottom:1px solid var(--linha)}
+.nota-h .quem{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.nota-h .quem small{font-size:12px;font-weight:700;color:var(--terra)}
+.nota-h .quem strong{font-size:18px;font-weight:800;color:var(--petroleo)}
+.kv{display:flex;flex-direction:column;gap:2px}
+.kv small{font-size:12px;color:var(--terra)}
+.kv b{font-size:15px;font-weight:800}
+.prog{flex:0 1 170px;display:flex;flex-direction:column;gap:6px}
+.prog small{font-size:12px;color:var(--terra)}
+.barra{height:8px;border-radius:99px;background:var(--linha);overflow:hidden}
+.barra i{display:block;height:100%;border-radius:99px;background:var(--petroleo)}
+.barra i.ok{background:var(--musgo)}
+.rolagem{overflow-x:auto}
+.linha{padding:14px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #E6DFCF;min-width:660px}
+.linha:last-child{border-bottom:0}
+.linha:hover{background:#FBF8F1}
+.linha.alerta{background:var(--alerta-row);box-shadow:inset 4px 0 0 var(--alerta)}
+.linha.sel{background:#F0EADC;box-shadow:inset 4px 0 0 var(--petroleo)}
+.parc{width:48px;font-weight:800;color:var(--petroleo)}
+.status{flex:1 1 200px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.status em{font-style:normal;font-size:12px;color:var(--terra);font-weight:600}
+.acoes{display:flex;gap:8px;margin-left:auto}
+.vazio{padding:40px;border-radius:16px;background:var(--creme);text-align:center;color:var(--terra)}
+
+/* ---------- menu em tela estreita (celular / janela pequena) ----------
+   Até 900px de largura o menu lateral some e vira uma barra no topo
+   com o botão "Menu", que abre a lista de telas por cima do conteúdo. */
+.barra-topo{display:none}
+@media (max-width:900px){
+  .app{flex-direction:column;flex-wrap:nowrap}
+  .barra-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:15;
+    background:var(--petroleo);color:var(--creme);padding-block:10px;
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .barra-topo .marca{font-size:17px;gap:10px}
+  .botao-menu{min-height:44px;padding:0 14px;border:1.5px solid rgba(244,239,228,.35);border-radius:10px;background:transparent;
+    color:var(--creme);font-weight:700;display:inline-flex;align-items:center;gap:8px}
+  .menu{display:none;flex:none;position:sticky;top:64px;z-index:14;padding-block:12px 16px;
+    padding-right:max(16px,env(safe-area-inset-right,0px));box-shadow:0 12px 24px rgba(30,40,48,.3)}
+  .menu.aberto{display:flex}
+  .marca-menu{display:none}
+  .eu{margin-top:4px}
+  main{flex:1 1 auto}
+}

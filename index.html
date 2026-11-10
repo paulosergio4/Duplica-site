@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  DUPLICA · index.html  (página de entrada / login)
+  Estilos:  css/base.css, css/layout.css
+  Script:   js/login.js
+  Depois do login, o sistema abre em html/app.html
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duplica · Entrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='2' y='2' width='36' height='36' rx='10' fill='%23334B5A'/%3E%3Cpath d='M17 20l3 3 5-6' fill='none' stroke='%23F4EFE4' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="login">
+
+    <!-- lado esquerdo: apresentação -->
+    <section class="login-hero">
+      <div class="marca">
+        <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="10" fill="#F4EFE4"/><path d="M12 13h11a7 7 0 0 1 0 14H12z" fill="none" stroke="#334B5A" stroke-width="3"/><path d="M17 20l3 3 5-6" fill="none" stroke="#334B5A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Duplica
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <h1>Nenhum boleto fica para trás.</h1>
+        <p>Cada nota de entrada já chega com as parcelas esperadas. O fiscal marca quando o boleto chega e envia; o financeiro dá o visto. Tudo fica registrado, com quem e quando.</p>
+        <div class="trilha" aria-label="Etapas do boleto">
+          <span>Esperado</span><i>›</i><span>Chegou</span><i>›</i><span>No financeiro</span><i>›</i><span class="fim">Visto</span>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--nevoa)">Controle de boletos das notas de entrada</p>
+    </section>
+
+    <!-- lado direito: formulários -->
+    <div class="login-side">
+
+      <!-- 1) login -->
+      <form class="login-card" id="form-login" novalidate>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <h2>Entrar</h2>
+          <p style="margin:0;font-size:14px;color:var(--terra)">Use o mesmo usuário do Avanço.</p>
+        </div>
+        <div class="field">
+          <label for="empresa">Empresa</label>
+          <input class="inp" id="empresa" autocomplete="organization" placeholder="código da empresa, ex.: saoluiz">
+        </div>
+        <div class="field">
+          <label for="usuario">Usuário</label>
+          <input class="inp" id="usuario" autocomplete="username" placeholder="ex.: paulo">
+        </div>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input class="inp" id="senha" type="password" autocomplete="current-password" placeholder="••••••">
+        </div>
+        <p class="erro" id="erro-login" role="alert" hidden></p>
+        <button class="bp" type="submit" style="height:50px;font-size:16px">Entrar</button>
+        <p class="dica" id="dica-demo" hidden>
+          Modo demonstração: empresa <b>saoluiz</b>, usuários <b>paulo</b> (gerente geral), <b>rafaela</b> (admin do Financeiro),
+          <b>lucia</b>, <b>maria</b> ou <b>joao</b> (primeiro acesso). Senha <b>123456</b>.
+        </p>
+      </form>
+
+      <!-- 2) primeiro acesso: criar a própria senha -->
+      <form class="login-card" id="form-senha" novalidate hidden>
+        <h2 id="boas-vindas">Bem-vindo.</h2>
+        <p style="margin:0;font-size:14px;color:var(--terra)">É o seu primeiro acesso. Crie uma senha só sua para começar.</p>
+        <div class="field">
+          <label for="s1">Nova senha</label>
+          <input class="inp" id="s1" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres">
+        </div>
+        <div class="field">
+          <label for="s2">Repita a senha</label>
+          <input class="inp" id="s2" type="password" autocomplete="new-password">
+        </div>
+        <p class="erro" id="erro-senha" role="alert" hidden></p>
+        <button class="bp" type="submit" style="height:50px;font-size:16px">Salvar e entrar</button>
+      </form>
+
+    </div>
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

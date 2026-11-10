@@ -1,0 +1,46 @@
+/* =====================================================================
+   DUPLICA · base.css
+   Cores (variáveis), fonte, botões, campos e etiquetas (pills).
+   Para mudar uma cor do sistema inteiro, troque só a variável em :root.
+   ===================================================================== */
+:root{
+  --petroleo:#334B5A; --petroleo-esc:#26394A; --salvia:#CED8CF; --nevoa:#98A5A7;
+  --terra:#625745; --cafe:#3B3429; --creme:#F4EFE4; --creme-2:#E9E2D3; --linha:#DDD6C6; --branco:#FFFDF8;
+  --alerta:#A8503A; --alerta-txt:#8E3F2B; --alerta-bg:#F3DDD5; --alerta-row:#FBEDE7;
+  --ocre-txt:#6E5119; --ocre-bg:#F3E6CC; --musgo:#4F6A4A; --musgo-bg:#DDE7D8; --musgo-txt:#3F5A3B;
+  --azul-bg:#DCE5EA; --cinza-bg:#E1E6E4; --hist-bg:#EDE6D7;
+  --f:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{min-height:100%}
+body{margin:0;background:var(--salvia);color:var(--cafe);font-family:var(--f);font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+:focus-visible{outline:3px solid var(--petroleo);outline-offset:2px}
+h1,h2{text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* botões */
+.bp{height:46px;padding:0 18px;border:0;border-radius:12px;background:var(--petroleo);color:var(--creme);font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.bp:hover{background:var(--petroleo-esc)}
+.bg{height:40px;padding:0 14px;border:1.5px solid var(--nevoa);border-radius:10px;background:transparent;color:var(--petroleo);font-weight:700;font-size:13px;white-space:nowrap}
+.bg:hover{background:var(--creme-2)}
+.bs{height:40px;padding:0 14px;font-size:13px;border-radius:10px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:13px;font-weight:700}
+.inp{height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--nevoa);background:var(--branco);color:var(--cafe)}
+textarea.inp{height:auto;padding:10px 12px;resize:vertical}
+.inp::placeholder{color:#7D7465}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-esperado{background:var(--cinza-bg);color:var(--cafe);border:1px solid var(--nevoa)}
+.p-chegou{background:var(--creme-2);color:var(--terra)}
+.p-enviado{background:var(--azul-bg);color:var(--petroleo)}
+.p-visto{background:var(--musgo-bg);color:var(--musgo-txt)}
+.p-vencido{background:var(--alerta-bg);color:var(--alerta-txt)}
+.p-breve{background:var(--ocre-bg);color:var(--ocre-txt)}
+.erro{margin:0;padding:10px 12px;border-radius:10px;background:var(--alerta-bg);color:var(--alerta-txt);font-weight:600;font-size:14px}
+.toast{padding:12px 16px;border-radius:12px;background:var(--petroleo);color:var(--creme);font-weight:600;font-size:14px}

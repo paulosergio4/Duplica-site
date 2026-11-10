@@ -1,0 +1,139 @@
+/* =====================================================================
+   DUPLICA · telas.css
+   Partes de telas específicas: painel de detalhes, financeiro, usuários,
+   filiais, calendário, janela (modal) e faixa de filiais.
+   ===================================================================== */
+/* painel */
+.painel{flex:1 1 340px;max-width:100%;background:var(--creme);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:20px;box-shadow:0 16px 40px rgba(51,75,90,.14)}
+/* detalhes do boleto abertos como janela no meio da tela (fica abaixo das janelas de confirmação) */
+.painel-fundo{z-index:15}
+.painel-modal{flex:none;width:100%;max-width:640px;max-height:calc(100vh - 48px);overflow-y:auto}
+.painel-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.painel-h div{display:flex;flex-direction:column;gap:4px}
+.painel-h small{font-size:12px;font-weight:700;color:var(--terra)}
+.painel-h strong{font-size:18px;font-weight:800;color:var(--petroleo)}
+.x{width:44px;height:44px;border:0;border-radius:10px;background:var(--creme-2);color:var(--petroleo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.etapas{margin:0;padding:0;list-style:none}
+.etapas li{display:flex;gap:12px}
+.etapas .trilho{display:flex;flex-direction:column;align-items:center}
+.etapas .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--nevoa);margin-top:3px;flex-shrink:0}
+.etapas li.feito .dot{background:var(--petroleo);border-color:var(--petroleo)}
+.etapas .fio{width:2px;flex:1;min-height:22px;background:#CFC7B5}
+.etapas li:last-child .fio{display:none}
+.etapas .txt{display:flex;flex-direction:column;gap:2px;padding-bottom:14px}
+.etapas .txt b{font-size:14px;color:#7D7465;font-weight:600}
+.etapas li.feito .txt b{color:var(--cafe);font-weight:700}
+.etapas .txt small{font-size:12px;color:var(--terra)}
+.foto{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:var(--creme-2)}
+.foto .thumb{width:56px;height:56px;border-radius:8px;background:var(--nevoa);display:flex;align-items:center;justify-content:center}
+.addfoto{height:72px;width:100%;border:1.5px dashed var(--nevoa);border-radius:12px;background:transparent;color:var(--petroleo);font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+.addfoto:hover{background:var(--creme-2)}
+.corrigir{display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:1px solid var(--linha)}
+.link-alerta{align-self:flex-start;min-height:40px;padding:0 4px;border:0;background:transparent;color:var(--alerta-txt);font-weight:700;font-size:13px;text-decoration:underline}
+.bdanger{height:40px;padding:0 14px;border:0;border-radius:10px;background:var(--alerta);color:#fff;font-weight:700;font-size:13px}
+.hist{display:flex;flex-direction:column;gap:8px}
+.hist div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--hist-bg)}
+.hist b{font-size:14px}
+.hist b.corr{color:var(--alerta-txt)}
+.hist small{font-size:12px;color:var(--terra)}
+
+/* seções genéricas */
+.secao{background:var(--creme);border-radius:16px;overflow:hidden}
+.secao-h{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--linha)}
+.secao-h h2{margin:0;font-size:18px;font-weight:800;color:var(--petroleo)}
+.visto{height:42px;padding:0 16px;border:0;border-radius:10px;background:var(--musgo);color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.visto:hover{background:#405A3C}
+.users{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.users .secao{flex:999 1 460px;min-width:0}
+.form-u{flex:1 1 320px;max-width:100%;background:var(--creme);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.form-u h2{margin:0;font-size:18px;font-weight:800;color:var(--petroleo)}
+.check{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;min-height:44px}
+.check input{width:20px;height:20px;accent-color:var(--petroleo)}
+.u-linha{padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #E6DFCF;min-width:440px}
+.u-linha div{flex:1;display:flex;flex-direction:column;gap:2px}
+.u-linha small{font-size:12px;color:var(--terra)}
+.admin{background:var(--petroleo);color:var(--creme)}
+.u-linha{min-width:880px}
+.u-linha.off b,.u-linha.off .av{opacity:.55}
+.filiais{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(244,239,228,.55)}
+.filiais .eyebrow{margin-right:4px}
+.filiais button{height:38px;padding:0 6px 0 12px;border-radius:10px;border:1.5px solid var(--nevoa);background:var(--creme);color:var(--petroleo);font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.filiais button span{min-width:24px;padding:2px 6px;border-radius:7px;background:var(--creme-2);font-size:12px;color:var(--terra);text-align:center}
+.filiais button[aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:var(--creme)}
+.filiais button[aria-pressed="true"] span{background:rgba(255,255,255,.18);color:var(--creme)}
+.lote{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 20px;background:#F0EADC;border-bottom:1px solid var(--linha)}
+.lote small{font-size:12px;color:var(--terra);margin-right:auto}
+.grupo{padding:12px 20px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;background:#F0EADC;border-bottom:1px solid var(--linha);min-width:660px}
+.grupo .kv{margin-right:auto}
+.cal-item{padding:14px 20px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #E6DFCF}
+.cal-item:last-child{border-bottom:0}
+.cal-item-d{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cal-wrap{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.cal{flex:3 1 560px;min-width:0}
+.cal-lado{flex:2 1 340px;min-width:0}
+.cal .secao-h .bg{width:44px;height:44px;font-size:20px;padding:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:14px}
+.cal-dow{font-size:12px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.8px;text-align:center;padding:4px 0}
+.cal-dia{min-height:84px;border:1.5px solid transparent;border-radius:12px;background:var(--branco);padding:8px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;color:var(--cafe)}
+.cal-dia:hover{border-color:var(--nevoa)}
+.cal-n{font-size:14px;font-weight:800}
+.cal-q{font-size:12px;font-weight:700}
+.cal-v{font-size:12px;color:var(--terra)}
+.cal-dia.risco{background:var(--alerta-bg)}.cal-dia.risco .cal-q{color:var(--alerta-txt)}
+.cal-dia.aberto{background:var(--azul-bg)}.cal-dia.aberto .cal-q{color:var(--petroleo)}
+.cal-dia.ok{background:var(--musgo-bg)}.cal-dia.ok .cal-q{color:var(--musgo-txt)}
+.cal-dia.hoje .cal-n{background:var(--petroleo);color:var(--creme);border-radius:999px;padding:1px 7px}
+.cal-dia.sel{border-color:var(--petroleo);box-shadow:0 0 0 2px var(--petroleo) inset}
+.cal-leg{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 20px;border-top:1px solid var(--linha);font-size:12px;color:var(--terra)}
+.cal-leg span{display:inline-flex;align-items:center;gap:6px}
+.cal-leg i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.l-risco{background:var(--alerta-bg);border:1px solid var(--alerta)}.l-aberto{background:var(--azul-bg);border:1px solid var(--petroleo)}.l-ok{background:var(--musgo-bg);border:1px solid var(--musgo)}
+@media (max-width:640px){.cal-grid{gap:3px;padding:8px}.cal-dia{min-height:56px;padding:5px}.cal-v{display:none}.cal-q{font-size:11px}}
+.modal-fundo{position:fixed;inset:0;background:rgba(59,52,41,.5);display:flex;align-items:center;justify-content:center;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:20}
+.modal{width:100%;max-width:440px;background:var(--creme);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:16px;box-shadow:0 24px 60px rgba(30,40,48,.35)}
+.modal h2{margin:0;font-size:21px;font-weight:800;color:var(--petroleo)}
+.modal .resumo{margin:0;padding:12px;border-radius:10px;background:var(--creme-2);font-size:14px;line-height:1.5}
+.modal .dica-campo{font-size:12px;color:var(--terra)}
+.modal .botoes{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:640px){.menu{padding-right:max(16px,env(safe-area-inset-right,0px))}.eu{margin-top:0}}
+@media (prefers-reduced-motion:no-preference){.toast{animation:in .25s ease-out}@keyframes in{from{transform:translateY(-6px);opacity:.4}}}
+
+/* ---------- resultado da importação de XML ---------- */
+.resultado{background:var(--creme);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;border:1.5px solid var(--nevoa)}
+.resultado h2{margin:0;font-size:17px;font-weight:800;color:var(--petroleo)}
+.resultado ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.resultado .linha-topo{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+/* ---------- carregando / avisos de sistema ---------- */
+.carregando{padding:60px 20px;text-align:center;color:var(--terra);font-weight:600}
+.faixa-demo{background:var(--ocre-bg);color:var(--ocre-txt);font-size:13px;font-weight:700;padding:8px 16px;text-align:center}
+.foto img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.foto a{color:var(--petroleo);font-weight:700}
+
+/* ---------- editar nome da filial (tela Empresa e filiais) ---------- */
+.editar-filial{flex:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}
+.editar-filial .inp{flex:1 1 180px;height:40px;min-width:0}
+
+/* ---------- boleto / nota cancelados ---------- */
+.p-pago{background:#DCEBD9;color:#2F5A2B}
+.p-cancelado{background:#E6E2DA;color:#5C554B;text-decoration:line-through;text-decoration-thickness:1px}
+.linha.cancelada .parc,.linha.cancelada .kv b{color:#8A8275;text-decoration:line-through}
+.link-cancelar{min-height:40px;padding:0 6px;border:0;background:transparent;color:var(--alerta-txt);font-weight:700;font-size:13px;text-decoration:underline}
+.modal textarea.inp{min-height:76px}
+
+/* ---------- boleto avulso / contas fixas ---------- */
+.p-tipo{background:#E3DCEB;color:#4A3D5C}
+.modal-largo{max-width:620px;max-height:calc(100vh - 48px);overflow-y:auto}
+.av-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.av-grade .av-largo{grid-column:1 / -1}
+.av-parcela{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.av-parcela .field{flex:1 1 150px;min-width:0}
+.av-parcela .parc{padding-bottom:12px}
+@media (max-width:560px){.av-grade{grid-template-columns:minmax(0,1fr)}}
+/* ---------- filtro de emissão (Fiscal) e abas (Financeiro) ---------- */
+.periodo{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.periodo .field{flex:0 1 160px}
+.periodo .inp{height:40px}
+.abas{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--creme-2)}
+.abas button{min-height:40px;padding:0 16px;border:0;border-radius:9px;background:transparent;color:var(--petroleo);font-weight:700}
+.abas button[aria-selected="true"]{background:var(--petroleo);color:var(--creme)}
