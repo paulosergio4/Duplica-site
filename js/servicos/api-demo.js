@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=4987ea5';
-import { dvChave } from '../util/chave.js?v=4987ea5';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=46e11dc';
+import { dvChave } from '../util/chave.js?v=46e11dc';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -127,7 +127,7 @@ export const apiDemo = {
   async carregarTudo() {
     eu();
     const d = carregar();
-    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0); hoje.setDate(hoje.getDate() - 30);
     const recebimentos = (d.recebimentos || []).filter((r) => new Date(r.feito_em) >= hoje).sort((a, b) => (a.feito_em < b.feito_em ? 1 : -1));
     return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };   // (no demo, notas já traz as sem boleto)
   },
@@ -231,7 +231,7 @@ export const apiDemo = {
       reg(b.id, 'Chegou', 'nota bipada no recebimento por ' + p.nome, p);
       marcados++;
     }
-    novo({ nota_id: n.id, boletos: marcados, situacao: marcados || !bs.length ? 'casada' : 'repetida' });
+    novo({ nota_id: n.id, boletos: marcados, situacao: d.recebimentos.some((r) => r.nota_id === n.id && r.situacao === 'casada') ? 'repetida' : 'casada' });
     const f = d.filiais.find((x) => x.id === n.filial_id);
     return { situacao: marcados || !bs.length ? 'casada' : 'ja', nota_id: n.id, fornecedor: n.fornecedor, numero: n.numero, filial: f?.nome, marcados, total: bs.length };
   },

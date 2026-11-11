@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=4987ea5';
-import { normalizarLogin } from '../util/formato.js?v=4987ea5';
+import { CONFIG } from '../config.js?v=46e11dc';
+import { normalizarLogin } from '../util/formato.js?v=46e11dc';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -83,7 +83,7 @@ export const apiSupabase = {
     const corte = new Date(); corte.setDate(corte.getDate() - 120);
     const corteISO = corte.toISOString().slice(0, 10);
 
-    const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+    const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0); inicioDia.setDate(inicioDia.getDate() - 30);   // recebimentos dos últimos 30 dias
     const [emp, filiais, perfis, boletos, recorrencias, recebimentos] = await Promise.all([
       sb.from('empresas').select('*').maybeSingle(),
       buscarTodas(() => sb.from('filiais').select('*').order('ordem')),
