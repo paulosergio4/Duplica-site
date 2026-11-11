@@ -4,14 +4,14 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=2f04570';
-import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=2f04570';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2f04570';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2f04570';
-import { ICONE } from './icones.js?v=2f04570';
-import { docNota } from './comuns.js?v=2f04570';
-import { linhaDigitavelHtml } from './ler-boleto.js?v=2f04570';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=2f04570';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=4d27135';
+import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=4d27135';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=4d27135';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4d27135';
+import { ICONE } from './icones.js?v=4d27135';
+import { docNota } from './comuns.js?v=4d27135';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=4d27135';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=4d27135';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
@@ -105,12 +105,14 @@ export function painelHtml() {
     <ol class="etapas">${passos}</ol>
     ${linhaDigitavelHtml(b)}
     <div class="field"><label for="anot">Anotação</label>
-      <textarea class="inp" id="anot" rows="3" placeholder="ex.: entregue para fulano no balcão">${esc(b.anotacao || '')}</textarea>
+      ${b.anotacao ? `<div style="background:var(--creme-2);border-radius:10px;padding:10px 12px;font-size:14px;white-space:pre-wrap">${esc(b.anotacao)}</div>` : ''}
+      <textarea class="inp" id="anot" rows="3" placeholder="${b.anotacao ? 'Escreva uma nova anotação (substitui a de cima)' : 'ex.: entregue para fulano no balcão'}"></textarea>
       <button class="bg" type="button" data-acao="salvar-anotacao" style="align-self:flex-start">Salvar anotação</button></div>
     <div class="field"><label>Comprovante</label>${foto}
       <input type="file" id="arquivo-foto" accept="image/jpeg,image/png,image/webp,application/pdf" hidden></div>
     ${correcao}
-    ${podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}${b.etapa === 'visto' ? 'Marcar como pago' : 'Pago direto ao fornecedor (Pix, transferência…)'}</button>` : ''}
+    ${estado.tela !== 'financeiro' && podePagarFiscal(b) ? `<button class="visto" type="button" data-acao="pago-fiscal" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}Pago (cheque, Pix…) · enviar ao financeiro</button>`
+      : podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}${b.etapa === 'visto' ? 'Marcar como pago' : 'Pago direto ao fornecedor (Pix, transferência…)'}</button>` : ''}
     ${podeCancelar() && b.etapa !== 'cancelado' ? `<button class="link-cancelar" type="button" data-acao="cancelar-boleto" data-id="${b.id}" style="align-self:flex-start">Cancelar este boleto</button>` : ''}
     <div class="field"><label>Histórico</label><div class="hist">${hist}</div></div>
   </aside></div>`;
@@ -132,7 +134,10 @@ registrarAcoes({
     await atualizar(`Vencimento alterado para ${dataBR(nova)}.`);
   }),
   'salvar-anotacao': () => executar(async () => {
-    await estado.api.salvarAnotacao(estado.sel, document.getElementById('anot').value);
+    const campo = document.getElementById('anot');
+    if (!campo.value.trim()) throw new Error('Escreva a anotação antes de salvar.');
+    await estado.api.salvarAnotacao(estado.sel, campo.value);
+    campo.value = '';
     await atualizar('Anotação salva.');
   }),
   'escolher-foto': () => document.getElementById('arquivo-foto').click(),

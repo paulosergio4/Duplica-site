@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=2f04570';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=4d27135';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -292,11 +292,32 @@ export const apiDemo = {
     return n;
   },
 
+  async fiscalPago(ids, forma, obs = null) {
+    const p = eu(), d = carregar();
+    if (!(p.papel === 'gerente' || p.setor === 'Fiscal')) throw new Error('Só o Fiscal usa esta opção.');
+    if (!['Cheque', 'Pix', 'Transferência', 'Dinheiro', 'Outro'].includes(forma)) throw new Error('Escolha como foi pago.');
+    if (forma === 'Outro' && !(obs || '').trim()) throw new Error('Em "Outro", escreva como foi pago.');
+    const det = [`pago por ${forma} · enviado ao financeiro`, (obs || '').trim() || null].filter(Boolean).join(' · ');
+    let n = 0;
+    for (const b of d.boletos.filter((x) => ids.includes(x.id) && !x.pago_em && ['esperado', 'chegou'].includes(x.etapa))) {
+      Object.assign(b, { pago_em: agora(), pago_por: p.nome, pago_forma: forma, etapa_antes_pago: b.etapa, etapa: 'enviado', enviado_por: p.nome, enviado_em: agora() });
+      reg(b.id, 'Pago', det, p);
+      n++;
+    }
+    if (!n) throw new Error('Nenhum boleto pôde ser marcado (já foi enviado, pago ou cancelado).');
+    salvar();
+    return n;
+  },
+
   async desfazerPago(boletoId, motivo) {
     const p = eu(), b = carregar().boletos.find((x) => x.id === boletoId);
-    if (!(p.papel === 'gerente' || p.setor === 'Financeiro')) throw new Error('Só o Financeiro desfaz o pagamento.');
+    if (!(p.papel === 'gerente' || p.setor === 'Financeiro' || (p.setor === 'Fiscal' && b.etapa === 'enviado'))) throw new Error('Só o Financeiro desfaz o pagamento.');
     if (!motivo || motivo.trim().length < 5) throw new Error('Escreva o motivo da correção.');
-    if (b.etapa_antes_pago) Object.assign(b, { etapa: b.etapa_antes_pago, direto_financeiro: null, visto_por: null, visto_em: null });
+    if (b.etapa_antes_pago) {
+      const voltaFiscal = ['esperado', 'chegou'].includes(b.etapa_antes_pago);
+      Object.assign(b, { etapa: b.etapa_antes_pago, direto_financeiro: null, visto_por: null, visto_em: null, entregue_por: null,
+        ...(voltaFiscal ? { enviado_por: null, enviado_em: null } : {}) });
+    }
     Object.assign(b, { pago_em: null, pago_por: null, pago_forma: null, etapa_antes_pago: null });
     reg(b.id, 'Corrigido', `desfez "Pago". Motivo: ${motivo.trim()}`, p);
     salvar();

@@ -4,16 +4,16 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=2f04570';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=2f04570';
-import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=2f04570';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2f04570';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2f04570';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=2f04570';
-import '../componentes/modal-avulso.js?v=2f04570';
-import { ICONE } from '../componentes/icones.js?v=2f04570';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=2f04570';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=2f04570';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=4d27135';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=4d27135';
+import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=4d27135';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=4d27135';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4d27135';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=4d27135';
+import '../componentes/modal-avulso.js?v=4d27135';
+import { ICONE } from '../componentes/icones.js?v=4d27135';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=4d27135';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=4d27135';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
@@ -27,6 +27,7 @@ function linhaBoleto(b) {
     <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
     <div class="status">${pillEtapa(b)}${pillPrazo(b)}${b.anotacao ? '<em>· anotação</em>' : ''}${b.foto_path ? '<em>· comprovante</em>' : ''}</div>
     <div class="acoes">${acao ? `<button class="bp bs" type="button" data-acao="avancar" data-id="${b.id}">${acao}</button>` : ''}
+      ${podePagarFiscal(b) ? `<button class="bg" type="button" data-acao="pago-fiscal" data-id="${b.id}">Pago</button>` : ''}
       <button class="bg" type="button" data-acao="abrir-boleto" data-id="${b.id}">Detalhes</button></div>
   </div>`;
 }

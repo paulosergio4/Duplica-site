@@ -5,15 +5,15 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=2f04570';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=2f04570';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=2f04570';
-import { obterApi } from './servicos/api.js?v=2f04570';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=2f04570';
-import { menuHtml } from './componentes/menu.js?v=2f04570';
-import { modalHtml } from './componentes/modal-pessoa.js?v=2f04570';
-import { painelHtml } from './componentes/painel-boleto.js?v=2f04570';
-import { esc } from './util/formato.js?v=2f04570';
+import { estado } from './nucleo/estado.js?v=4d27135';
+import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=4d27135';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=4d27135';
+import { obterApi } from './servicos/api.js?v=4d27135';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=4d27135';
+import { menuHtml } from './componentes/menu.js?v=4d27135';
+import { modalHtml } from './componentes/modal-pessoa.js?v=4d27135';
+import { painelHtml } from './componentes/painel-boleto.js?v=4d27135';
+import { esc } from './util/formato.js?v=4d27135';
 
 const raiz = document.getElementById('app');
 

@@ -8,15 +8,15 @@
 //                                    (e-mail, DDA, em mãos) e marca com visto
 //   5. Vencem nos próximos 7 dias   → só consulta, qualquer etapa (menos os já pagos)
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=2f04570';
-import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=2f04570';
-import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=2f04570';
-import '../componentes/modal-avulso.js?v=2f04570';
-import { leitorHtml } from '../componentes/ler-boleto.js?v=2f04570';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2f04570';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=2f04570';
-import { ICONE } from '../componentes/icones.js?v=2f04570';
-import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=2f04570';
+import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=4d27135';
+import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=4d27135';
+import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=4d27135';
+import '../componentes/modal-avulso.js?v=4d27135';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=4d27135';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4d27135';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=4d27135';
+import { ICONE } from '../componentes/icones.js?v=4d27135';
+import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=4d27135';
 
 const aviso = (t) => `<span style="margin-left:auto;font-size:12px;color:var(--terra);font-weight:600;white-space:nowrap">${t}</span>`;
 
@@ -166,11 +166,12 @@ function confirmarPago() {
   return executar(async () => {
     const forma = document.getElementById('pg-forma').value;
     const obs = document.getElementById('pg-obs').value.trim();
-    const n = await estado.api.marcarPago(estado.modal.ids, forma, obs);
+    const fiscal = estado.modal.fiscal;
+    const n = fiscal ? await estado.api.fiscalPago(estado.modal.ids, forma, obs) : await estado.api.marcarPago(estado.modal.ids, forma, obs);
     estado.modal = null;
     await recarregar();
     const como = forma === 'Boleto' ? '' : ` (${forma})`;
-    avisar(n === 1 ? `Boleto marcado como pago${como}.` : `${n} boletos marcados como pagos${como}.`);
+    avisar((n === 1 ? `Boleto marcado como pago${como}` : `${n} boletos marcados como pagos${como}`) + (fiscal ? ' e enviado ao financeiro.' : '.'));
   });
 }
 
@@ -180,17 +181,18 @@ export function modalPagarHtml() {
   if (!bs.length) return '';
   const n = notaDe(bs[0].nota_id), f = filialDe(n.filial_id), varios = bs.length > 1;
   const total = bs.reduce((s, b) => s + Number(b.valor), 0);
-  const todosComVisto = bs.every((b) => b.etapa === 'visto');
-  const formas = [['Boleto', 'Boleto (pagou o boleto)'], ['Pix', 'Pix direto ao fornecedor'], ['Transferência', 'Transferência (TED/DOC) direto ao fornecedor'],
-    ['Dinheiro', 'Dinheiro'], ['Outro', 'Outro']];
+  const fiscal = !!estado.modal.fiscal;
+  const todosComVisto = !fiscal && bs.every((b) => b.etapa === 'visto');
+  const formas = [['Boleto', 'Boleto (pagou o boleto)'], ['Cheque', 'Cheque'], ['Pix', 'Pix direto ao fornecedor'], ['Transferência', 'Transferência (TED/DOC) direto ao fornecedor'],
+    ['Dinheiro', 'Dinheiro'], ['Outro', 'Outro']].filter(([v]) => !(fiscal && v === 'Boleto'));
   const opcoes = formas.map(([v, t], i) => `<option value="${v}"${v === 'Boleto' && !todosComVisto ? ' disabled' : ''}${(todosComVisto ? i === 0 : v === 'Pix') ? ' selected' : ''}>${t}</option>`).join('');
   return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
-    <h2 id="m-t">${varios ? `Marcar os ${bs.length} boletos como pagos` : 'Marcar como pago'}</h2>
+    <h2 id="m-t">${varios ? `Marcar os ${bs.length} boletos como pagos` : 'Marcar como pago'}${fiscal ? ' e enviar ao financeiro' : ''}</h2>
     <p class="resumo"><b>${esc(n.fornecedor)}</b> · ${esc(f?.nome || '')}<br>${docNota(n)} · ${varios
       ? `parcelas ${bs.map((b) => `${b.parcela}/${b.total_parcelas}`).join(', ')} · total <span class="num">${brl(total)}</span>`
       : `parcela ${bs[0].parcela}/${bs[0].total_parcelas} · <span class="num">${brl(bs[0].valor)}</span> · vence ${dataBR(bs[0].vencimento)}`}</p>
     <div class="field"><label for="pg-forma">Como foi pago</label><select class="inp" id="pg-forma">${opcoes}</select>
-      ${todosComVisto ? '' : '<span class="dica-campo">O boleto ainda não teve visto: só dá para marcar como pago direto ao fornecedor (Pix, transferência…). Ele sai dos pendentes do Fiscal e do Financeiro.</span>'}</div>
+      ${fiscal ? `<span class="dica-campo">${varios ? 'Os boletos vão' : 'O boleto vai'} direto para o Financeiro, já marcado${varios ? 's' : ''} como pago${varios ? 's' : ''}. O Financeiro só dá o visto.</span>` : todosComVisto ? '' : '<span class="dica-campo">O boleto ainda não teve visto: só dá para marcar como pago direto ao fornecedor (Pix, transferência…). Ele sai dos pendentes do Fiscal e do Financeiro.</span>'}</div>
     <div class="field"><label for="pg-obs">Observação (opcional; obrigatória em "Outro")</label>
       <input class="inp" id="pg-obs" placeholder="ex.: Pix enviado pela Rafaela, comprovante no WhatsApp"></div>
     <div class="botoes">
@@ -205,4 +207,6 @@ registrarAcoes({
   'marcar-pago': (el) => pagar([el.dataset.id]),
   'marcar-pago-nota': (el) => pagar(estado.boletos.filter((b) => b.nota_id === el.dataset.nota && b.etapa === 'visto' && !b.pago_em).map((b) => b.id)),
   'confirmar-pago': () => confirmarPago(),
+  // Fiscal: pago (cheque, Pix...) e já vai para o financeiro
+  'pago-fiscal': (el) => { estado.modal = { tipo: 'pagar', ids: [el.dataset.id], fiscal: true }; desenhar(); },
 });

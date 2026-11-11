@@ -9,14 +9,15 @@
 //   data-acao="avancar"       data-id="<boleto>"
 //   data-acao="avancar-lote"  data-nota="<nota>" data-etapa="esperado|chegou|enviado"
 // =====================================================================
-import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=2f04570';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2f04570';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2f04570';
-import { docNota } from './comuns.js?v=2f04570';
-import { esc, brl, dataBR } from '../util/formato.js?v=2f04570';
-import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=2f04570';
-import { modalEditarPessoaHtml } from '../telas/usuarios.js?v=2f04570';
-import { modalPagarHtml } from '../telas/financeiro.js?v=2f04570';
+import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=4d27135';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=4d27135';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4d27135';
+import { docNota } from './comuns.js?v=4d27135';
+import { esc, brl, dataBR } from '../util/formato.js?v=4d27135';
+import { podeFiscal } from '../nucleo/regras.js?v=4d27135';
+import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=4d27135';
+import { modalEditarPessoaHtml } from '../telas/usuarios.js?v=4d27135';
+import { modalPagarHtml } from '../telas/financeiro.js?v=4d27135';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 
@@ -70,6 +71,7 @@ function modalCancelarHtml(bs) {
   const b = bs[0], nota = notaDe(b.nota_id), filial = filialDe(nota.filial_id);
   const todosDaNota = estado.boletos.filter((x) => x.nota_id === nota.id && x.etapa !== 'cancelado').length === bs.length;
   const total = bs.reduce((s, x) => s + Number(x.valor), 0);
+  const enviados = podeFiscal() ? bs.filter((x) => x.etapa === 'enviado').length : 0;
   const titulo = todosDaNota && bs.length > 1 ? `Cancelar a nota e os ${bs.length} boletos` : todosDaNota ? 'Cancelar a nota e o boleto' : 'Cancelar este boleto';
   return `<div class="modal-fundo"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
     <h2 id="m-t">${titulo}</h2>
@@ -81,6 +83,9 @@ function modalCancelarHtml(bs) {
       <button class="bdanger" type="button" data-acao="confirmar-cancelar" id="b-canc" disabled style="flex:1;height:46px">Confirmar cancelamento</button>
       <button class="bg" type="button" data-acao="fechar-modal" style="height:46px">Voltar</button>
     </div>
+    ${enviados ? `<div class="corrigir" style="display:flex;flex-direction:column;gap:8px">
+      <small>Foi só enviado ao financeiro por engano? ${enviados > 1 ? `Os ${enviados} boletos voltam` : 'O boleto volta'} para <b>Chegou</b> (com o fiscal) e a nota não é cancelada. Usa o mesmo motivo de cima.</small>
+      <button class="bg" type="button" data-acao="cancelar-envio" id="b-canc-envio" disabled style="height:42px;align-self:flex-start">Cancelar só o envio ao financeiro</button></div>` : ''}
   </div></div>`;
 }
 
@@ -168,7 +173,23 @@ registrarAcoes({
     avisar(`${n > 1 ? `${n} boletos` : 'Boleto'} de ${fornecedor} cancelado${n > 1 ? 's' : ''}. Motivo: ${motivo}`);
   }),
 });
-registrarCampo('motivo-canc', (el) => { document.getElementById('b-canc').disabled = el.value.trim().length < 5; });
+registrarAcoes({
+  // volta "Enviado ao financeiro" para "Chegou" (é a mesma correção do painel, com o motivo daqui)
+  'cancelar-envio': () => executar(async () => {
+    const motivo = document.getElementById('motivo-canc').value.trim();
+    const bs = estado.modal.ids.map(boletoDe).filter((b) => b && b.etapa === 'enviado');
+    const fornecedor = notaDe(bs[0].nota_id).fornecedor;
+    for (const b of bs) await estado.api.corrigir(b.id, motivo);
+    estado.modal = null;
+    await recarregar();
+    avisar(`Envio ao financeiro cancelado: ${bs.length > 1 ? `${bs.length} boletos` : 'boleto'} de ${fornecedor} voltou para Chegou.`);
+  }),
+});
+registrarCampo('motivo-canc', (el) => {
+  const curto = el.value.trim().length < 5;
+  document.getElementById('b-canc').disabled = curto;
+  const e = document.getElementById('b-canc-envio'); if (e) e.disabled = curto;
+});
 
 // mostra "Entregue por" só quando a opção é "Em mãos"
 registrarCampo('origem', (el) => { document.getElementById('campo-quem').hidden = el.value !== 'Em mãos'; });

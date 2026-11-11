@@ -4,7 +4,7 @@
 // A regra que vale de verdade está no banco (sql/02_funcoes.sql);
 // se mudar uma regra lá, mude aqui também.
 // =====================================================================
-import { estado } from './estado.js?v=2f04570';
+import { estado } from './estado.js?v=4d27135';
 
 const eu = () => estado.perfil || {};
 
@@ -34,6 +34,9 @@ export const podeAlterarVencimento = (b) => (podeFiscal() || podeFinanceiro()) &
 /** Pode marcar como pago? Financeiro/gerente, boleto ainda não pago e não cancelado.
  *  Com visto: pago no boleto (ou direto). Sem visto: só "pago direto" (Pix, transferência...) */
 export const podePagar = (b) => podeFinanceiro() && b.etapa !== 'cancelado' && !b.pago_em;
+
+/** Fiscal: "Pago" (cheque, Pix...) num boleto que ainda está com ele; já vai para o Financeiro */
+export const podePagarFiscal = (b) => podeFiscal() && ['esperado', 'chegou'].includes(b.etapa) && !b.pago_em;
 
 /** Pode corrigir (voltar) a etapa atual deste boleto? */
 export function podeCorrigir(b) {

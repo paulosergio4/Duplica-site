@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=2f04570';
-import { normalizarLogin } from '../util/formato.js?v=2f04570';
+import { CONFIG } from '../config.js?v=4d27135';
+import { normalizarLogin } from '../util/formato.js?v=4d27135';
 
 const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -158,6 +158,11 @@ export const apiSupabase = {
     return data;
   },
 
+  async fiscalPago(ids, forma, obs = null) {
+    const { data, error } = await sb.rpc('fiscal_pago', { ids, forma, obs: obs || null });
+    falha(error);
+    return data;
+  },
   async desfazerPago(boletoId, motivo) {
     falha((await sb.rpc('desfazer_pago', { boleto: boletoId, motivo })).error);
   },
