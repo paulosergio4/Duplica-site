@@ -85,6 +85,11 @@ main{flex:999 1 560px;min-width:0;padding-block:28px 48px;padding-left:max(16px,
    Até 900px de largura o menu lateral some e vira uma barra no topo
    com o botão "Menu", que abre a lista de telas por cima do conteúdo. */
 .barra-topo{display:none}
+/* PC: a lateral fica fixa na tela enquanto a página rola */
+@media (min-width:901px){
+  .app{flex-wrap:nowrap;align-items:flex-start}
+  .menu{flex:0 0 250px;position:sticky;top:0;height:100vh;overflow-y:auto}
+}
 @media (max-width:900px){
   .app{flex-direction:column;flex-wrap:nowrap}
   .barra-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:15;
