@@ -4,16 +4,16 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=535e288';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=535e288';
-import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=535e288';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=535e288';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=535e288';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=535e288';
-import '../componentes/modal-avulso.js?v=535e288';
-import { ICONE } from '../componentes/icones.js?v=535e288';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=535e288';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=535e288';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=1a48cff';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=1a48cff';
+import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=1a48cff';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=1a48cff';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=1a48cff';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=1a48cff';
+import '../componentes/modal-avulso.js?v=1a48cff';
+import { ICONE } from '../componentes/icones.js?v=1a48cff';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=1a48cff';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=1a48cff';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 

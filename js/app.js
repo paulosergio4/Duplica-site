@@ -5,17 +5,26 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=535e288';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=535e288';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=535e288';
-import { obterApi } from './servicos/api.js?v=535e288';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=535e288';
-import { menuHtml } from './componentes/menu.js?v=535e288';
-import { modalHtml } from './componentes/modal-pessoa.js?v=535e288';
-import { painelHtml } from './componentes/painel-boleto.js?v=535e288';
-import { esc } from './util/formato.js?v=535e288';
+import { estado } from './nucleo/estado.js?v=1a48cff';
+import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=1a48cff';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=1a48cff';
+import { obterApi } from './servicos/api.js?v=1a48cff';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=1a48cff';
+import { menuHtml } from './componentes/menu.js?v=1a48cff';
+import { modalHtml } from './componentes/modal-pessoa.js?v=1a48cff';
+import { painelHtml } from './componentes/painel-boleto.js?v=1a48cff';
+import { esc } from './util/formato.js?v=1a48cff';
 
 const raiz = document.getElementById('app');
+const inicioCarga = performance.now();
+
+/** Some com a tela de carregamento (deixa a animação do logo terminar: ~1,6 s no mínimo) */
+function esconderSplash() {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  const falta = Math.max(0, 1600 - (performance.now() - inicioCarga));
+  setTimeout(() => { splash.classList.add('saindo'); setTimeout(() => splash.remove(), 500); }, falta);
+}
 
 /** Redesenha tudo, mantendo o cursor no campo em que a pessoa estava digitando */
 function desenhar() {
@@ -51,6 +60,7 @@ async function iniciar() {
   // cria os boletos das contas fixas que já entraram no prazo (nunca duplica)
   try { await estado.api.gerarRecorrentes(); } catch (e) { console.warn('Contas fixas:', e.message); }
   await recarregar();
+  esconderSplash();
 }
 
 // ação do botão da faixa de demonstração
@@ -60,5 +70,6 @@ registrarAcoes({
 
 iniciar().catch((e) => {
   console.error(e);
+  document.getElementById('splash')?.remove();
   raiz.innerHTML = `<div class="carregando">Não foi possível abrir o sistema: ${esc(e.message)}<br><a href="../index.html">Voltar ao login</a></div>`;
 });

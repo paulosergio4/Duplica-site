@@ -5,8 +5,19 @@
 const svg = (tam, conteudo, extra = '') =>
   `<svg width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${conteudo}</svg>`;
 
+let logoN = 0;
+
 export const ICONE = {
-  logo: (t = 36) => `<svg width="${t}" height="${t}" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="10" fill="#FBE4D8"/><path d="M12 13h11a7 7 0 0 1 0 14H12z" fill="none" stroke="#2B124C" stroke-width="3"/><path d="M17 20l3 3 5-6" fill="none" stroke="#2B124C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  // logo: "D" com o visto saindo dele (o boleto conferido). Gradiente com id próprio em cada cópia.
+  logo: (t = 36) => {
+    const n = ++logoN;
+    return `<svg class="logo" width="${t}" height="${t}" viewBox="0 0 48 48" aria-hidden="true"><defs>
+      <linearGradient id="lg-f${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1EA"/><stop offset="1" stop-color="#DFB6B2"/></linearGradient>
+      <linearGradient id="lg-c${n}" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#522B5B"/><stop offset="1" stop-color="#A0627F"/></linearGradient></defs>
+      <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#lg-f${n})"/>
+      <path class="logo-d" pathLength="100" d="M27.6 14.3A10.5 10.5 0 0 0 23.5 13.5h-9v21h9a10.5 10.5 0 0 0 10.3-12.6" fill="none" stroke="#2B124C" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="logo-v" pathLength="100" d="M19.4 23.6l4 4L36 13.8" fill="none" stroke="url(#lg-c${n})" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  },
   sair: () => svg(20, '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'),
   upload: () => svg(18, '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>'),
   busca: () => svg(18, '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>', 'stroke="#522B5B"'),
