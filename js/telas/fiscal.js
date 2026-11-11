@@ -4,15 +4,16 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=9b9ec3e';
-import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=9b9ec3e';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=9b9ec3e';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9b9ec3e';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=9b9ec3e';
-import '../componentes/modal-avulso.js?v=9b9ec3e';
-import { ICONE } from '../componentes/icones.js?v=9b9ec3e';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=9b9ec3e';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=9b9ec3e';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=3e50cf5';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=3e50cf5';
+import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=3e50cf5';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=3e50cf5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=3e50cf5';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=3e50cf5';
+import '../componentes/modal-avulso.js?v=3e50cf5';
+import { ICONE } from '../componentes/icones.js?v=3e50cf5';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=3e50cf5';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=3e50cf5';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
@@ -151,7 +152,9 @@ export const telaFiscal = {
 
     return cabecalho(sobretituloHoje('Fiscal'), 'Boletos das notas', botaoXml) + toastHtml() + resultadoHtml()
       + faixaFiliais(estado.boletos.filter((b) => !['visto', 'cancelado'].includes(b.etapa)), 'boletos em aberto')
-      + `<div class="cards">${cards}</div>
+      + `<div class="cards">${cards}</div>`
+      + (podeFiscal() ? leitorHtml('fiscal') : '')
+      + `
       <div class="filtros"><div class="busca"><label for="busca" class="sr">Buscar</label>
         <input id="busca" placeholder="Buscar por fornecedor ou número da nota" value="${esc(estado.busca)}">${ICONE.busca()}</div>
         <div class="chips" role="group" aria-label="Filtrar">${chips}</div></div>

@@ -4,13 +4,14 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=9b9ec3e';
-import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=9b9ec3e';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=9b9ec3e';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9b9ec3e';
-import { ICONE } from './icones.js?v=9b9ec3e';
-import { docNota } from './comuns.js?v=9b9ec3e';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=9b9ec3e';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=3e50cf5';
+import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=3e50cf5';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=3e50cf5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=3e50cf5';
+import { ICONE } from './icones.js?v=3e50cf5';
+import { docNota } from './comuns.js?v=3e50cf5';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=3e50cf5';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=3e50cf5';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
@@ -102,6 +103,7 @@ export function painelHtml() {
     ${b.etapa === 'cancelado' ? `<div class="erro" style="background:#E6E2DA;color:#3B3429"><b>Cancelado</b> · ${esc(b.cancelado_motivo || '')}<br>
       <small>por ${esc(b.cancelado_por || '')} · ${dataHoraBR(b.cancelado_em)}</small></div>` : ''}
     <ol class="etapas">${passos}</ol>
+    ${linhaDigitavelHtml(b)}
     <div class="field"><label for="anot">Anotação</label>
       <textarea class="inp" id="anot" rows="3" placeholder="ex.: entregue para fulano no balcão">${esc(b.anotacao || '')}</textarea>
       <button class="bg" type="button" data-acao="salvar-anotacao" style="align-self:flex-start">Salvar anotação</button></div>

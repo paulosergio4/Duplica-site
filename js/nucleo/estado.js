@@ -3,8 +3,8 @@
 // Tudo que está na tela vem deste objeto "estado". As telas LEEM daqui;
 // as ações MUDAM aqui e depois chamam render() para redesenhar.
 // =====================================================================
-import { hojeISO, diasAte } from '../util/formato.js?v=9b9ec3e';
-import { CONFIG } from '../config.js?v=9b9ec3e';
+import { hojeISO, diasAte } from '../util/formato.js?v=3e50cf5';
+import { CONFIG } from '../config.js?v=3e50cf5';
 
 export const estado = {
   api: null,          // funções de dados (demo ou Supabase) – ver servicos/api.js
@@ -27,7 +27,8 @@ export const estado = {
   hist: null,         // histórico do boleto aberto (carregado sob demanda)
   fotoUrl: null,      // link temporário da foto do boleto aberto
   corrigindo: false,
-  editandoVenc: false, // painel de detalhes: editando o vencimento?
+  editandoVenc: false,
+  leitura: null,       // resultado do campo "Ler boleto" { tela, texto, res } // painel de detalhes: editando o vencimento?
   modal: null,        // janela aberta: { ids: [...] }
   menuAberto: false,  // menu aberto na tela estreita (celular)
   editandoFilial: null, // id da filial com o nome em edição

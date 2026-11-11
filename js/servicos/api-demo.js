@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=9b9ec3e';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=3e50cf5';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -325,6 +325,18 @@ export const apiDemo = {
     if (b.etapa === 'chegou') Object.assign(b, { etapa: 'esperado', recebido_por: null, chegou_marcado_por: null, chegou_em: null });
     else if (b.etapa === 'enviado') Object.assign(b, { etapa: 'chegou', enviado_por: null, enviado_em: null });
     else if (b.etapa === 'visto') Object.assign(b, { etapa: 'enviado', entregue_por: null, visto_por: null, visto_em: null });
+    salvar();
+  },
+
+  async vincularCodigo(boletoId, barras, linha, venc) {
+    const p = eu(), d = carregar(), b = d.boletos.find((x) => x.id === boletoId);
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Financeiro'].includes(p.setor))) throw new Error('Só Fiscal ou Financeiro leem o código do boleto.');
+    if (b.codigo_barras === barras) return;
+    const outro = d.boletos.find((x) => x.codigo_barras === barras && x.id !== b.id);
+    if (outro) throw new Error('Esse código já foi lido em outro boleto.');
+    const preencheu = !b.vencimento && venc;
+    Object.assign(b, { codigo_barras: barras, linha_digitavel: linha, vencimento: b.vencimento || venc || null });
+    reg(b.id, 'Código do boleto lido', preencheu ? `vencimento preenchido: ${venc.split('-').reverse().join('/')}` : null, p);
     salvar();
   },
 
