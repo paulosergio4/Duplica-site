@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=25c8395';
-import { normalizarLogin } from '../util/formato.js?v=25c8395';
+import { CONFIG } from '../config.js?v=ddc939d';
+import { normalizarLogin } from '../util/formato.js?v=ddc939d';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -209,6 +209,18 @@ export const apiSupabase = {
     const { data, error } = await sb.storage.from('comprovantes').createSignedUrl(caminho, 3600);
     falha(error);
     return data.signedUrl;
+  },
+
+  /** Cadastro aberto (página Criar conta): cria a empresa em teste grátis e já entra */
+  async cadastrarEmpresa(dados) {
+    const { data, error } = await sb.functions.invoke('usuarios', { body: { acao: 'cadastro_publico', ...dados } });
+    if (error) {
+      let msg = error.message;
+      try { msg = (await error.context.json()).erro || msg; } catch { /* mantém a mensagem padrão */ }
+      throw new Error(msg);
+    }
+    if (!data?.empresa) throw new Error('Não foi possível concluir o cadastro. Tente de novo.');
+    return data;
   },
 
   async criarUsuario(dados) {

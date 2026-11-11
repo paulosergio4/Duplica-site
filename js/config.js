@@ -21,6 +21,11 @@ export const CONFIG = {
 
   // Quantos dias antes do vencimento um boleto que não chegou vira "Atenção"
   DIAS_ATENCAO: 5,
+
+  // Suporte do Duplica (aparece na página de cadastro e quando o teste grátis
+  // termina). WhatsApp só com números, com DDI e DDD: '5537999999999'.
+  SUPORTE_WHATSAPP: '',
+  SUPORTE_EMAIL: '',
 };
 
 export const MODO_DEMO = !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY;

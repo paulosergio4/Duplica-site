@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=25c8395';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=ddc939d';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -199,6 +199,10 @@ export const apiDemo = {
     }
     salvar();
     return n;
+  },
+
+  async cadastrarEmpresa() {
+    throw new Error('No modo demonstração não dá para criar conta. Use o endereço oficial do Duplica.');
   },
 
   async lancarAvulso(dados) {

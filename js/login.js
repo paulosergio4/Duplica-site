@@ -5,9 +5,9 @@
 //   - primeiro acesso: troca da senha provisória
 // Depois de entrar, vai para html/app.html
 // =====================================================================
-import { obterApi } from './servicos/api.js?v=25c8395';
-import { MODO_DEMO } from './config.js?v=25c8395';
-import { normalizarLogin } from './util/formato.js?v=25c8395';
+import { obterApi } from './servicos/api.js?v=ddc939d';
+import { MODO_DEMO } from './config.js?v=ddc939d';
+import { normalizarLogin } from './util/formato.js?v=ddc939d';
 
 const $ = (id) => document.getElementById(id);
 let api;
@@ -52,6 +52,7 @@ $('form-login').addEventListener('submit', async (ev) => {
   if (!empresa || !usuario || !senha) { mostrarErro('erro-login', 'Preencha empresa, usuário e senha.'); return; }
   const botao = ev.submitter; botao.disabled = true;
   try {
+    api ??= await obterApi();      // clicou antes de a página terminar de carregar
     const perfil = await api.entrar(empresa, usuario, senha);
     lembrarEmpresa(empresa);
     if (perfil.pendente) mostrarPrimeiroAcesso(perfil.nome);

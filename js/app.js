@@ -5,15 +5,16 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=25c8395';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=25c8395';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=25c8395';
-import { obterApi } from './servicos/api.js?v=25c8395';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=25c8395';
-import { menuHtml } from './componentes/menu.js?v=25c8395';
-import { modalHtml } from './componentes/modal-pessoa.js?v=25c8395';
-import { painelHtml } from './componentes/painel-boleto.js?v=25c8395';
-import { esc } from './util/formato.js?v=25c8395';
+import { estado } from './nucleo/estado.js?v=ddc939d';
+import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=ddc939d';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=ddc939d';
+import { obterApi } from './servicos/api.js?v=ddc939d';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=ddc939d';
+import { menuHtml } from './componentes/menu.js?v=ddc939d';
+import { modalHtml } from './componentes/modal-pessoa.js?v=ddc939d';
+import { painelHtml } from './componentes/painel-boleto.js?v=ddc939d';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=ddc939d';
+import { CONFIG } from './config.js?v=ddc939d';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
@@ -27,6 +28,40 @@ function esconderSplash() {
   setTimeout(() => { splash.classList.add('saindo'); setTimeout(() => splash.remove(), 500); }, falta);
 }
 
+/** Dias que faltam do teste grátis (null = não está em teste) */
+function diasDeTeste() {
+  const e = estado.empresa;
+  if (!e || e.situacao !== 'teste' || !e.teste_ate) return null;
+  return Math.round((new Date(e.teste_ate + 'T12:00:00') - new Date(hojeISO() + 'T12:00:00')) / 864e5);
+}
+
+const contatoSuporte = () => [
+  CONFIG.SUPORTE_WHATSAPP ? `<a href="https://wa.me/${CONFIG.SUPORTE_WHATSAPP}" target="_blank" rel="noopener">WhatsApp</a>` : '',
+  CONFIG.SUPORTE_EMAIL ? `<a href="mailto:${CONFIG.SUPORTE_EMAIL}">${CONFIG.SUPORTE_EMAIL}</a>` : '',
+].filter(Boolean).join(' · ');
+
+/** Faixa no topo durante o teste grátis */
+function faixaTeste() {
+  const d = diasDeTeste();
+  if (d === null || d < 0) return '';
+  const quando = d === 0 ? 'termina hoje' : d === 1 ? 'termina amanhã' : `faltam ${d} dias`;
+  const c = contatoSuporte();
+  return `<div class="faixa-teste">Teste grátis: ${quando} (até ${dataBR(estado.empresa.teste_ate)}).${c ? ` Para assinar, fale com a gente: ${c}` : ''}</div>`;
+}
+
+/** Teste vencido ou empresa suspensa: mostra o aviso no lugar do sistema */
+function telaBloqueio() {
+  const e = estado.empresa;
+  const titulo = e.situacao === 'bloqueado' ? 'Acesso suspenso' : 'O teste grátis terminou';
+  const texto = e.situacao === 'bloqueado'
+    ? 'O acesso desta empresa ao Duplica está suspenso.'
+    : `O período de teste da ${esc(e.nome)} terminou em ${dataBR(e.teste_ate)}. Os seus dados continuam guardados: assine para voltar a usar.`;
+  const c = contatoSuporte();
+  return `<div class="bloqueio"><div class="login-card"><h2>${titulo}</h2><p style="margin:0;font-size:15px;line-height:1.6;color:var(--cafe)">${texto}</p>
+    ${c ? `<p style="margin:0;font-size:15px">Fale com a gente: ${c}</p>` : '<p style="margin:0;font-size:15px">Fale com o suporte do Duplica.</p>'}
+    <a class="bg" href="../index.html?sair=1" style="height:46px;display:flex;align-items:center;justify-content:center;text-decoration:none">Sair</a></div></div>`;
+}
+
 /** Redesenha tudo, mantendo o cursor no campo em que a pessoa estava digitando */
 function desenhar() {
   const ativo = document.activeElement;
@@ -37,7 +72,7 @@ function desenhar() {
   const tela = TELAS.find((t) => t.id === estado.tela && t.visivel(estado.perfil)) || telasDe(estado.perfil)[0];
   const faixaDemo = estado.api.demo
     ? '<div class="faixa-demo">Modo demonstração: dados de exemplo, salvos só neste navegador. <button class="bg" type="button" data-acao="reiniciar-demo" style="height:28px;margin-left:8px">Recomeçar exemplo</button></div>' : '';
-  raiz.innerHTML = `${faixaDemo}<div class="app">${menuHtml()}<main>${tela.render()}</main></div>${painelHtml()}${modalHtml()}`;
+  raiz.innerHTML = `${faixaDemo}${faixaTeste()}<div class="app">${menuHtml()}<main>${tela.render()}</main></div>${painelHtml()}${modalHtml()}`;
 
   if (focoId) {
     const el = document.getElementById(focoId);
@@ -54,6 +89,12 @@ async function iniciar() {
 
   estado.perfil = sessao.perfil;
   estado.empresa = sessao.empresa;
+  const d = diasDeTeste();
+  if (estado.empresa?.situacao === 'bloqueado' || (d !== null && d < 0)) {
+    document.getElementById('splash')?.remove();
+    raiz.innerHTML = telaBloqueio();
+    return;
+  }
   estado.tela = telaInicial(estado.perfil);
 
   definirDesenho(desenhar);
