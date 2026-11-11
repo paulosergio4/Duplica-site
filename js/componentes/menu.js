@@ -2,13 +2,13 @@
 // DUPLICA · componentes/menu.js
 // Menu lateral: marca, empresa, telas que a pessoa pode ver e botão Sair.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=fbcaef1';
-import { NOME_PAPEL } from '../nucleo/regras.js?v=fbcaef1';
-import { registrarAcoes } from '../nucleo/eventos.js?v=fbcaef1';
-import { desenhar } from '../nucleo/desenhar.js?v=fbcaef1';
-import { telasDe } from '../telas/index.js?v=fbcaef1';
-import { ICONE } from './icones.js?v=fbcaef1';
-import { esc } from '../util/formato.js?v=fbcaef1';
+import { estado } from '../nucleo/estado.js?v=795d991';
+import { NOME_PAPEL } from '../nucleo/regras.js?v=795d991';
+import { registrarAcoes } from '../nucleo/eventos.js?v=795d991';
+import { desenhar } from '../nucleo/desenhar.js?v=795d991';
+import { telasDe } from '../telas/index.js?v=795d991';
+import { ICONE } from './icones.js?v=795d991';
+import { esc } from '../util/formato.js?v=795d991';
 
 export function menuHtml() {
   const p = estado.perfil;
