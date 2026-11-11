@@ -4,16 +4,17 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=632155c';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=632155c';
-import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=632155c';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=632155c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=632155c';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=632155c';
-import '../componentes/modal-avulso.js?v=632155c';
-import { ICONE } from '../componentes/icones.js?v=632155c';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=632155c';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=632155c';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=ad4d5df';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=ad4d5df';
+import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=ad4d5df';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=ad4d5df';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ad4d5df';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=ad4d5df';
+import '../componentes/modal-avulso.js?v=ad4d5df';
+import { ICONE } from '../componentes/icones.js?v=ad4d5df';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=ad4d5df';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=ad4d5df';
+import { botaoRelatorio } from '../componentes/relatorio.js?v=ad4d5df';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
@@ -135,7 +136,7 @@ export const telaFiscal = {
         </div>` : '';
 
     const botaoXml = podeFiscal()
-      ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bg" type="button" data-acao="abrir-avulso" style="height:46px">+ Boleto avulso</button>
+      ? `<div style="display:flex;gap:8px;flex-wrap:wrap">${botaoRelatorio()}<button class="bg" type="button" data-acao="abrir-avulso" style="height:46px">+ Boleto avulso</button>
          <button class="bp" type="button" data-acao="escolher-xml">${ICONE.upload()}Adicionar XML</button></div>
          <input type="file" id="arquivos-xml" accept=".xml,text/xml,application/xml" multiple hidden>` : '';
 

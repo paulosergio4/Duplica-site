@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=632155c';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=ad4d5df';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -124,6 +124,14 @@ export const apiDemo = {
     eu();
     const d = carregar();
     return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [] };
+  },
+
+  async relatorio(de, ate, campo = 'vencimento') {
+    eu();
+    const d = carregar();
+    return d.boletos.map((b) => ({ ...b, nota: d.notas.find((n) => n.id === b.nota_id) }))
+      .filter((b) => { const v = campo === 'emissao' ? b.nota?.emissao : b.vencimento; return v && v >= de && v <= ate; })
+      .sort((a, b) => ((a.vencimento || '') < (b.vencimento || '') ? -1 : 1));
   },
 
   async historico(boletoId) {

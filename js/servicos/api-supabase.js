@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=632155c';
-import { normalizarLogin } from '../util/formato.js?v=632155c';
+import { CONFIG } from '../config.js?v=ad4d5df';
+import { normalizarLogin } from '../util/formato.js?v=ad4d5df';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -99,6 +99,15 @@ export const apiSupabase = {
     const notas = new Map();
     for (const b of boletos) { if (b.nota) notas.set(b.nota.id, b.nota); delete b.nota; }
     return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias };
+  },
+
+  /** Relatório: todos os boletos do período (pagos, não pagos, cancelados), com a nota de cada um.
+   *  campo = 'vencimento' (data do boleto) ou 'emissao' (data da nota) */
+  async relatorio(de, ate, campo = 'vencimento') {
+    const cols = 'id,filial_id,tipo,numero,serie,valor,fornecedor,fornecedor_cnpj,descricao,chave,emissao';
+    const rel = campo === 'emissao' ? `nota:notas!inner(${cols})` : `nota:notas(${cols})`;
+    const filtro = campo === 'emissao' ? 'nota.emissao' : 'vencimento';
+    return buscarTodas(() => sb.from('boletos').select(`*, ${rel}`).gte(filtro, de).lte(filtro, ate).order('vencimento'));
   },
 
   async historico(boletoId) {
