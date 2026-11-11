@@ -4,9 +4,9 @@
 // visto do financeiro. A etapa própria da contabilidade (boletos avulsos
 // que ela envia ao financeiro) ainda vai ser definida.
 // =====================================================================
-import { estado, notaDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=08ffbb8';
-import { cabecalho, sobretituloHoje, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=08ffbb8';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=08ffbb8';
+import { estado, notaDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=907816c';
+import { cabecalho, sobretituloHoje, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=907816c';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=907816c';
 
 export const telaContabilidade = {
   id: 'contabilidade',
