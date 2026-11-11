@@ -8,28 +8,31 @@
 //                                    (e-mail, DDA, em mãos) e marca com visto
 //   5. Vencem nos próximos 7 dias   → só consulta, qualquer etapa (menos os já pagos)
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=bc29f79';
-import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=bc29f79';
-import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=bc29f79';
-import '../componentes/modal-avulso.js?v=bc29f79';
-import { leitorHtml } from '../componentes/ler-boleto.js?v=bc29f79';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=bc29f79';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=bc29f79';
-import { ICONE } from '../componentes/icones.js?v=bc29f79';
-import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=bc29f79';
+import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=ead054a';
+import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=ead054a';
+import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=ead054a';
+import '../componentes/modal-avulso.js?v=ead054a';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=ead054a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ead054a';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=ead054a';
+import { ICONE } from '../componentes/icones.js?v=ead054a';
+import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=ead054a';
 
 const aviso = (t) => `<span style="margin-left:auto;font-size:12px;color:var(--terra);font-weight:600;white-space:nowrap">${t}</span>`;
 
 /** Linha de um boleto aguardando visto */
 function linhaVisto(b) {
   return `<div class="linha"><span class="parc num">${b.parcela}/${b.total_parcelas}</span>
-    <div class="kv" style="flex:1 1 200px;min-width:160px"><small>chegou aqui · enviado por</small><b>${dataHoraBR(b.enviado_em)} · ${esc(b.enviado_por || '—')}</b></div>
+    <div class="kv" style="flex:1 1 200px;min-width:160px"><small>chegou aqui · enviado por</small><b>${dataHoraBR(b.enviado_em)} · ${esc(b.enviado_por || '—')}</b>${b.forma_indicada ? `<small style="color:var(--musgo-txt);font-weight:700">Fiscal marcou: pago por ${esc(b.forma_indicada)}</small>` : ''}</div>
     <div class="kv" style="width:110px"><small>Vencimento</small><b class="num">${dataBR(b.vencimento)}</b></div>
     <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
     <span style="width:130px;display:flex;justify-content:flex-end">${pillPrazo(b)}</span>
     <button class="bg" type="button" data-acao="abrir-boleto" data-id="${b.id}" style="margin-left:auto">Detalhes</button>
-    ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
-      <button class="visto" type="button" data-acao="avancar" data-id="${b.id}">${ICONE.check()}Dar visto</button>` : aviso('Só o Financeiro dá o visto')}
+    ${!podeFinanceiro() ? aviso('Só o Financeiro dá o visto') : b.forma_indicada
+      ? `<button class="bg" type="button" data-acao="avancar" data-id="${b.id}">Só dar visto</button>
+      <button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" title="O Fiscal marcou como pago por ${esc(b.forma_indicada)}">${ICONE.check()}Confirmar pagamento</button>`
+      : `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
+      <button class="visto" type="button" data-acao="avancar" data-id="${b.id}">${ICONE.check()}Dar visto</button>`}
   </div>`;
 }
 
@@ -171,7 +174,9 @@ function confirmarPago() {
     estado.modal = null;
     await recarregar();
     const como = forma === 'Boleto' ? '' : ` (${forma})`;
-    avisar((n === 1 ? `Boleto marcado como pago${como}` : `${n} boletos marcados como pagos${como}`) + (fiscal ? ' e enviado ao financeiro.' : '.'));
+    avisar(fiscal
+      ? `${n === 1 ? 'Boleto enviado' : `${n} boletos enviados`} ao financeiro marcado${n === 1 ? '' : 's'} como pago${n === 1 ? '' : 's'}${como}. O Financeiro confirma.`
+      : n === 1 ? `Boleto marcado como pago${como}.` : `${n} boletos marcados como pagos${como}.`);
   });
 }
 
@@ -185,18 +190,21 @@ export function modalPagarHtml() {
   const todosComVisto = !fiscal && bs.every((b) => b.etapa === 'visto');
   const formas = [['Boleto', 'Boleto (pagou o boleto)'], ['Cheque', 'Cheque'], ['Pix', 'Pix direto ao fornecedor'], ['Transferência', 'Transferência (TED/DOC) direto ao fornecedor'],
     ['Dinheiro', 'Dinheiro'], ['Outro', 'Outro']].filter(([v]) => !(fiscal && v === 'Boleto'));
-  const opcoes = formas.map(([v, t], i) => `<option value="${v}"${v === 'Boleto' && !todosComVisto ? ' disabled' : ''}${(todosComVisto ? i === 0 : v === 'Pix') ? ' selected' : ''}>${t}</option>`).join('');
+  const indicada = !fiscal && bs[0].forma_indicada;
+  const padrao = indicada || (todosComVisto ? 'Boleto' : 'Pix');
+  const opcoes = formas.map(([v, t]) => `<option value="${v}"${v === 'Boleto' && !todosComVisto ? ' disabled' : ''}${v === padrao ? ' selected' : ''}>${t}</option>`).join('');
   return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
     <h2 id="m-t">${varios ? `Marcar os ${bs.length} boletos como pagos` : 'Marcar como pago'}${fiscal ? ' e enviar ao financeiro' : ''}</h2>
     <p class="resumo"><b>${esc(n.fornecedor)}</b> · ${esc(f?.nome || '')}<br>${docNota(n)} · ${varios
       ? `parcelas ${bs.map((b) => `${b.parcela}/${b.total_parcelas}`).join(', ')} · total <span class="num">${brl(total)}</span>`
       : `parcela ${bs[0].parcela}/${bs[0].total_parcelas} · <span class="num">${brl(bs[0].valor)}</span> · vence ${dataBR(bs[0].vencimento)}`}</p>
     <div class="field"><label for="pg-forma">Como foi pago</label><select class="inp" id="pg-forma">${opcoes}</select>
-      ${fiscal ? `<span class="dica-campo">${varios ? 'Os boletos vão' : 'O boleto vai'} direto para o Financeiro, já marcado${varios ? 's' : ''} como pago${varios ? 's' : ''}. O Financeiro só dá o visto.</span>` : todosComVisto ? '' : '<span class="dica-campo">O boleto ainda não teve visto: só dá para marcar como pago direto ao fornecedor (Pix, transferência…). Ele sai dos pendentes do Fiscal e do Financeiro.</span>'}</div>
+      ${fiscal ? `<span class="dica-campo">${varios ? 'Os boletos vão' : 'O boleto vai'} para o Financeiro com a marcação de pago. <b>Quem confirma o pagamento é o Financeiro.</b></span>`
+        : indicada ? `<span class="dica-campo">O Fiscal marcou como pago por <b>${esc(indicada)}</b>${bs[0].forma_indicada_obs ? ` (${esc(bs[0].forma_indicada_obs)})` : ''}. Confira e confirme.</span>` : todosComVisto ? '' : '<span class="dica-campo">O boleto ainda não teve visto: só dá para marcar como pago direto ao fornecedor (Pix, transferência…). Ele sai dos pendentes do Fiscal e do Financeiro.</span>'}</div>
     <div class="field"><label for="pg-obs">Observação (opcional; obrigatória em "Outro")</label>
-      <input class="inp" id="pg-obs" placeholder="ex.: Pix enviado pela Rafaela, comprovante no WhatsApp"></div>
+      <input class="inp" id="pg-obs" placeholder="ex.: Pix enviado pela Rafaela, comprovante no WhatsApp" value="${esc((indicada && bs[0].forma_indicada_obs) || '')}"></div>
     <div class="botoes">
-      <button class="visto" type="button" data-acao="confirmar-pago" style="flex:1">${ICONE.check()}Confirmar pagamento</button>
+      <button class="visto" type="button" data-acao="confirmar-pago" style="flex:1">${ICONE.check()}${fiscal ? 'Marcar e enviar ao financeiro' : 'Confirmar pagamento'}</button>
       <button class="bg" type="button" data-acao="fechar-modal" style="height:46px">Cancelar</button>
     </div>
   </div></div>`;

@@ -3,12 +3,12 @@
 // Pedaços de tela usados em várias telas: aviso (toast), cabeçalho,
 // faixa de filiais e etiquetas de etapa/prazo.
 // =====================================================================
-import { estado, notaDe } from '../nucleo/estado.js?v=bc29f79';
-import { NOME_ETAPA } from '../nucleo/regras.js?v=bc29f79';
-import { registrarAcoes } from '../nucleo/eventos.js?v=bc29f79';
-import { desenhar } from '../nucleo/desenhar.js?v=bc29f79';
-import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=bc29f79';
-import { CONFIG } from '../config.js?v=bc29f79';
+import { estado, notaDe } from '../nucleo/estado.js?v=ead054a';
+import { NOME_ETAPA } from '../nucleo/regras.js?v=ead054a';
+import { registrarAcoes } from '../nucleo/eventos.js?v=ead054a';
+import { desenhar } from '../nucleo/desenhar.js?v=ead054a';
+import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=ead054a';
+import { CONFIG } from '../config.js?v=ead054a';
 
 /** Aviso no topo (sucesso em azul, erro em terracota) */
 export function toastHtml() {
@@ -40,6 +40,8 @@ export function pillTipo(n) {
 /** Etiqueta da etapa: "Não chegou", "Chegou"... */
 export const pillEtapa = (b) => b.pago_em && b.etapa !== 'cancelado'
   ? `<span class="pill p-pago">Pago${b.pago_forma && b.pago_forma !== 'Boleto' ? ' · ' + esc(b.pago_forma) : ''}</span>`
+  : b.forma_indicada && b.etapa === 'enviado'
+  ? `<span class="pill p-enviado">No financeiro · marcado pago (${esc(b.forma_indicada)})</span>`
   : b.direto_financeiro
   ? `<span class="pill p-visto">Direto no financeiro · ${esc(b.direto_financeiro)}</span>`
   : `<span class="pill p-${b.etapa}">${NOME_ETAPA[b.etapa]}</span>`;

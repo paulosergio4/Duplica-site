@@ -4,14 +4,14 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=bc29f79';
-import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=bc29f79';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=bc29f79';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=bc29f79';
-import { ICONE } from './icones.js?v=bc29f79';
-import { docNota } from './comuns.js?v=bc29f79';
-import { linhaDigitavelHtml } from './ler-boleto.js?v=bc29f79';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=bc29f79';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=ead054a';
+import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=ead054a';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=ead054a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ead054a';
+import { ICONE } from './icones.js?v=ead054a';
+import { docNota } from './comuns.js?v=ead054a';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=ead054a';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=ead054a';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
@@ -60,7 +60,7 @@ export function painelHtml() {
       <div class="txt"><b>${titulo}</b><small>${info}</small></div></li>`).join('') : [
     ['Nota lançada, boleto esperado', 'automático, pelo XML'],
     ['Chegou', b.chegou_em ? `<b>Recebido por ${esc(b.recebido_por)}</b> · marcado por ${esc(b.chegou_marcado_por)} · ${dataHoraBR(b.chegou_em)}` : 'pendente'],
-    ['Enviado ao financeiro', b.enviado_em ? `por ${esc(b.enviado_por)} · ${dataHoraBR(b.enviado_em)}` : 'pendente'],
+    ['Enviado ao financeiro', b.enviado_em ? `por ${esc(b.enviado_por)} · ${dataHoraBR(b.enviado_em)}${b.forma_indicada && !b.pago_em ? ` · <b>marcado como pago por ${esc(b.forma_indicada)}</b>${b.forma_indicada_obs ? ` (${esc(b.forma_indicada_obs)})` : ''}, falta o Financeiro confirmar` : ''}` : 'pendente'],
     ['Visto do financeiro', b.visto_em ? `<b>Entregue por ${esc(b.entregue_por)}</b> · visto por ${esc(b.visto_por)} · ${dataHoraBR(b.visto_em)}` : 'pendente'],
     ['Pago', b.pago_em ? textoPago : 'pendente'],
   ].map(([titulo, info], i) => `<li class="${i <= atual || (i === 4 && b.pago_em) ? 'feito' : ''}"><div class="trilho"><span class="dot"></span><span class="fio"></span></div>
@@ -112,7 +112,7 @@ export function painelHtml() {
       <input type="file" id="arquivo-foto" accept="image/jpeg,image/png,image/webp,application/pdf" hidden></div>
     ${correcao}
     ${estado.tela !== 'financeiro' && podePagarFiscal(b) ? `<button class="visto" type="button" data-acao="pago-fiscal" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}Pago (cheque, Pix…) · enviar ao financeiro</button>`
-      : podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}${b.etapa === 'visto' ? 'Marcar como pago' : 'Pago direto ao fornecedor (Pix, transferência…)'}</button>` : ''}
+      : podePagar(b) ? `<button class="visto" type="button" data-acao="marcar-pago" data-id="${b.id}" style="align-self:flex-start">${ICONE.check()}${b.etapa === 'visto' ? 'Marcar como pago' : b.forma_indicada ? `Confirmar pagamento (${esc(b.forma_indicada)})` : 'Pago direto ao fornecedor (Pix, transferência…)'}</button>` : ''}
     ${podeCancelar() && b.etapa !== 'cancelado' ? `<button class="link-cancelar" type="button" data-acao="cancelar-boleto" data-id="${b.id}" style="align-self:flex-start">Cancelar este boleto</button>` : ''}
     <div class="field"><label>Histórico</label><div class="hist">${hist}</div></div>
   </aside></div>`;

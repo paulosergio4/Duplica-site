@@ -6,11 +6,11 @@
 //   vermelho = tem boleto que não chegou   azul = chegou, falta visto
 //   verde    = tudo com visto
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja } from '../nucleo/estado.js?v=bc29f79';
-import { registrarAcoes } from '../nucleo/eventos.js?v=bc29f79';
-import { desenhar } from '../nucleo/desenhar.js?v=bc29f79';
-import { cabecalho, toastHtml, faixaFiliais, pillEtapa, vazio, docNota } from '../componentes/comuns.js?v=bc29f79';
-import { esc, brl, brlCurto, isoDe, hojeISO, MESES, plural } from '../util/formato.js?v=bc29f79';
+import { estado, notaDe, filialDe, naLoja } from '../nucleo/estado.js?v=ead054a';
+import { registrarAcoes } from '../nucleo/eventos.js?v=ead054a';
+import { desenhar } from '../nucleo/desenhar.js?v=ead054a';
+import { cabecalho, toastHtml, faixaFiliais, pillEtapa, vazio, docNota } from '../componentes/comuns.js?v=ead054a';
+import { esc, brl, brlCurto, isoDe, hojeISO, MESES, plural } from '../util/formato.js?v=ead054a';
 
 export const telaCalendario = {
   id: 'calendario',

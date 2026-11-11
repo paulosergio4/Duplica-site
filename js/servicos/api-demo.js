@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=bc29f79';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=ead054a';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -267,7 +267,7 @@ export const apiDemo = {
     if (!motivo || motivo.trim().length < 5) throw new Error('Escreva o motivo do cancelamento.');
     let n = 0;
     for (const b of d.boletos.filter((x) => ids.includes(x.id) && x.etapa !== 'cancelado')) {
-      Object.assign(b, { etapa_antes_cancelar: b.etapa, etapa: 'cancelado', cancelado_por: p.nome, cancelado_em: agora(), cancelado_motivo: motivo.trim() });
+      Object.assign(b, { forma_indicada: null, forma_indicada_obs: null, etapa_antes_cancelar: b.etapa, etapa: 'cancelado', cancelado_por: p.nome, cancelado_em: agora(), cancelado_motivo: motivo.trim() });
       reg(b.id, 'Cancelado', motivo.trim(), p);
       n++;
     }
@@ -297,11 +297,11 @@ export const apiDemo = {
     if (!(p.papel === 'gerente' || p.setor === 'Fiscal')) throw new Error('Só o Fiscal usa esta opção.');
     if (!['Cheque', 'Pix', 'Transferência', 'Dinheiro', 'Outro'].includes(forma)) throw new Error('Escolha como foi pago.');
     if (forma === 'Outro' && !(obs || '').trim()) throw new Error('Em "Outro", escreva como foi pago.');
-    const det = [`pago por ${forma} · enviado ao financeiro`, (obs || '').trim() || null].filter(Boolean).join(' · ');
+    const det = [`marcado como pago por ${forma} (o Financeiro confirma)`, (obs || '').trim() || null].filter(Boolean).join(' · ');
     let n = 0;
     for (const b of d.boletos.filter((x) => ids.includes(x.id) && !x.pago_em && ['esperado', 'chegou'].includes(x.etapa))) {
-      Object.assign(b, { pago_em: agora(), pago_por: p.nome, pago_forma: forma, etapa_antes_pago: b.etapa, etapa: 'enviado', enviado_por: p.nome, enviado_em: agora() });
-      reg(b.id, 'Pago', det, p);
+      Object.assign(b, { etapa: 'enviado', enviado_por: p.nome, enviado_em: agora(), forma_indicada: forma, forma_indicada_obs: (obs || '').trim() || null });
+      reg(b.id, 'Enviado ao financeiro', det, p);
       n++;
     }
     if (!n) throw new Error('Nenhum boleto pôde ser marcado (já foi enviado, pago ou cancelado).');
@@ -344,7 +344,7 @@ export const apiDemo = {
     }
     reg(b.id, 'Corrigido', `desfez "${nomes[b.etapa]}". Motivo: ${motivo.trim()}`, p);
     if (b.etapa === 'chegou') Object.assign(b, { etapa: 'esperado', recebido_por: null, chegou_marcado_por: null, chegou_em: null });
-    else if (b.etapa === 'enviado') Object.assign(b, { etapa: 'chegou', enviado_por: null, enviado_em: null });
+    else if (b.etapa === 'enviado') Object.assign(b, { etapa: 'chegou', enviado_por: null, enviado_em: null, forma_indicada: null, forma_indicada_obs: null });
     else if (b.etapa === 'visto') Object.assign(b, { etapa: 'enviado', entregue_por: null, visto_por: null, visto_em: null });
     salvar();
   },
