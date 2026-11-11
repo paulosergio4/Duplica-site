@@ -4,13 +4,13 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js';
-import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js';
-import { desenhar, recarregar } from '../nucleo/desenhar.js';
-import { ICONE } from './icones.js';
-import { docNota } from './comuns.js';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=9b9ec3e';
+import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=9b9ec3e';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=9b9ec3e';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9b9ec3e';
+import { ICONE } from './icones.js?v=9b9ec3e';
+import { docNota } from './comuns.js?v=9b9ec3e';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=9b9ec3e';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {

@@ -8,14 +8,14 @@
 //                                    (e-mail, DDA, em mãos) e marca com visto
 //   5. Vencem nos próximos 7 dias   → só consulta, qualquer etapa (menos os já pagos)
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js';
-import { podeFinanceiro, podePagar } from '../nucleo/regras.js';
-import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js';
-import '../componentes/modal-avulso.js';
-import { desenhar, recarregar } from '../nucleo/desenhar.js';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js';
-import { ICONE } from '../componentes/icones.js';
-import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js';
+import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=9b9ec3e';
+import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=9b9ec3e';
+import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=9b9ec3e';
+import '../componentes/modal-avulso.js?v=9b9ec3e';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9b9ec3e';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=9b9ec3e';
+import { ICONE } from '../componentes/icones.js?v=9b9ec3e';
+import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=9b9ec3e';
 
 const aviso = (t) => `<span style="margin-left:auto;font-size:12px;color:var(--terra);font-weight:600;white-space:nowrap">${t}</span>`;
 

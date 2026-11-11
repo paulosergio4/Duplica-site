@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js';
-import { normalizarLogin } from '../util/formato.js';
+import { CONFIG } from '../config.js?v=9b9ec3e';
+import { normalizarLogin } from '../util/formato.js?v=9b9ec3e';
 
 const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 

@@ -4,13 +4,13 @@
 // Para criar uma tela nova: copie um arquivo desta pasta, mude o "id",
 // "rotulo", "visivel" e "render", e acrescente aqui.
 // =====================================================================
-import { telaFiscal } from './fiscal.js';
-import { telaFinanceiro } from './financeiro.js';
-import { telaCalendario } from './calendario.js';
-import { telaContasFixas } from './contas-fixas.js';
-import { telaContabilidade } from './contabilidade.js';
-import { telaUsuarios } from './usuarios.js';
-import { telaFiliais } from './filiais.js';
+import { telaFiscal } from './fiscal.js?v=9b9ec3e';
+import { telaFinanceiro } from './financeiro.js?v=9b9ec3e';
+import { telaCalendario } from './calendario.js?v=9b9ec3e';
+import { telaContasFixas } from './contas-fixas.js?v=9b9ec3e';
+import { telaContabilidade } from './contabilidade.js?v=9b9ec3e';
+import { telaUsuarios } from './usuarios.js?v=9b9ec3e';
+import { telaFiliais } from './filiais.js?v=9b9ec3e';
 
 export const TELAS = [telaFiscal, telaFinanceiro, telaCalendario, telaContasFixas, telaContabilidade, telaUsuarios, telaFiliais];
 

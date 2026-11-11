@@ -5,15 +5,15 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js';
-import { obterApi } from './servicos/api.js';
-import { TELAS, telasDe, telaInicial } from './telas/index.js';
-import { menuHtml } from './componentes/menu.js';
-import { modalHtml } from './componentes/modal-pessoa.js';
-import { painelHtml } from './componentes/painel-boleto.js';
-import { esc } from './util/formato.js';
+import { estado } from './nucleo/estado.js?v=9b9ec3e';
+import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=9b9ec3e';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=9b9ec3e';
+import { obterApi } from './servicos/api.js?v=9b9ec3e';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=9b9ec3e';
+import { menuHtml } from './componentes/menu.js?v=9b9ec3e';
+import { modalHtml } from './componentes/modal-pessoa.js?v=9b9ec3e';
+import { painelHtml } from './componentes/painel-boleto.js?v=9b9ec3e';
+import { esc } from './util/formato.js?v=9b9ec3e';
 
 const raiz = document.getElementById('app');
 

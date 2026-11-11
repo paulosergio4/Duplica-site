@@ -4,15 +4,15 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js';
-import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js';
-import { desenhar, recarregar } from '../nucleo/desenhar.js';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js';
-import '../componentes/modal-avulso.js';
-import { ICONE } from '../componentes/icones.js';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js';
-import { lerXmlNfe } from '../util/xml-nfe.js';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=9b9ec3e';
+import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=9b9ec3e';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=9b9ec3e';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9b9ec3e';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=9b9ec3e';
+import '../componentes/modal-avulso.js?v=9b9ec3e';
+import { ICONE } from '../componentes/icones.js?v=9b9ec3e';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=9b9ec3e';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=9b9ec3e';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
