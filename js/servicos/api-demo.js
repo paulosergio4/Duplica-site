@@ -328,6 +328,18 @@ export const apiDemo = {
     salvar();
   },
 
+  async alterarVencimento(boletoId, nova, motivo) {
+    const p = eu(), b = carregar().boletos.find((x) => x.id === boletoId);
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Financeiro'].includes(p.setor))) throw new Error('Só Fiscal ou Financeiro alteram o vencimento.');
+    if (!nova) throw new Error('Informe a nova data de vencimento.');
+    if (b.etapa === 'cancelado') throw new Error('Boleto cancelado não tem vencimento para alterar.');
+    if (b.vencimento === nova) return;
+    const br = (d) => (d ? d.split('-').reverse().join('/') : 'sem data');
+    reg(b.id, 'Vencimento alterado', `de ${br(b.vencimento)} para ${br(nova)}${motivo && motivo.trim() ? ' · ' + motivo.trim() : ''}`, p);
+    b.vencimento = nova;
+    salvar();
+  },
+
   async salvarAnotacao(boletoId, texto) {
     const p = eu(), b = carregar().boletos.find((x) => x.id === boletoId);
     b.anotacao = texto.trim() || null;

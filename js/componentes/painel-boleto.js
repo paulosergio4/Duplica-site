@@ -5,7 +5,7 @@
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
 import { estado, boletoDe, notaDe } from '../nucleo/estado.js';
-import { podeCorrigir, podeCancelar, podePagar, NOME_ETAPA } from '../nucleo/regras.js';
+import { podeCorrigir, podeCancelar, podePagar, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js';
 import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js';
 import { desenhar, recarregar } from '../nucleo/desenhar.js';
 import { ICONE } from './icones.js';
@@ -14,7 +14,7 @@ import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
-  Object.assign(estado, { sel: id, hist: null, fotoUrl: null, corrigindo: false });
+  Object.assign(estado, { sel: id, hist: null, fotoUrl: null, corrigindo: false, editandoVenc: false });
   desenhar();
   await executar(async () => {
     const b = boletoDe(id);
@@ -87,8 +87,18 @@ export function painelHtml() {
   return `<div class="modal-fundo painel-fundo" data-fechar-fundo="fechar-painel">
   <aside class="painel painel-modal" role="dialog" aria-modal="true" aria-label="Detalhes do boleto">
     <div class="painel-h"><div><small>${docNota(n)} · parcela ${b.parcela}/${b.total_parcelas}</small><strong>${esc(n.fornecedor)}</strong>
-      <span class="num">${brl(b.valor)} · vence ${dataBR(b.vencimento)}</span></div>
+      <span class="num">${brl(b.valor)} · vence ${dataBR(b.vencimento)}</span>
+      ${podeAlterarVencimento(b) && !estado.editandoVenc ? '<button class="link-alerta" type="button" data-acao="editar-venc" style="align-self:flex-start;color:var(--petroleo)">Alterar vencimento</button>' : ''}</div>
       <button class="x" type="button" data-acao="fechar-painel" aria-label="Fechar detalhes">${ICONE.fechar()}</button></div>
+    ${estado.editandoVenc ? `<div class="corrigir" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="flex:0 0 180px"><label for="venc-novo">Novo vencimento</label>
+          <input class="inp" type="date" id="venc-novo" data-rascunho="1" value="${esc(estado.rascunho['venc-novo'] ?? b.vencimento ?? '')}"></div>
+        <div class="field" style="flex:1 1 220px"><label for="venc-motivo">Motivo (opcional)</label>
+          <input class="inp" id="venc-motivo" data-rascunho="1" placeholder="ex.: fornecedor prorrogou" value="${esc(estado.rascunho['venc-motivo'] || '')}"></div></div>
+      <div style="display:flex;gap:8px"><button class="bp" type="button" data-acao="salvar-venc">Salvar vencimento</button>
+        <button class="bg" type="button" data-acao="cancelar-venc">Cancelar</button></div>
+      <small style="color:var(--terra)">A data antiga fica registrada no histórico.</small></div>` : ''}
     ${b.etapa === 'cancelado' ? `<div class="erro" style="background:#E6E2DA;color:#3B3429"><b>Cancelado</b> · ${esc(b.cancelado_motivo || '')}<br>
       <small>por ${esc(b.cancelado_por || '')} · ${dataHoraBR(b.cancelado_em)}</small></div>` : ''}
     <ol class="etapas">${passos}</ol>
@@ -107,6 +117,18 @@ export function painelHtml() {
 registrarAcoes({
   'abrir-boleto': (el) => abrir(el.dataset.id),
   'fechar-painel': () => { estado.sel = null; desenhar(); },
+  'editar-venc': () => {
+    delete estado.rascunho['venc-novo']; delete estado.rascunho['venc-motivo'];
+    estado.editandoVenc = true; desenhar(); document.getElementById('venc-novo')?.focus();
+  },
+  'cancelar-venc': () => { estado.editandoVenc = false; desenhar(); },
+  'salvar-venc': () => executar(async () => {
+    const nova = document.getElementById('venc-novo').value;
+    if (!nova) throw new Error('Escolha a nova data de vencimento.');
+    await estado.api.alterarVencimento(estado.sel, nova, document.getElementById('venc-motivo').value);
+    estado.editandoVenc = false;
+    await atualizar(`Vencimento alterado para ${dataBR(nova)}.`);
+  }),
   'salvar-anotacao': () => executar(async () => {
     await estado.api.salvarAnotacao(estado.sel, document.getElementById('anot').value);
     await atualizar('Anotação salva.');

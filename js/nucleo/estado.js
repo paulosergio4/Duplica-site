@@ -27,6 +27,7 @@ export const estado = {
   hist: null,         // histórico do boleto aberto (carregado sob demanda)
   fotoUrl: null,      // link temporário da foto do boleto aberto
   corrigindo: false,
+  editandoVenc: false, // painel de detalhes: editando o vencimento?
   modal: null,        // janela aberta: { ids: [...] }
   menuAberto: false,  // menu aberto na tela estreita (celular)
   editandoFilial: null, // id da filial com o nome em edição

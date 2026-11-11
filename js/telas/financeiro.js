@@ -26,7 +26,8 @@ function linhaVisto(b) {
     <div class="kv" style="width:110px"><small>Vencimento</small><b class="num">${dataBR(b.vencimento)}</b></div>
     <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
     <span style="width:130px;display:flex;justify-content:flex-end">${pillPrazo(b)}</span>
-    ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" style="margin-left:auto" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
+    <button class="bg" type="button" data-acao="abrir-boleto" data-id="${b.id}" style="margin-left:auto">Detalhes</button>
+    ${podeFinanceiro() ? `<button class="bg" type="button" data-acao="marcar-pago" data-id="${b.id}" title="Pago por Pix, transferência… sem o boleto">Pago direto</button>
       <button class="visto" type="button" data-acao="avancar" data-id="${b.id}">${ICONE.check()}Dar visto</button>` : aviso('Só o Financeiro dá o visto')}
   </div>`;
 }
@@ -89,7 +90,8 @@ export const telaFinanceiro = {
         <small>${docNota(n)} · parcela ${b.parcela}/${b.total_parcelas} · chegou ${dataHoraBR(b.chegou_em)} · recebido por ${esc(b.recebido_por || '—')}</small></div>
         <div class="kv" style="width:110px"><small>Vencimento</small><b class="num">${dataBR(b.vencimento)}</b></div>
         <div class="kv" style="width:120px"><small>Valor</small><b class="num">${brl(b.valor)}</b></div>
-        <span style="width:130px;display:flex;justify-content:flex-end">${pillPrazo(b)}</span>${aviso('Aguardando o fiscal enviar')}</div>`;
+        <span style="width:130px;display:flex;justify-content:flex-end">${pillPrazo(b)}</span>${aviso('Aguardando o fiscal enviar')}
+        <button class="bg" type="button" data-acao="abrir-boleto" data-id="${b.id}">Detalhes</button></div>`;
     }).join('');
 
     const semana = estado.boletos.filter((b) => { const d = diasAte(b.vencimento); return d !== null && d >= 0 && d <= 7 && naLoja(b) && b.etapa !== 'cancelado' && !b.pago_em; }).sort(ordenarPorVencimento);

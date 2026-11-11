@@ -166,6 +166,10 @@ export const apiSupabase = {
     falha((await sb.rpc('corrigir_boleto', { boleto: boletoId, motivo })).error);
   },
 
+  async alterarVencimento(boletoId, nova, motivo) {
+    falha((await sb.rpc('alterar_vencimento', { boleto: boletoId, nova, motivo: motivo || null })).error);
+  },
+
   async salvarAnotacao(boletoId, texto) {
     falha((await sb.rpc('salvar_anotacao', { boleto: boletoId, texto })).error);
   },

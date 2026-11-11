@@ -28,6 +28,9 @@ export function proximaAcao(b) {
 /** Cancelar boleto ou nota (nota devolvida, cancelada, parcela renegociada) */
 export const podeCancelar = () => podeFiscal();
 
+/** Pode alterar o vencimento? Fiscal, Financeiro ou Admin, em qualquer etapa menos cancelado */
+export const podeAlterarVencimento = (b) => (podeFiscal() || podeFinanceiro()) && b.etapa !== 'cancelado';
+
 /** Pode marcar como pago? Financeiro/gerente, boleto ainda não pago e não cancelado.
  *  Com visto: pago no boleto (ou direto). Sem visto: só "pago direto" (Pix, transferência...) */
 export const podePagar = (b) => podeFinanceiro() && b.etapa !== 'cancelado' && !b.pago_em;
