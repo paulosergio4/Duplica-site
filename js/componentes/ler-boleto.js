@@ -9,12 +9,12 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=3e50cf5';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=3e50cf5';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=3e50cf5';
-import { pillEtapa, docNota } from './comuns.js?v=3e50cf5';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=3e50cf5';
-import { esc, brl, dataBR } from '../util/formato.js?v=3e50cf5';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=fbcaef1';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=fbcaef1';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=fbcaef1';
+import { pillEtapa, docNota } from './comuns.js?v=fbcaef1';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=fbcaef1';
+import { esc, brl, dataBR } from '../util/formato.js?v=fbcaef1';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
@@ -27,6 +27,16 @@ function candidatos(res) {
     .sort((x, y) => x.dist - y.dist || (x.b.etapa === 'esperado' ? -1 : 1))
     .map((x) => x.b)
     .slice(0, 8);
+}
+
+/** Notas que vieram SEM parcelas no XML (1 boleto sem vencimento, valor = total da nota) e cujo total
+ *  é maior que o boleto lido: o boleto lido pode ser uma das parcelas delas. */
+function semParcelas(res) {
+  return estado.boletos
+    .filter((b) => b.etapa === 'esperado' && !b.vencimento && b.total_parcelas === 1 && Number(b.valor) > res.valor + 0.005)
+    .map((b) => { const k = Math.round(Number(b.valor) / res.valor); return { b, exato: k > 1 && k <= 12 && Math.abs(k * res.valor - Number(b.valor)) < 0.05 }; })
+    .sort((x, y) => (y.exato - x.exato) || (Number(x.b.valor) - Number(y.b.valor)))
+    .slice(0, 6);
 }
 
 /** Botão de ação de cada candidato, conforme a tela e a etapa do boleto */
@@ -69,6 +79,19 @@ export function leitorHtml(tela) {
           }).join('')
         : `<div class="lote" style="border-radius:12px"><small>Nenhum boleto em aberto com esse valor${r.vencimento ? ' e vencimento' : ''}. Pode ser de uma nota que ainda não entrou no sistema, ou o valor do boleto é diferente do da nota.</small>
             <button class="bg" type="button" data-acao="ler-avulso">Lançar como boleto avulso</button></div>`);
+      // notas que vieram sem parcelas: o boleto lido pode ser uma parcela delas
+      const sp = lista.length ? [] : semParcelas(r);
+      if (sp.length) {
+        resultado += `<small style="color:var(--terra)">Ou é parcela de uma nota que veio <b>sem as parcelas</b> no XML? Confira o fornecedor:</small>`
+          + sp.map(({ b, exato }) => {
+            const n = notaDe(b.nota_id), f = filialDe(n.filial_id);
+            const k = Math.round(Number(b.valor) / r.valor);
+            return `<div class="linha" style="border-radius:12px;border:1px solid var(--linha)"><div class="kv" style="flex:1 1 260px">
+                <b style="color:var(--petroleo)">${esc(n.fornecedor)}</b>
+                <small>${docNota(n)} · ${esc(f?.nome || '')} · total <span class="num">${brl(b.valor)}</span>${exato ? ` · <b>dá ${k} parcelas de ${brl(r.valor)}</b>` : ''}</small></div>
+              <button class="bp" type="button" data-acao="ler-parcelas" data-nota="${n.id}">É desta nota · Informar parcelas</button></div>`;
+          }).join('');
+      }
     }
   }
   return `<section class="secao"><form id="form-ler-boleto" class="ler-boleto" novalidate style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
@@ -101,6 +124,23 @@ registrarAcoes({
     else avisar('Código do boleto guardado. A linha digitável aparece nos Detalhes para copiar.');
     desenhar();
   }),
+
+  // nota sem parcelas: abre "Informar parcelas" já com o boleto lido como 1ª parcela
+  'ler-parcelas': (el) => {
+    const r = estado.leitura.res;
+    const b = estado.boletos.find((x) => x.nota_id === el.dataset.nota && !x.vencimento);
+    const total = Number(b.valor), fmt = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const k = Math.round(total / r.valor);
+    let parcelas;
+    if (k > 1 && k <= 12 && Math.abs(k * r.valor - total) < 0.05) {
+      // divide certinho: k parcelas iguais; o vencimento das outras a pessoa completa
+      parcelas = Array.from({ length: k }, (_, i) => ({ venc: i === 0 ? (r.vencimento || '') : '', valor: fmt(i === k - 1 ? total - r.valor * (k - 1) : r.valor) }));
+    } else {
+      parcelas = [{ venc: r.vencimento || '', valor: fmt(r.valor) }, { venc: '', valor: fmt(Math.round((total - r.valor) * 100) / 100) }];
+    }
+    estado.modal = { tipo: 'parcelas', nota: el.dataset.nota, parcelas, erro: '' };
+    desenhar();
+  },
 
   // nenhum boleto bateu: abre o boleto avulso já com valor e vencimento
   'ler-avulso': () => {

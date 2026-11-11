@@ -9,14 +9,14 @@
 //   data-acao="avancar"       data-id="<boleto>"
 //   data-acao="avancar-lote"  data-nota="<nota>" data-etapa="esperado|chegou|enviado"
 // =====================================================================
-import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=3e50cf5';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=3e50cf5';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=3e50cf5';
-import { docNota } from './comuns.js?v=3e50cf5';
-import { esc, brl, dataBR } from '../util/formato.js?v=3e50cf5';
-import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=3e50cf5';
-import { modalEditarPessoaHtml } from '../telas/usuarios.js?v=3e50cf5';
-import { modalPagarHtml } from '../telas/financeiro.js?v=3e50cf5';
+import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=fbcaef1';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=fbcaef1';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=fbcaef1';
+import { docNota } from './comuns.js?v=fbcaef1';
+import { esc, brl, dataBR } from '../util/formato.js?v=fbcaef1';
+import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=fbcaef1';
+import { modalEditarPessoaHtml } from '../telas/usuarios.js?v=fbcaef1';
+import { modalPagarHtml } from '../telas/financeiro.js?v=fbcaef1';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 

@@ -8,15 +8,15 @@
 //                                    (e-mail, DDA, em mãos) e marca com visto
 //   5. Vencem nos próximos 7 dias   → só consulta, qualquer etapa (menos os já pagos)
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=3e50cf5';
-import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=3e50cf5';
-import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=3e50cf5';
-import '../componentes/modal-avulso.js?v=3e50cf5';
-import { leitorHtml } from '../componentes/ler-boleto.js?v=3e50cf5';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=3e50cf5';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=3e50cf5';
-import { ICONE } from '../componentes/icones.js?v=3e50cf5';
-import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=3e50cf5';
+import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=fbcaef1';
+import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=fbcaef1';
+import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=fbcaef1';
+import '../componentes/modal-avulso.js?v=fbcaef1';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=fbcaef1';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=fbcaef1';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=fbcaef1';
+import { ICONE } from '../componentes/icones.js?v=fbcaef1';
+import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=fbcaef1';
 
 const aviso = (t) => `<span style="margin-left:auto;font-size:12px;color:var(--terra);font-weight:600;white-space:nowrap">${t}</span>`;
 

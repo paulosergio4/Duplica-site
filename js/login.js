@@ -5,9 +5,9 @@
 //   - primeiro acesso: troca da senha provisória
 // Depois de entrar, vai para html/app.html
 // =====================================================================
-import { obterApi } from './servicos/api.js?v=3e50cf5';
-import { MODO_DEMO } from './config.js?v=3e50cf5';
-import { normalizarLogin } from './util/formato.js?v=3e50cf5';
+import { obterApi } from './servicos/api.js?v=fbcaef1';
+import { MODO_DEMO } from './config.js?v=fbcaef1';
+import { normalizarLogin } from './util/formato.js?v=fbcaef1';
 
 const $ = (id) => document.getElementById(id);
 let api;
