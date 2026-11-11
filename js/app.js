@@ -5,16 +5,18 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=ddc939d';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=ddc939d';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=ddc939d';
-import { obterApi } from './servicos/api.js?v=ddc939d';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=ddc939d';
-import { menuHtml } from './componentes/menu.js?v=ddc939d';
-import { modalHtml } from './componentes/modal-pessoa.js?v=ddc939d';
-import { painelHtml } from './componentes/painel-boleto.js?v=ddc939d';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=ddc939d';
-import { CONFIG } from './config.js?v=ddc939d';
+import { estado } from './nucleo/estado.js?v=149a3a4';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=149a3a4';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=149a3a4';
+import { obterApi } from './servicos/api.js?v=149a3a4';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=149a3a4';
+import { menuHtml } from './componentes/menu.js?v=149a3a4';
+import { modalHtml } from './componentes/modal-pessoa.js?v=149a3a4';
+import { painelHtml } from './componentes/painel-boleto.js?v=149a3a4';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=149a3a4';
+import { CONFIG } from './config.js?v=149a3a4';
+import { bip } from './util/camera.js?v=149a3a4';
+import { numeroDaChave } from './util/chave.js?v=149a3a4';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
@@ -62,6 +64,20 @@ function telaBloqueio() {
     <a class="bg" href="../index.html?sair=1" style="height:46px;display:flex;align-items:center;justify-content:center;text-decoration:none">Sair</a></div></div>`;
 }
 
+/** "A nota e o boleto chegaram, fulano recebeu" */
+async function avisoRecebimento(r) {
+  if (r.perfil_id === estado.perfil.id) return;          // fui eu mesmo que bipei
+  await recarregar();
+  const n = r.nota_id ? estado.notas.find((x) => x.id === r.nota_id) : null;
+  const f = n ? estado.filiais.find((x) => x.id === n.filial_id) : null;
+  const texto = r.situacao === 'pendente'
+    ? `${r.nome} bipou a NF ${numeroDaChave(r.chave)}, que ainda não entrou no sistema. Quando o XML chegar, os boletos já entram como "Chegou".`
+    : n ? `Chegou: ${n.fornecedor} · NF ${n.numero}${f ? ' · ' + f.nome : ''}. A nota e ${r.boletos === 1 ? 'o boleto chegaram' : `os ${r.boletos} boletos chegaram`}, ${r.nome} recebeu.`
+    : `${r.nome} bipou uma nota.`;
+  bip(true);
+  avisar(texto, false, 12000);
+}
+
 /** Redesenha tudo, mantendo o cursor no campo em que a pessoa estava digitando */
 function desenhar() {
   const ativo = document.activeElement;
@@ -103,6 +119,10 @@ async function iniciar() {
   try { await estado.api.gerarRecorrentes(); } catch (e) { console.warn('Contas fixas:', e.message); }
   await recarregar();
   esconderSplash();
+  // Fiscal e Admin: aviso na hora quando alguém bipa uma nota no recebimento
+  if (estado.perfil.papel === 'gerente' || estado.perfil.setor === 'Fiscal') {
+    try { estado.api.ouvirRecebimentos(avisoRecebimento); } catch (e) { console.warn('Avisos de recebimento:', e.message); }
+  }
 }
 
 // ação do botão da faixa de demonstração

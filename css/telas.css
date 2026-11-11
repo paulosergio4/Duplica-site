@@ -137,3 +137,22 @@
 .abas{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--creme-2)}
 .abas button{min-height:40px;padding:0 16px;border:0;border-radius:9px;background:transparent;color:var(--petroleo);font-weight:700}
 .abas button[aria-selected="true"]{background:var(--petroleo);color:var(--creme)}
+
+/* ---------- Receber notas (celular) ---------- */
+.receber{padding:20px;display:flex;flex-direction:column;gap:16px}
+.receber-bipar{min-height:72px;font-size:19px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:12px}
+.receber-manual{display:flex;flex-direction:column;gap:8px}
+.receber-manual label{font-size:13px;font-weight:700;color:var(--terra)}
+.receber-resultado{border:2px solid;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:var(--branco)}
+.receber-resultado b{font-size:17px}
+.receber-resultado small{font-size:14px;line-height:1.5;color:var(--cafe)}
+
+/* janela da câmera (fica no <body>, fora do redesenho) */
+.camera{position:fixed;inset:0;z-index:200;background:#0d000d;display:flex;flex-direction:column;color:#FBE4D8}
+.camera-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(14px,env(safe-area-inset-top,0px)) 16px 14px}
+.camera-topo b{font-size:16px}
+.camera-topo .bg{height:40px;background:#FBE4D8}
+.camera-video{position:relative;flex:1;overflow:hidden}
+.camera-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.camera-mira{position:absolute;left:6%;right:6%;top:38%;height:24%;border:3px solid #DFB6B2;border-radius:14px;box-shadow:0 0 0 2000px rgba(13,0,13,.45)}
+.camera-dica{margin:0;padding:14px 16px max(18px,env(safe-area-inset-bottom,0px));font-size:14px;text-align:center;color:#DFB6B2}

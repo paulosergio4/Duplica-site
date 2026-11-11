@@ -11,7 +11,7 @@
 // / registrarCampo. Para achar "o que acontece quando clico em X", procure
 // pelo nome do data-acao nos arquivos da pasta js/telas.
 // =====================================================================
-import { estado } from './estado.js?v=ddc939d';
+import { estado } from './estado.js?v=149a3a4';
 
 const acoes = {};
 const formularios = {};
@@ -25,10 +25,10 @@ let redesenhar = () => {};
 
 /** Mostra um aviso no topo da tela por alguns segundos */
 let timerToast;
-export function avisar(texto, erro = false) {
+export function avisar(texto, erro = false, duracao = erro ? 7000 : 4500) {
   estado.toast = { texto, erro };
   clearTimeout(timerToast);
-  timerToast = setTimeout(() => { estado.toast = null; redesenhar(); }, erro ? 7000 : 4500);
+  timerToast = setTimeout(() => { estado.toast = null; redesenhar(); }, duracao);
   redesenhar();
 }
 

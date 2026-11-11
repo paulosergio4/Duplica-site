@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=ddc939d';
-import { normalizarLogin } from '../util/formato.js?v=ddc939d';
+import { CONFIG } from '../config.js?v=149a3a4';
+import { normalizarLogin } from '../util/formato.js?v=149a3a4';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -83,7 +83,8 @@ export const apiSupabase = {
     const corte = new Date(); corte.setDate(corte.getDate() - 120);
     const corteISO = corte.toISOString().slice(0, 10);
 
-    const [emp, filiais, perfis, boletos, recorrencias] = await Promise.all([
+    const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0);
+    const [emp, filiais, perfis, boletos, recorrencias, recebimentos] = await Promise.all([
       sb.from('empresas').select('*').maybeSingle(),
       buscarTodas(() => sb.from('filiais').select('*').order('ordem')),
       buscarTodas(() => sb.from('perfis').select('id,nome,usuario,setor,papel,ativo,pendente').order('nome')),
@@ -92,13 +93,14 @@ export const apiSupabase = {
         .or(`etapa.not.in.(visto,cancelado),vencimento.gte.${corteISO}`)
         .order('vencimento')),
       buscarTodas(() => sb.from('recorrencias').select('*').order('dia')),
+      buscarTodas(() => sb.from('recebimentos').select('*').gte('feito_em', inicioDia.toISOString()).order('feito_em', { ascending: false })),
     ]);
     falha(emp.error);
 
     // separa as notas que vieram junto com os boletos
     const notas = new Map();
     for (const b of boletos) { if (b.nota) notas.set(b.nota.id, b.nota); delete b.nota; }
-    return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias };
+    return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias, recebimentos };
   },
 
   /** Relatório: todos os boletos do período (pagos, não pagos, cancelados), com a nota de cada um.
@@ -108,6 +110,21 @@ export const apiSupabase = {
     const rel = campo === 'emissao' ? `nota:notas!inner(${cols})` : `nota:notas(${cols})`;
     const filtro = campo === 'emissao' ? 'nota.emissao' : 'vencimento';
     return buscarTodas(() => sb.from('boletos').select(`*, ${rel}`).gte(filtro, de).lte(filtro, ate).order('vencimento'));
+  },
+
+  /** Recebimento: bipou a DANFE (chave de 44 números) */
+  async receberNota(chave) {
+    const { data, error } = await sb.rpc('receber_nota', { chave });
+    falha(error);
+    return data;
+  },
+
+  /** Avisa na hora quando alguém da empresa bipa uma nota (Supabase Realtime) */
+  ouvirRecebimentos(aoReceber) {
+    const canal = sb.channel('recebimentos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'recebimentos' }, (ev) => aoReceber(ev.new))
+      .subscribe();
+    return () => sb.removeChannel(canal);
   },
 
   async historico(boletoId) {

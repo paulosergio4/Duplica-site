@@ -14,7 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=ddc939d';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=149a3a4';
+import { dvChave } from '../util/chave.js?v=149a3a4';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -41,6 +42,7 @@ function dadosIniciais() {
     ['lucia', 'Lúcia (exemplo)', 'Financeiro', 'usuario', false],
     ['maria', 'Maria (exemplo)', 'Fiscal', 'usuario', false],
     ['joao', 'João (exemplo)', 'Fiscal', 'usuario', true],
+    ['carlos', 'Carlos (exemplo)', 'Recebimento', 'usuario', false],
   ].map(([usuario, nome, setor, papel, pendente]) =>
     ({ id: 'u-' + usuario, usuario, nome, setor, papel, pendente, ativo: true, senha: '123456' }));
 
@@ -56,7 +58,8 @@ function dadosIniciais() {
     ['210561', 'Refrigerantes Vale do Pará', 'f3', [[11, 2400, 'enviado'], [25, 2400, 'enviado'], [39, 2400, 'enviado']]],
   ];
   exemplo.forEach(([numero, fornecedor, filial_id, parcelas], k) => {
-    const nota = { id: 'n' + k, filial_id, numero, serie: '1', fornecedor, chave: String(k + 1).repeat(44).slice(0, 44),
+    const base = ('3126' + '11' + String(k + 1).padStart(14, '0') + '55001' + numero.padStart(9, '0') + '1' + '12345678').slice(0, 43);
+    const nota = { id: 'n' + k, filial_id, numero, serie: '1', fornecedor, chave: base + dvChave(base),
       emissao: emDias(-4 - k * 3), valor: parcelas.reduce((s, p) => s + p[1], 0) };
     notas.push(nota);
     parcelas.forEach(([dias, valor, etapa], i) => {
@@ -92,6 +95,7 @@ function eu() {
   return p;
 }
 const semSenha = ({ senha, ...resto }) => resto;
+let ouvintes = [];           // demo: avisos de "nota bipada" (no Supabase é o Realtime)
 const fotosNaMemoria = {}; // no modo demo a foto não é salva de verdade
 
 // ------------------------------ API ---------------------------------
@@ -123,7 +127,9 @@ export const apiDemo = {
   async carregarTudo() {
     eu();
     const d = carregar();
-    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [] };
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const recebimentos = (d.recebimentos || []).filter((r) => new Date(r.feito_em) >= hoje).sort((a, b) => (a.feito_em < b.feito_em ? 1 : -1));
+    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };
   },
 
   async relatorio(de, ate, campo = 'vencimento') {
@@ -200,6 +206,33 @@ export const apiDemo = {
     salvar();
     return n;
   },
+
+  async receberNota(chave) {
+    const p = eu(), d = carregar();
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal bipam notas.');
+    const c = String(chave).replace(/\D/g, '');
+    if (c.length !== 44) throw new Error(`Li ${c.length} números. A chave da nota tem 44: bipe o código de barras da DANFE.`);
+    d.recebimentos = d.recebimentos || [];
+    const n = d.notas.find((x) => x.chave === c);
+    const novo = (extra) => { const r = { id: id(), chave: c, perfil_id: p.id, nome: p.nome, boletos: 0, situacao: 'casada', feito_em: agora(), nota_id: null, ...extra }; d.recebimentos.push(r); salvar(); ouvintes.forEach((f) => setTimeout(() => f(r), 300)); return r; };
+    if (!n) {
+      if (d.recebimentos.some((r) => r.chave === c && r.situacao === 'pendente')) return { situacao: 'repetida' };
+      novo({ situacao: 'pendente' });
+      return { situacao: 'pendente' };
+    }
+    const bs = d.boletos.filter((b) => b.nota_id === n.id && b.etapa !== 'cancelado');
+    let marcados = 0;
+    for (const b of bs.filter((x) => x.etapa === 'esperado')) {
+      Object.assign(b, { etapa: 'chegou', recebido_por: p.nome, chegou_marcado_por: p.nome, chegou_em: agora() });
+      reg(b.id, 'Chegou', 'nota bipada no recebimento por ' + p.nome, p);
+      marcados++;
+    }
+    novo({ nota_id: n.id, boletos: marcados, situacao: marcados || !bs.length ? 'casada' : 'repetida' });
+    const f = d.filiais.find((x) => x.id === n.filial_id);
+    return { situacao: marcados || !bs.length ? 'casada' : 'ja', nota_id: n.id, fornecedor: n.fornecedor, numero: n.numero, filial: f?.nome, marcados, total: bs.length };
+  },
+
+  ouvirRecebimentos(aoReceber) { ouvintes.push(aoReceber); return () => { ouvintes = ouvintes.filter((f) => f !== aoReceber); }; },
 
   async cadastrarEmpresa() {
     throw new Error('No modo demonstração não dá para criar conta. Use o endereço oficial do Duplica.');
