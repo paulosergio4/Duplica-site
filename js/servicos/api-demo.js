@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=ad4d5df';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=08ffbb8';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';

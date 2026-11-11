@@ -7,11 +7,12 @@
 // A planilha tem duas abas: "Boletos" (uma linha por parcela) e "Resumo".
 // Gerada no navegador com a biblioteca SheetJS (carregada só na hora).
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=ad4d5df';
-import { registrarAcoes, avisar } from '../nucleo/eventos.js?v=ad4d5df';
-import { desenhar } from '../nucleo/desenhar.js?v=ad4d5df';
-import { NOME_ETAPA } from '../nucleo/regras.js?v=ad4d5df';
-import { esc, hojeISO, dataHoraBR, cnpjFormatado } from '../util/formato.js?v=ad4d5df';
+import { estado, filialDe } from '../nucleo/estado.js?v=08ffbb8';
+import { registrarAcoes, avisar } from '../nucleo/eventos.js?v=08ffbb8';
+import { desenhar } from '../nucleo/desenhar.js?v=08ffbb8';
+import { NOME_ETAPA } from '../nucleo/regras.js?v=08ffbb8';
+import { TIPOS_NOTA } from './comuns.js?v=08ffbb8';
+import { esc, hojeISO, dataHoraBR, cnpjFormatado } from '../util/formato.js?v=08ffbb8';
 
 const URL_XLSX = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 
@@ -94,7 +95,7 @@ async function gerar() {
     'Anotação', 'Linha digitável', 'Chave da NF-e'];
   const linhas = lista.map((b) => {
     const n = b.nota || {};
-    return [filialDe(n.filial_id)?.nome || '', n.fornecedor || '', n.fornecedor_cnpj ? cnpjFormatado(n.fornecedor_cnpj) : '', n.tipo || 'NF-e',
+    return [filialDe(n.filial_id)?.nome || '', n.fornecedor || '', n.fornecedor_cnpj ? cnpjFormatado(n.fornecedor_cnpj) : '', !n.tipo || (n.tipo === 'nfe' && n.chave) ? 'NF-e' : (TIPOS_NOTA[n.tipo]?.[2] || n.tipo),
       n.numero || '', n.serie || '', data(n.emissao), Number(n.valor) || null, `${b.parcela}/${b.total_parcelas}`, data(b.vencimento),
       Number(b.valor), situacao(b), b.pago_em && b.etapa !== 'cancelado' ? 'Sim' : 'Não', b.pago_em ? (b.pago_forma || 'Boleto') : '',
       b.pago_em ? dataHoraBR(b.pago_em) : '', b.pago_por || '', b.recebido_por || '', b.chegou_em ? dataHoraBR(b.chegou_em) : '',

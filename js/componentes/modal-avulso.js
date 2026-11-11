@@ -7,10 +7,11 @@
 //
 // Botão que abre: data-acao="abrir-avulso"   (Fiscal e Financeiro)
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=ad4d5df';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=ad4d5df';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ad4d5df';
-import { esc, brl, dataBR, hojeISO, mascaraCnpj } from '../util/formato.js?v=ad4d5df';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=08ffbb8';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=08ffbb8';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=08ffbb8';
+import { esc, brl, dataBR, hojeISO, mascaraCnpj } from '../util/formato.js?v=08ffbb8';
+import { TIPOS_NOTA } from './comuns.js?v=08ffbb8';
 
 /** Copia o que está digitado na janela para o estado (para não perder ao redesenhar) */
 function lerCampos() {
@@ -64,7 +65,7 @@ export function modalAvulsoHtml() {
   return `<div class="modal-fundo"><div class="modal modal-largo" role="dialog" aria-modal="true" aria-labelledby="m-t">
     <h2 id="m-t">Adicionar boleto avulso</h2>
     <div class="av-grade">
-      <div class="field"><label for="av-tipo">Tipo</label><select class="inp" id="av-tipo">${sel('servico', 'Nota de serviço (NFS-e)')}${sel('outro', 'Outro documento')}</select></div>
+      <div class="field"><label for="av-tipo">Tipo</label><select class="inp" id="av-tipo">${Object.entries(TIPOS_NOTA).filter(([k]) => k !== 'recorrente').map(([k, t]) => sel(k, t[0])).join('')}</select></div>
       <div class="field"><label for="av-filial">Filial</label><select class="inp" id="av-filial"><option value="">Escolha…</option>${filiais}</select></div>
       <div class="field av-largo"><label for="av-forn">Fornecedor</label><input class="inp" id="av-forn" placeholder="ex.: Net Pompéu Telecom" value="${esc(v.fornecedor || '')}"></div>
       <div class="field"><label for="av-cnpj">CNPJ do fornecedor (opcional)</label><input class="inp num" id="av-cnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" value="${esc(v.cnpj || '')}"></div>

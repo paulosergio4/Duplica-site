@@ -3,12 +3,12 @@
 // Pedaços de tela usados em várias telas: aviso (toast), cabeçalho,
 // faixa de filiais e etiquetas de etapa/prazo.
 // =====================================================================
-import { estado, notaDe } from '../nucleo/estado.js?v=ad4d5df';
-import { NOME_ETAPA } from '../nucleo/regras.js?v=ad4d5df';
-import { registrarAcoes } from '../nucleo/eventos.js?v=ad4d5df';
-import { desenhar } from '../nucleo/desenhar.js?v=ad4d5df';
-import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=ad4d5df';
-import { CONFIG } from '../config.js?v=ad4d5df';
+import { estado, notaDe } from '../nucleo/estado.js?v=08ffbb8';
+import { NOME_ETAPA } from '../nucleo/regras.js?v=08ffbb8';
+import { registrarAcoes } from '../nucleo/eventos.js?v=08ffbb8';
+import { desenhar } from '../nucleo/desenhar.js?v=08ffbb8';
+import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=08ffbb8';
+import { CONFIG } from '../config.js?v=08ffbb8';
 
 /** Aviso no topo (sucesso em azul, erro em terracota) */
 export function toastHtml() {
@@ -24,16 +24,36 @@ export function cabecalho(sobretitulo, titulo, direita = '') {
 
 export const sobretituloHoje = (setor) => `${setor} · ${hojeExtenso()}`;
 
+/** Modelos de nota/documento: código → [nome no formulário, prefixo curto, etiqueta]
+ *  (os que não vêm no XML de NF-e são lançados como "boleto avulso") */
+export const TIPOS_NOTA = {
+  nfe: ['NF-e (modelo 55) sem XML', 'NF', 'NF-e'],
+  servico: ['Nota de serviço (NFS-e)', 'NFS', 'Serviço'],
+  nfce: ['NFC-e / cupom fiscal (modelo 65)', 'NFC-e', 'NFC-e'],
+  cte: ['CT-e / conhecimento de frete (modelo 57)', 'CT-e', 'Frete'],
+  nf1: ['Nota fiscal em papel (modelo 1 / 1-A)', 'NF', 'NF papel'],
+  produtor: ['Nota de produtor rural', 'NFP', 'Produtor rural'],
+  energia: ['Conta de energia (NF3-e / modelo 6)', 'Energia', 'Energia'],
+  agua: ['Conta de água / esgoto', 'Água', 'Água'],
+  comunicacao: ['Telefone / internet (modelo 21 / 22)', 'Telecom', 'Telecom'],
+  fatura: ['Fatura / duplicata', 'Fatura', 'Fatura'],
+  aluguel: ['Aluguel', 'Aluguel', 'Aluguel'],
+  imposto: ['Guia de imposto / taxa', 'Guia', 'Imposto'],
+  recibo: ['Recibo', 'Recibo', 'Recibo'],
+  outro: ['Outro documento', 'Doc', 'Avulso'],
+  recorrente: ['Conta fixa', 'Conta fixa', 'Conta fixa'],
+};
+
 /** Como chamar o documento: "NF 123", "NFS 45", "Doc 9", "Conta fixa 11/2026" */
 export function docNota(n) {
-  const pre = { nfe: 'NF', servico: 'NFS', outro: 'Doc', recorrente: 'Conta fixa' }[n?.tipo || 'nfe'] || 'NF';
+  const pre = TIPOS_NOTA[n?.tipo || 'nfe']?.[1] || 'NF';
   return `${pre} ${esc(n?.numero || '')}`;
 }
 
 /** Etiqueta do tipo (não aparece para NF-e comum) */
 export function pillTipo(n) {
-  if (!n || !n.tipo || n.tipo === 'nfe') return '';
-  const t = { servico: 'Serviço', outro: 'Avulso', recorrente: 'Conta fixa' }[n.tipo];
+  if (!n || !n.tipo || (n.tipo === 'nfe' && n.chave)) return '';
+  const t = n.tipo === 'nfe' ? 'NF-e sem XML' : (TIPOS_NOTA[n.tipo]?.[2] || 'Avulso');
   return `<span class="pill p-tipo">${t}${n.descricao ? ' · ' + esc(n.descricao) : ''}</span>`;
 }
 

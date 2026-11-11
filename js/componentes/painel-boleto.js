@@ -4,14 +4,14 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=ad4d5df';
-import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=ad4d5df';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=ad4d5df';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ad4d5df';
-import { ICONE } from './icones.js?v=ad4d5df';
-import { docNota } from './comuns.js?v=ad4d5df';
-import { linhaDigitavelHtml } from './ler-boleto.js?v=ad4d5df';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=ad4d5df';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=08ffbb8';
+import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=08ffbb8';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=08ffbb8';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=08ffbb8';
+import { ICONE } from './icones.js?v=08ffbb8';
+import { docNota } from './comuns.js?v=08ffbb8';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=08ffbb8';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=08ffbb8';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {

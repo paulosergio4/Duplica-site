@@ -9,12 +9,12 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=ad4d5df';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=ad4d5df';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ad4d5df';
-import { pillEtapa, docNota } from './comuns.js?v=ad4d5df';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=ad4d5df';
-import { esc, brl, dataBR } from '../util/formato.js?v=ad4d5df';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=08ffbb8';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=08ffbb8';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=08ffbb8';
+import { pillEtapa, docNota } from './comuns.js?v=08ffbb8';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=08ffbb8';
+import { esc, brl, dataBR } from '../util/formato.js?v=08ffbb8';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
