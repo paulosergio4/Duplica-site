@@ -4,17 +4,17 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=149a3a4';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=149a3a4';
-import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=149a3a4';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=149a3a4';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=149a3a4';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=149a3a4';
-import '../componentes/modal-avulso.js?v=149a3a4';
-import { ICONE } from '../componentes/icones.js?v=149a3a4';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=149a3a4';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=149a3a4';
-import { botaoRelatorio } from '../componentes/relatorio.js?v=149a3a4';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=4987ea5';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=4987ea5';
+import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=4987ea5';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=4987ea5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4987ea5';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=4987ea5';
+import '../componentes/modal-avulso.js?v=4987ea5';
+import { ICONE } from '../componentes/icones.js?v=4987ea5';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=4987ea5';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=4987ea5';
+import { botaoRelatorio } from '../componentes/relatorio.js?v=4987ea5';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
@@ -78,7 +78,7 @@ function resultadoHtml() {
     r.duplicada && `<li>${plural(r.duplicada, 'XML ignorado', 'XMLs ignorados')}: <b>Este XML já foi adicionado</b></li>`,
     r.filial_desconhecida && `<li>${plural(r.filial_desconhecida, 'nota não é', 'notas não são')} para uma filial cadastrada (CNPJ do destinatário diferente)</li>`,
     r.importada_sem_vencimento && `<li><b>${plural(r.importada_sem_vencimento, 'nota paga por boleto entrou', 'notas pagas por boleto entraram')} sem as parcelas no XML</b>: use “Informar parcelas” na nota</li>`,
-    r.sem_boleto && `<li>${plural(r.sem_boleto, 'nota sem boleto', 'notas sem boleto')} (não tem duplicatas no XML)</li>`,
+    r.importada_sem_boleto && `<li>${plural(r.importada_sem_boleto, 'nota sem boleto guardada', 'notas sem boleto guardadas')} (à vista, bonificação…): não aparecem na lista de boletos, mas o recebimento consegue bipar</li>`,
     ...r.erros.map((e) => `<li style="color:var(--alerta-txt)">${esc(e)}</li>`),
   ].filter(Boolean).join('');
   return `<div class="resultado" role="status"><div class="linha-topo"><h2>Resultado da importação · ${plural(r.total, 'arquivo', 'arquivos')}</h2>

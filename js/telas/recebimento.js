@@ -8,13 +8,13 @@
 // Se a nota ainda não entrou pelo XML, fica guardada e é marcada sozinha
 // quando o XML chegar.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=149a3a4';
-import { registrarAcoes, registrarFormulario, avisar } from '../nucleo/eventos.js?v=149a3a4';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=149a3a4';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=149a3a4';
-import { esc, plural } from '../util/formato.js?v=149a3a4';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=149a3a4';
-import { abrirCamera, bip } from '../util/camera.js?v=149a3a4';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=4987ea5';
+import { registrarAcoes, registrarFormulario, avisar } from '../nucleo/eventos.js?v=4987ea5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=4987ea5';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=4987ea5';
+import { esc, plural } from '../util/formato.js?v=4987ea5';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=4987ea5';
+import { abrirCamera, bip } from '../util/camera.js?v=4987ea5';
 
 export const telaRecebimento = {
   id: 'receber',
@@ -44,7 +44,7 @@ const iconeCamera = () => '<svg width="22" height="22" viewBox="0 0 24 24" fill=
 function resultadoHtml(r) {
   const cor = { casada: 'var(--musgo)', ja: 'var(--ocre-txt)', pendente: 'var(--terra)', repetida: 'var(--ocre-txt)', erro: 'var(--alerta)' }[r.situacao];
   const titulo = {
-    casada: r.marcados ? `Nota recebida: ${plural(r.marcados, 'boleto marcado', 'boletos marcados')} como "Chegou"` : 'Nota recebida (sem boleto)',
+    casada: r.marcados ? `Nota recebida: ${plural(r.marcados, 'boleto marcado', 'boletos marcados')} como "Chegou"` : 'Nota recebida (essa nota não tem boleto)',
     ja: 'Essa nota já tinha sido recebida',
     pendente: 'Nota guardada: ainda não entrou no sistema',
     repetida: 'Essa nota já foi bipada e está aguardando o XML',
@@ -62,7 +62,7 @@ function linhaRecebimento(r) {
   const desc = n ? `${esc(n.fornecedor)} · ${docNota(n)} · ${esc(f?.nome || '')}` : `NF ${esc(numeroDaChave(r.chave))} · XML ainda não entrou`;
   const pill = r.situacao === 'pendente' ? '<span class="pill p-esperado">Aguardando XML</span>'
     : r.situacao === 'repetida' ? '<span class="pill p-breve">Repetida</span>'
-    : `<span class="pill p-chegou">${plural(r.boletos, 'boleto', 'boletos')} chegou</span>`;
+    : r.boletos ? `<span class="pill p-chegou">${plural(r.boletos, 'boleto', 'boletos')} chegou</span>` : '<span class="pill p-visto">Nota recebida · sem boleto</span>';
   return `<div class="linha"><div class="kv" style="flex:1 1 220px;min-width:0"><b style="color:var(--petroleo)">${desc}</b>
     <small>${hora} · ${esc(r.nome)}</small></div>${pill}</div>`;
 }

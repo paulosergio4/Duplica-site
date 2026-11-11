@@ -5,18 +5,18 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=149a3a4';
-import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=149a3a4';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=149a3a4';
-import { obterApi } from './servicos/api.js?v=149a3a4';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=149a3a4';
-import { menuHtml } from './componentes/menu.js?v=149a3a4';
-import { modalHtml } from './componentes/modal-pessoa.js?v=149a3a4';
-import { painelHtml } from './componentes/painel-boleto.js?v=149a3a4';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=149a3a4';
-import { CONFIG } from './config.js?v=149a3a4';
-import { bip } from './util/camera.js?v=149a3a4';
-import { numeroDaChave } from './util/chave.js?v=149a3a4';
+import { estado } from './nucleo/estado.js?v=4987ea5';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=4987ea5';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=4987ea5';
+import { obterApi } from './servicos/api.js?v=4987ea5';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=4987ea5';
+import { menuHtml } from './componentes/menu.js?v=4987ea5';
+import { modalHtml } from './componentes/modal-pessoa.js?v=4987ea5';
+import { painelHtml } from './componentes/painel-boleto.js?v=4987ea5';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=4987ea5';
+import { CONFIG } from './config.js?v=4987ea5';
+import { bip } from './util/camera.js?v=4987ea5';
+import { numeroDaChave } from './util/chave.js?v=4987ea5';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
@@ -72,7 +72,7 @@ async function avisoRecebimento(r) {
   const f = n ? estado.filiais.find((x) => x.id === n.filial_id) : null;
   const texto = r.situacao === 'pendente'
     ? `${r.nome} bipou a NF ${numeroDaChave(r.chave)}, que ainda não entrou no sistema. Quando o XML chegar, os boletos já entram como "Chegou".`
-    : n ? `Chegou: ${n.fornecedor} · NF ${n.numero}${f ? ' · ' + f.nome : ''}. A nota e ${r.boletos === 1 ? 'o boleto chegaram' : `os ${r.boletos} boletos chegaram`}, ${r.nome} recebeu.`
+    : n ? `Chegou: ${n.fornecedor} · NF ${n.numero}${f ? ' · ' + f.nome : ''}. ${r.boletos === 0 ? 'A nota chegou (sem boleto)' : r.boletos === 1 ? 'A nota e o boleto chegaram' : `A nota e os ${r.boletos} boletos chegaram`}, ${r.nome} recebeu.`
     : `${r.nome} bipou uma nota.`;
   bip(true);
   avisar(texto, false, 12000);

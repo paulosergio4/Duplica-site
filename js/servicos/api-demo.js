@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=149a3a4';
-import { dvChave } from '../util/chave.js?v=149a3a4';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=4987ea5';
+import { dvChave } from '../util/chave.js?v=4987ea5';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -129,7 +129,7 @@ export const apiDemo = {
     const d = carregar();
     const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
     const recebimentos = (d.recebimentos || []).filter((r) => new Date(r.feito_em) >= hoje).sort((a, b) => (a.feito_em < b.feito_em ? 1 : -1));
-    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };
+    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };   // (no demo, notas já traz as sem boleto)
   },
 
   async relatorio(de, ate, campo = 'vencimento') {
@@ -150,10 +150,14 @@ export const apiDemo = {
     if (d.notas.some((n) => n.chave === dados.chave)) return 'duplicada';
     const filial = d.filiais.find((f) => f.cnpj && f.cnpj === soDigitos(dados.dest_cnpj));
     if (!filial) return 'filial_desconhecida';
-    if (!dados.duplicatas.length && !dados.pagamento_boleto) return 'sem_boleto';
     const nota = { id: id(), filial_id: filial.id, numero: dados.numero, serie: dados.serie, fornecedor: dados.fornecedor,
       chave: dados.chave, emissao: dados.emissao, valor: dados.valor };
     d.notas.push(nota);
+    if (!dados.duplicatas.length && !dados.pagamento_boleto) {   // sem boleto: guardada só para o recebimento bipar
+      (d.recebimentos || []).filter((r) => r.chave === nota.chave && r.situacao === 'pendente').forEach((r) => Object.assign(r, { situacao: 'casada', nota_id: nota.id }));
+      salvar();
+      return 'importada_sem_boleto';
+    }
     if (!dados.duplicatas.length) {   // paga por boleto, mas o XML não trouxe as parcelas
       d.boletos.push({ id: id(), nota_id: nota.id, parcela: 1, total_parcelas: 1, vencimento: null,
         valor: dados.valor_pagamento || dados.valor, etapa: 'esperado', anotacao: null, foto_path: null });

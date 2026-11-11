@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=149a3a4';
-import { normalizarLogin } from '../util/formato.js?v=149a3a4';
+import { CONFIG } from '../config.js?v=4987ea5';
+import { normalizarLogin } from '../util/formato.js?v=4987ea5';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -93,13 +93,16 @@ export const apiSupabase = {
         .or(`etapa.not.in.(visto,cancelado),vencimento.gte.${corteISO}`)
         .order('vencimento')),
       buscarTodas(() => sb.from('recorrencias').select('*').order('dia')),
-      buscarTodas(() => sb.from('recebimentos').select('*').gte('feito_em', inicioDia.toISOString()).order('feito_em', { ascending: false })),
+      buscarTodas(() => sb.from('recebimentos').select('*, nota:notas(id,filial_id,tipo,numero,serie,valor,fornecedor,fornecedor_cnpj,descricao,chave,emissao)')
+        .gte('feito_em', inicioDia.toISOString()).order('feito_em', { ascending: false })),
     ]);
     falha(emp.error);
 
     // separa as notas que vieram junto com os boletos
     const notas = new Map();
     for (const b of boletos) { if (b.nota) notas.set(b.nota.id, b.nota); delete b.nota; }
+    // notas bipadas hoje (inclui as SEM boleto, que não vêm na lista acima)
+    for (const r of recebimentos) { if (r.nota) notas.set(r.nota.id, r.nota); delete r.nota; }
     return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias, recebimentos };
   },
 
