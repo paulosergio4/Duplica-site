@@ -18,10 +18,10 @@
 .etapas .trilho{display:flex;flex-direction:column;align-items:center}
 .etapas .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--nevoa);margin-top:3px;flex-shrink:0}
 .etapas li.feito .dot{background:var(--petroleo);border-color:var(--petroleo)}
-.etapas .fio{width:2px;flex:1;min-height:22px;background:#CFC7B5}
+.etapas .fio{width:2px;flex:1;min-height:22px;background:#D9B3B5}
 .etapas li:last-child .fio{display:none}
 .etapas .txt{display:flex;flex-direction:column;gap:2px;padding-bottom:14px}
-.etapas .txt b{font-size:14px;color:#7D7465;font-weight:600}
+.etapas .txt b{font-size:14px;color:#7A4E68;font-weight:600}
 .etapas li.feito .txt b{color:var(--cafe);font-weight:700}
 .etapas .txt small{font-size:12px;color:var(--terra)}
 .foto{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;background:var(--creme-2)}
@@ -49,7 +49,7 @@
 .form-u h2{margin:0;font-size:18px;font-weight:800;color:var(--petroleo)}
 .check{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;min-height:44px}
 .check input{width:20px;height:20px;accent-color:var(--petroleo)}
-.u-linha{padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #E6DFCF;min-width:440px}
+.u-linha{padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #EFCFC6;min-width:440px}
 .u-linha div{flex:1;display:flex;flex-direction:column;gap:2px}
 .u-linha small{font-size:12px;color:var(--terra)}
 .admin{background:var(--petroleo);color:var(--creme)}
@@ -61,11 +61,11 @@
 .filiais button span{min-width:24px;padding:2px 6px;border-radius:7px;background:var(--creme-2);font-size:12px;color:var(--terra);text-align:center}
 .filiais button[aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:var(--creme)}
 .filiais button[aria-pressed="true"] span{background:rgba(255,255,255,.18);color:var(--creme)}
-.lote{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 20px;background:#F0EADC;border-bottom:1px solid var(--linha)}
+.lote{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 20px;background:#F7DDD4;border-bottom:1px solid var(--linha)}
 .lote small{font-size:12px;color:var(--terra);margin-right:auto}
-.grupo{padding:12px 20px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;background:#F0EADC;border-bottom:1px solid var(--linha);min-width:660px}
+.grupo{padding:12px 20px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;background:#F7DDD4;border-bottom:1px solid var(--linha);min-width:660px}
 .grupo .kv{margin-right:auto}
-.cal-item{padding:14px 20px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #E6DFCF}
+.cal-item{padding:14px 20px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #EFCFC6}
 .cal-item:last-child{border-bottom:0}
 .cal-item-d{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .cal-wrap{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
@@ -116,8 +116,8 @@
 
 /* ---------- boleto / nota cancelados ---------- */
 .p-pago{background:#DCEBD9;color:#2F5A2B}
-.p-cancelado{background:#E6E2DA;color:#5C554B;text-decoration:line-through;text-decoration-thickness:1px}
-.linha.cancelada .parc,.linha.cancelada .kv b{color:#8A8275;text-decoration:line-through}
+.p-cancelado{background:#EFD9D6;color:#5A3A5F;text-decoration:line-through;text-decoration-thickness:1px}
+.linha.cancelada .parc,.linha.cancelada .kv b{color:#854F6C;text-decoration:line-through}
 .link-cancelar{min-height:40px;padding:0 6px;border:0;background:transparent;color:var(--alerta-txt);font-weight:700;font-size:13px;text-decoration:underline}
 .modal textarea.inp{min-height:76px}
 

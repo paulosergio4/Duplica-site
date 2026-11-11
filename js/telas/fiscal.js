@@ -4,16 +4,16 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=795d991';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=795d991';
-import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=795d991';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=795d991';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=795d991';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=795d991';
-import '../componentes/modal-avulso.js?v=795d991';
-import { ICONE } from '../componentes/icones.js?v=795d991';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=795d991';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=795d991';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=2f04570';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=2f04570';
+import { podeFiscal, podeCancelar, proximaAcao } from '../nucleo/regras.js?v=2f04570';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2f04570';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2f04570';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=2f04570';
+import '../componentes/modal-avulso.js?v=2f04570';
+import { ICONE } from '../componentes/icones.js?v=2f04570';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=2f04570';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=2f04570';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 

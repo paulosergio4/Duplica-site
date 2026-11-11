@@ -4,11 +4,11 @@
    Para mudar uma cor do sistema inteiro, troque só a variável em :root.
    ===================================================================== */
 :root{
-  --petroleo:#334B5A; --petroleo-esc:#26394A; --salvia:#CED8CF; --nevoa:#98A5A7;
-  --terra:#625745; --cafe:#3B3429; --creme:#F4EFE4; --creme-2:#E9E2D3; --linha:#DDD6C6; --branco:#FFFDF8;
+  --petroleo:#2B124C; --petroleo-esc:#190019; --salvia:#DFB6B2; --nevoa:#854F6C;
+  --terra:#522B5B; --cafe:#190019; --creme:#FBE4D8; --creme-2:#F3D2C9; --linha:#E9C7C0; --branco:#FFF6F1;
   --alerta:#A8503A; --alerta-txt:#8E3F2B; --alerta-bg:#F3DDD5; --alerta-row:#FBEDE7;
   --ocre-txt:#6E5119; --ocre-bg:#F3E6CC; --musgo:#4F6A4A; --musgo-bg:#DDE7D8; --musgo-txt:#3F5A3B;
-  --azul-bg:#DCE5EA; --cinza-bg:#E1E6E4; --hist-bg:#EDE6D7;
+  --azul-bg:#E6D9EC; --cinza-bg:#EADDE3; --hist-bg:#F6DCD3;
   --f:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   color-scheme:light;
 }
@@ -34,7 +34,7 @@ h1,h2{text-wrap:balance}
 .field label{font-size:13px;font-weight:700}
 .inp{height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--nevoa);background:var(--branco);color:var(--cafe)}
 textarea.inp{height:auto;padding:10px 12px;resize:vertical}
-.inp::placeholder{color:#7D7465}
+.inp::placeholder{color:#7A4E68}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
 .p-esperado{background:var(--cinza-bg);color:var(--cafe);border:1px solid var(--nevoa)}
 .p-chegou{background:var(--creme-2);color:var(--terra)}

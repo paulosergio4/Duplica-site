@@ -70,11 +70,11 @@ main{flex:999 1 560px;min-width:0;padding-block:28px 48px;padding-left:max(16px,
 .barra i{display:block;height:100%;border-radius:99px;background:var(--petroleo)}
 .barra i.ok{background:var(--musgo)}
 .rolagem{overflow-x:auto}
-.linha{padding:14px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #E6DFCF;min-width:660px}
+.linha{padding:14px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #EFCFC6;min-width:660px}
 .linha:last-child{border-bottom:0}
-.linha:hover{background:#FBF8F1}
+.linha:hover{background:#FFF3EE}
 .linha.alerta{background:var(--alerta-row);box-shadow:inset 4px 0 0 var(--alerta)}
-.linha.sel{background:#F0EADC;box-shadow:inset 4px 0 0 var(--petroleo)}
+.linha.sel{background:#F7DDD4;box-shadow:inset 4px 0 0 var(--petroleo)}
 .parc{width:48px;font-weight:800;color:var(--petroleo)}
 .status{flex:1 1 200px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .status em{font-style:normal;font-size:12px;color:var(--terra);font-weight:600}
