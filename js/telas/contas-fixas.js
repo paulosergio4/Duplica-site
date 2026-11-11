@@ -5,11 +5,11 @@
 // "Não chegou" (uns 40 dias antes do vencimento), para ninguém esquecer.
 // Quem vê: Fiscal, Financeiro e gerente.
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=1a48cff';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=1a48cff';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=1a48cff';
-import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=1a48cff';
-import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=1a48cff';
+import { estado, filialDe } from '../nucleo/estado.js?v=632155c';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=632155c';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=632155c';
+import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=632155c';
+import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=632155c';
 
 const numero = (t) => Number(String(t).replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'));
 const valorBR = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });

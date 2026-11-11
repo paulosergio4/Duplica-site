@@ -5,24 +5,25 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=1a48cff';
-import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=1a48cff';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=1a48cff';
-import { obterApi } from './servicos/api.js?v=1a48cff';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=1a48cff';
-import { menuHtml } from './componentes/menu.js?v=1a48cff';
-import { modalHtml } from './componentes/modal-pessoa.js?v=1a48cff';
-import { painelHtml } from './componentes/painel-boleto.js?v=1a48cff';
-import { esc } from './util/formato.js?v=1a48cff';
+import { estado } from './nucleo/estado.js?v=632155c';
+import { ligarEventos, registrarAcoes } from './nucleo/eventos.js?v=632155c';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=632155c';
+import { obterApi } from './servicos/api.js?v=632155c';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=632155c';
+import { menuHtml } from './componentes/menu.js?v=632155c';
+import { modalHtml } from './componentes/modal-pessoa.js?v=632155c';
+import { painelHtml } from './componentes/painel-boleto.js?v=632155c';
+import { esc } from './util/formato.js?v=632155c';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
 
-/** Some com a tela de carregamento (deixa a animação do logo terminar: ~1,6 s no mínimo) */
+/** Some com a tela de carregamento só depois que a animação do logo terminou
+ *  (o visto acaba de se desenhar em ~1,55 s; o "pulo" final vai até ~2,1 s; mais uma pausa) */
 function esconderSplash() {
   const splash = document.getElementById('splash');
   if (!splash) return;
-  const falta = Math.max(0, 1600 - (performance.now() - inicioCarga));
+  const falta = Math.max(0, 2500 - (performance.now() - inicioCarga));
   setTimeout(() => { splash.classList.add('saindo'); setTimeout(() => splash.remove(), 500); }, falta);
 }
 
