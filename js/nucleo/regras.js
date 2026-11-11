@@ -47,5 +47,6 @@ export function podeAlterarPessoa(alvo) {
   return ehAdminSetor() && alvo.setor === eu().setor && alvo.papel === 'usuario';
 }
 
-export const NOME_PAPEL = { gerente: 'Gerente geral', admin_setor: 'Admin do setor', usuario: 'Usuário' };
+// "gerente" é o nome interno do papel de quem pode tudo; na tela aparece como "Admin"
+export const NOME_PAPEL = { gerente: 'Admin', admin_setor: 'Admin do setor', usuario: 'Usuário' };
 export const NOME_ETAPA = { esperado: 'Não chegou', chegou: 'Chegou', enviado: 'No financeiro', visto: 'Visto do financeiro', cancelado: 'Cancelado' };

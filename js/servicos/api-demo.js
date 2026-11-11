@@ -363,7 +363,7 @@ export const apiDemo = {
     if (!a || a.id === p.id || a.papel === 'gerente') throw new Error('Essa pessoa não pode ser editada por aqui.');
     if (p.papel === 'admin_setor') {
       if (a.setor !== p.setor || a.papel !== 'usuario') throw new Error('Você só edita pessoas do seu setor.');
-      if (setor !== a.setor) throw new Error('Só o gerente geral muda o setor.');
+      if (setor !== a.setor) throw new Error('Só o Admin muda o setor.');
     } else if (p.papel !== 'gerente') throw new Error('Sem permissão para editar pessoas.');
     if (d.perfis.some((x) => x.usuario === usuario && x.id !== a.id)) throw new Error(`Já existe alguém com o usuário "${usuario}".`);
     Object.assign(a, { nome, usuario, setor });
@@ -374,10 +374,10 @@ export const apiDemo = {
   async atualizarPessoa(alvoId, { ativo, papel }) {
     const p = eu(), a = carregar().perfis.find((x) => x.id === alvoId);
     if (a.id === p.id) throw new Error('Você não pode alterar o seu próprio acesso.');
-    if (a.papel === 'gerente') throw new Error('O gerente geral não pode ser alterado por aqui.');
+    if (a.papel === 'gerente') throw new Error('O Admin não pode ser alterado por aqui.');
     if (p.papel === 'admin_setor') {
       if (a.setor !== p.setor || a.papel !== 'usuario') throw new Error('Você só altera pessoas do seu setor.');
-      if (papel) throw new Error('Só o gerente geral define administradores.');
+      if (papel) throw new Error('Só o Admin define administradores.');
     } else if (p.papel !== 'gerente') throw new Error('Sem permissão para alterar pessoas.');
     if (ativo !== undefined && ativo !== null) a.ativo = ativo;
     if (papel) a.papel = papel;
@@ -386,7 +386,7 @@ export const apiDemo = {
 
   async salvarFilial(nome, cnpj) {
     const p = eu(), d = carregar(), c = soDigitos(cnpj);
-    if (p.papel !== 'gerente') throw new Error('Só o gerente geral cadastra filiais.');
+    if (p.papel !== 'gerente') throw new Error('Só o Admin cadastra filiais.');
     if (d.filiais.some((f) => f.cnpj === c)) throw new Error('Esse CNPJ já está em outra filial.');
     const ex = d.filiais.find((f) => f.nome.toLowerCase() === nome.trim().toLowerCase());
     if (ex && ex.cnpj) throw new Error('Já existe uma filial com esse nome.');
@@ -397,7 +397,7 @@ export const apiDemo = {
 
   async renomearFilial(filialId, novoNome) {
     const p = eu(), d = carregar(), n = novoNome.trim();
-    if (p.papel !== 'gerente') throw new Error('Só o gerente geral altera filiais.');
+    if (p.papel !== 'gerente') throw new Error('Só o Admin altera filiais.');
     if (!n) throw new Error('Informe o novo nome da filial.');
     if (d.filiais.some((f) => f.id !== filialId && f.nome.toLowerCase() === n.toLowerCase())) throw new Error('Já existe uma filial com esse nome.');
     d.filiais.find((f) => f.id === filialId).nome = n;

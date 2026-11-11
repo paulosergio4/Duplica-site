@@ -1,7 +1,7 @@
 // =====================================================================
 // DUPLICA · telas/usuarios.js
 // Cadastro de pessoas.
-//   Gerente geral → vê todos, cadastra em qualquer setor, cria admin do setor
+//   Admin (papel interno "gerente") → vê todos, cadastra em qualquer setor, cria admin do setor
 //   Admin do setor → vê e cadastra só no próprio setor
 // Ninguém é apagado: quem sai é DESATIVADO (o nome fica no histórico).
 // "Editar" abre uma janela para mudar nome, usuário, setor ou dar senha nova.
@@ -44,7 +44,7 @@ export const telaUsuarios = {
     const opcoes = geral ? SETORES.map(([s, d]) => `<option value="${s}">${s}: ${d}</option>`).join('')
       : `<option value="${eu.setor}">${eu.setor}</option>`;
 
-    return cabecalho(geral ? 'Gerente geral' : `Admin do setor ${eu.setor}`, geral ? `Usuários do ${estado.empresa?.nome || ''}` : `Equipe do ${eu.setor}`) + toastHtml()
+    return cabecalho(geral ? 'Admin' : `Admin do setor ${eu.setor}`, geral ? `Usuários do ${estado.empresa?.nome || ''}` : `Equipe do ${eu.setor}`) + toastHtml()
       + `<div class="users"><section class="secao"><div class="secao-h"><h2>${geral ? 'Todos os setores' : `Pessoas do ${eu.setor}`}</h2>
           <span style="font-size:13px;color:var(--terra);font-weight:600">${lista.length} pessoas</span></div>
           <div class="rolagem">${lista.map(linhaPessoa).join('')}</div></section>
@@ -73,7 +73,7 @@ export function modalEditarPessoaHtml() {
     <div class="field"><label for="edusuario">Usuário de login</label><input class="inp" id="edusuario" data-rascunho="1" autocomplete="off" value="${esc(r.edusuario ?? u.usuario)}">
       <span class="dica-campo">Se mudar, a pessoa passa a entrar com o usuário novo.</span></div>
     <div class="field"><label for="edsetor">Setor</label><select class="inp" id="edsetor" data-rascunho="1"${geral ? '' : ' disabled'}>${opcoes}</select>
-      ${geral ? '' : '<span class="dica-campo">Só o gerente geral muda o setor.</span>'}</div>
+      ${geral ? '' : '<span class="dica-campo">Só o Admin muda o setor.</span>'}</div>
     <div class="field"><label for="edsenha">Nova senha provisória (opcional)</label><input class="inp" id="edsenha" data-rascunho="1" placeholder="deixe vazio para manter a senha" autocomplete="new-password" value="${esc(r.edsenha || '')}">
       <span class="dica-campo">Use quando a pessoa esquecer a senha. No próximo acesso ela cria uma nova.</span></div>
     ${erro ? `<p class="erro" role="alert">${esc(erro)}</p>` : ''}

@@ -1,6 +1,6 @@
 // =====================================================================
 // DUPLICA · telas/filiais.js
-// Empresa e filiais (só o gerente geral).
+// Empresa e filiais (só o Admin).
 // O CNPJ de cada filial é o que liga o XML à loja certa.
 // =====================================================================
 import { estado } from '../nucleo/estado.js';
@@ -35,7 +35,7 @@ export const telaFiliais = {
         ${editar}</div>`;
     }).join('');
 
-    return cabecalho('Gerente geral', 'Empresa e filiais') + toastHtml()
+    return cabecalho('Admin', 'Empresa e filiais') + toastHtml()
       + `<div class="users"><section class="secao"><div class="secao-h"><h2>${esc(estado.empresa?.nome || '')} · ${plural(estado.filiais.length, 'filial', 'filiais')}</h2>
           <span style="font-size:13px;color:var(--terra);font-weight:600">código de login: <b>${esc(estado.empresa?.codigo || '')}</b></span></div>
           <p style="margin:0;padding:14px 20px;font-size:13px;line-height:1.5;color:var(--terra);border-bottom:1px solid var(--linha)">Cada XML é lido pelo CNPJ do destinatário: se bater com uma filial daqui, a nota entra nela. XML de CNPJ que não está na lista não entra.</p>
