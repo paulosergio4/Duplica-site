@@ -7,10 +7,14 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=4d27135';
-import { normalizarLogin } from '../util/formato.js?v=4d27135';
+import { CONFIG } from '../config.js?v=bc29f79';
+import { normalizarLogin } from '../util/formato.js?v=bc29f79';
 
-const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+// login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
+let guarda;
+try { sessionStorage.setItem('duplica-teste', '1'); sessionStorage.removeItem('duplica-teste'); guarda = sessionStorage; } catch { guarda = undefined; }
+try { Object.keys(localStorage).filter((k) => /^sb-.*-auth-token/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch { /* sem storage */ }
+const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { storage: guarda, persistSession: true } });
 
 /** Monta o e-mail interno do login: paulo + saoluiz → paulo@saoluiz.duplica.app */
 const emailDe = (empresa, usuario) =>
