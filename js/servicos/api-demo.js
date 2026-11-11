@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=46e11dc';
-import { dvChave } from '../util/chave.js?v=46e11dc';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=bebe11c';
+import { dvChave } from '../util/chave.js?v=bebe11c';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -244,7 +244,7 @@ export const apiDemo = {
 
   async lancarAvulso(dados) {
     const p = eu(), d = carregar();
-    if (!(p.papel === 'gerente' || ['Fiscal', 'Financeiro'].includes(p.setor))) throw new Error('Só Fiscal ou Financeiro lançam boleto avulso.');
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Financeiro', 'Contabilidade'].includes(p.setor))) throw new Error('Só Fiscal, Financeiro ou Contabilidade lançam boleto avulso.');
     const nota = { id: id(), filial_id: dados.filial_id, tipo: dados.tipo, numero: dados.numero, fornecedor: dados.fornecedor,
       fornecedor_cnpj: soDigitos(dados.fornecedor_cnpj) || null, descricao: dados.descricao || null, chave: null,
       emissao: dados.emissao || new Date().toISOString().slice(0, 10), valor: dados.parcelas.reduce((s, x) => s + x.valor, 0) };

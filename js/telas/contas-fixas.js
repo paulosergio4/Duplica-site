@@ -5,11 +5,11 @@
 // "Não chegou" no começo do mês do vencimento (só o mês corrente), para ninguém esquecer.
 // Quem vê: Fiscal, Financeiro e gerente.
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=46e11dc';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=46e11dc';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=46e11dc';
-import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=46e11dc';
-import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=46e11dc';
+import { estado, filialDe } from '../nucleo/estado.js?v=bebe11c';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=bebe11c';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=bebe11c';
+import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=bebe11c';
+import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=bebe11c';
 
 const numero = (t) => Number(String(t).replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'));
 const valorBR = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
