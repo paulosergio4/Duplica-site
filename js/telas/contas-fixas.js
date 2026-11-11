@@ -2,14 +2,14 @@
 // DUPLICA · telas/contas-fixas.js
 // Contas que se repetem todo mês (internet, aluguel, manutenção...).
 // Cadastrou uma vez, o Duplica cria sozinho o boleto de cada mês como
-// "Não chegou" (uns 40 dias antes do vencimento), para ninguém esquecer.
+// "Não chegou" no começo do mês do vencimento (só o mês corrente), para ninguém esquecer.
 // Quem vê: Fiscal, Financeiro e gerente.
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=907816c';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=907816c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=907816c';
-import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=907816c';
-import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=907816c';
+import { estado, filialDe } from '../nucleo/estado.js?v=25c8395';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=25c8395';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=25c8395';
+import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=25c8395';
+import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=25c8395';
 
 const numero = (t) => Number(String(t).replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'));
 const valorBR = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
@@ -40,7 +40,7 @@ export const telaContasFixas = {
     return cabecalho('Fiscal e Financeiro', 'Contas fixas') + toastHtml()
       + `<div class="users"><section class="secao"><div class="secao-h"><h2>${plural(ativas.length, 'conta ativa', 'contas ativas')}</h2>
           <span style="font-size:13px;color:var(--terra);font-weight:600">por mês: <b class="num">${brl(totalMes)}</b></span></div>
-          <p style="margin:0;padding:14px 20px;font-size:13px;line-height:1.5;color:var(--terra);border-bottom:1px solid var(--linha)">O boleto de cada mês aparece sozinho no Fiscal como “Não chegou”, uns 40 dias antes do vencimento. Pausar não apaga os boletos já criados.</p>
+          <p style="margin:0;padding:14px 20px;font-size:13px;line-height:1.5;color:var(--terra);border-bottom:1px solid var(--linha)">O boleto de cada mês aparece sozinho no Fiscal como “Não chegou” quando o mês começa (só o do mês corrente; o do mês que vem aparece quando o mês virar). Pausar não apaga os boletos já criados.</p>
           ${linhas ? `<div class="rolagem">${linhas}</div>` : vazio('Nenhuma conta fixa ainda. Cadastre ao lado a primeira (ex.: internet, aluguel).')}</section>
         <form class="form-u" id="form-conta" novalidate><h2>${ed ? 'Editar conta fixa' : 'Nova conta fixa'}</h2>
           <div class="field"><label for="cf-desc">Descrição</label><input class="inp" id="cf-desc" placeholder="ex.: Internet da Matriz" value="${esc(ed?.descricao || '')}"></div>
@@ -85,6 +85,6 @@ registrarFormulario('form-conta', () => executar(async () => {
   estado.erroForm.conta = ''; estado.editandoConta = null;
   const criados = novo ? await estado.api.gerarRecorrentes() : 0;
   await recarregar();
-  avisar(novo ? `Conta fixa “${dados.descricao}” cadastrada.${criados ? ` ${plural(criados, 'boleto já foi criado', 'boletos já foram criados')} no Fiscal.` : ' O boleto aparece no Fiscal uns 40 dias antes do vencimento.'}`
+  avisar(novo ? `Conta fixa “${dados.descricao}” cadastrada.${criados ? ` ${plural(criados, 'boleto já foi criado', 'boletos já foram criados')} no Fiscal.` : ' O boleto aparece no Fiscal quando chegar o mês do vencimento.'}`
     : `“${dados.descricao}” atualizada.`);
 }));

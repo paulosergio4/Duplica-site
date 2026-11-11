@@ -14,7 +14,7 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=907816c';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=25c8395';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -245,7 +245,8 @@ export const apiDemo = {
     const d = carregar();
     d.geradas = d.geradas || {};
     const hoje = new Date(); hoje.setHours(12, 0, 0, 0);
-    const limite = new Date(hoje); limite.setDate(limite.getDate() + 40);
+    // só o mês corrente: o boleto do mês que vem aparece quando o mês virar
+    const limite = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 12);
     const iso = (x) => x.toISOString().slice(0, 10);
     let n = 0;
     for (const r of (d.recorrencias || []).filter((x) => x.ativa)) {
