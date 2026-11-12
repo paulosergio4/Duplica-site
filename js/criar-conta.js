@@ -6,10 +6,10 @@
 //   2. api.cadastrarEmpresa → função "usuarios" (cadastro_publico) cria tudo;
 //   3. já faz o login e abre o sistema (html/app.html).
 // =====================================================================
-import { ligarBotaoTema } from './util/tema.js?v=6140a37';
-import { obterApi } from './servicos/api.js?v=6140a37';
-import { CONFIG } from './config.js?v=6140a37';
-import { normalizarLogin, mascaraCnpj, cnpjValido, soDigitos } from './util/formato.js?v=6140a37';
+import { ligarBotaoTema } from './util/tema.js?v=e9fe573';
+import { obterApi } from './servicos/api.js?v=e9fe573';
+import { CONFIG } from './config.js?v=e9fe573';
+import { normalizarLogin, mascaraCnpj, cnpjValido, soDigitos } from './util/formato.js?v=e9fe573';
 
 const $ = (id) => document.getElementById(id);
 let api;

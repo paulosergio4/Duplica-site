@@ -15,10 +15,13 @@
 // A janela da câmera fica num elemento PRÓPRIO no <body>, fora do
 // redesenho das telas, para o vídeo não piscar.
 // =====================================================================
+import { temScandit, abrirScandit } from './scandit.js?v=e9fe573';
+
 const ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm';
 const FORMATOS = ['code_128', 'itf', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code'];
 
 let aberto = null;   // { parar }
+let scanditFalhou = '';   // motivo de a Scandit não abrir neste aparelho/sessão (aí usa o leitor próprio)
 let leitorZxing = null;
 
 /** Monta (uma vez) o leitor que serve para este aparelho. Devolve async (fonte) => [textos] */
@@ -93,12 +96,13 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   const video = caixa.querySelector('video'), mira = caixa.querySelector('.camera-mira');
   const status = caixa.querySelector('.camera-status');
   const dizer = (t) => { status.textContent = t; };
-  let parado = false, stream = null, timer = null;
+  let parado = false, stream = null, timer = null, scandit = null;
 
   const parar = () => {
     parado = true;
     clearTimeout(timer);
     stream?.getTracks().forEach((t) => t.stop());
+    scandit?.parar();
     caixa.remove();
     aberto = null;
   };
@@ -121,7 +125,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
       // o mesmo código continua na frente da câmera: não repete por 2,5 s
       if (texto === ultimo && Date.now() - ultimoEm < 2500) continue;
       ultimo = texto; ultimoEm = Date.now();
-      const r = await aoLer(texto, { foto: fotoDe(fonteAtual || video) });
+      const r = await aoLer(texto, { foto: scandit && !fonteAtual ? scandit.foto : fotoDe(fonteAtual || video) });
       if (r === true) { parar(); return; }
       if (typeof r === 'string') { dizer(r); continue; }
       recusados++;
@@ -130,13 +134,9 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
     }
   };
 
-  let ler;
-  try {
-    ler = await prepararLeitor();
-  } catch (e) {
-    parar();
-    throw new Error('Não consegui carregar o leitor de código. Confira a internet e tente de novo.');
-  }
+  // leitor próprio (BarcodeDetector/ZXing): ao vivo quando não há Scandit, e sempre para "Tirar foto"
+  let ler = null;
+  const leitor = async () => (ler ??= await prepararLeitor());
 
   // Plano B: foto em resolução máxima
   caixa.querySelector('.camera-foto input').addEventListener('change', async (ev) => {
@@ -157,7 +157,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
       }
       for (const fonte of tentativas) {
         fonteAtual = img;
-        const lidos = await ler(fonte).catch(() => []);
+        const lidos = await (await leitor())(fonte).catch(() => []);
         if (lidos.length) { await entregar(lidos); if (parado) return; }
       }
       fonteAtual = null;
@@ -166,6 +166,46 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
       dizer('Não consegui abrir a foto. Tente de novo.');
     } finally { ocupado = false; }
   });
+
+  // 1º: Scandit (lê o código fino da nota com o celular em pé). Se não abrir, segue com o leitor próprio.
+  if (temScandit() && !scanditFalhou) {
+    const area = caixa.querySelector('.camera-video');
+    const alvo = document.createElement('div');
+    alvo.className = 'camera-scandit';
+    area.prepend(alvo);
+    try {
+      dizer('Abrindo o leitor… (na primeira vez demora um pouco)');
+      const motivo = (e) => (String(e?.message || e).match(/\((\d+)\)/) ? `Scandit ${String(e.message).match(/\((\d+)\)/)[1]}` : 'Scandit não abriu');
+      const aberta = await Promise.race([
+        abrirScandit(alvo, (texto) => entregar([texto]), (e) => {
+          // licença recusada com a câmera já aberta: reabre com o leitor próprio
+          scanditFalhou = motivo(e);
+          console.warn('Scandit recusou a licença; usando o leitor próprio.', e);
+          if (!parado) { parar(); abrirCamera({ titulo, dica, aoLer }).catch(() => {}); }
+        }),
+        new Promise((_, erro) => setTimeout(() => erro(new Error('demorou')), 40000)),
+      ]);
+      if (parado) { aberta.parar(); return parar; }
+      scandit = aberta;
+      caixa.classList.add('com-scandit');
+      video.remove();
+      dizer('Procurando o código…');
+      caixa.querySelector('.camera-info').textContent = 'Scandit';
+      return parar;
+    } catch (e) {
+      scanditFalhou = String(e?.message || e).match(/\((\d+)\)/) ? `Scandit ${String(e.message).match(/\((\d+)\)/)[1]}` : 'Scandit não abriu';
+      alvo.remove();
+      console.warn('Scandit não abriu; usando o leitor próprio.', e);
+      if (parado) return parar;
+    }
+  }
+
+  try {
+    ler = await prepararLeitor();
+  } catch (e) {
+    parar();
+    throw new Error('Não consegui carregar o leitor de código. Confira a internet e tente de novo.');
+  }
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -209,7 +249,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   await video.play().catch(() => {});
   dizer('Procurando o código…');
   // informação técnica pequena (ajuda a entender quando um aparelho não lê)
-  caixa.querySelector('.camera-info').textContent = `${video.videoWidth}×${video.videoHeight}${zoom > 1 ? ` · zoom ${zoom}x` : ''}${'BarcodeDetector' in window ? '' : ' · zx'}`;
+  caixa.querySelector('.camera-info').textContent = `${video.videoWidth}×${video.videoHeight}${zoom > 1 ? ` · zoom ${zoom}x` : ''}${'BarcodeDetector' in window ? '' : ' · zx'}${scanditFalhou ? ` · ${scanditFalhou}` : ''}`;
 
   // leitura ao vivo: alterna o recorte do retângulo (mais nítido) com o quadro inteiro
   const tela = document.createElement('canvas');
