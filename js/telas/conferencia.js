@@ -8,11 +8,11 @@
 //   - As fotos ficam 3 meses; depois o Fiscal/Admin apaga sozinho (ver
 //     limparFotosProduto) e fica só quem conferiu e quando.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=62643e5';
-import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=62643e5';
-import { desenhar } from '../nucleo/desenhar.js?v=62643e5';
-import { esc, plural, dataHoraBR } from '../util/formato.js?v=62643e5';
-import { abrirCamera, bip } from '../util/camera.js?v=62643e5';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=a06169a';
+import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=a06169a';
+import { desenhar } from '../nucleo/desenhar.js?v=a06169a';
+import { esc, plural, dataHoraBR } from '../util/formato.js?v=a06169a';
+import { abrirCamera, bip } from '../util/camera.js?v=a06169a';
 
 const semZeros = (t) => String(t || '').replace(/\D/g, '').replace(/^0+/, '');
 
@@ -138,7 +138,7 @@ export async function limparFotosProduto() {
 }
 
 registrarAcoes({
-  'conf-abrir': (el) => abrirConferencia(el.dataset.id),
+  'conf-abrir': (el) => { estado.modal = null; abrirConferencia(el.dataset.id); },
   'conf-fechar': () => { estado.conferindo = null; desenhar(); },
 
   // caixinha: marca o produto como conferido na mão (ou desmarca)

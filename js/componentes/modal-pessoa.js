@@ -9,17 +9,17 @@
 //   data-acao="avancar"       data-id="<boleto>"
 //   data-acao="avancar-lote"  data-nota="<nota>" data-etapa="esperado|chegou|enviado"
 // =====================================================================
-import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=62643e5';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=62643e5';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=62643e5';
-import { docNota } from './comuns.js?v=62643e5';
-import { esc, brl, dataBR } from '../util/formato.js?v=62643e5';
-import { podeFiscal } from '../nucleo/regras.js?v=62643e5';
-import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=62643e5';
-import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=62643e5';
-import { modalFotosBoletoHtml } from '../telas/recebimento.js?v=62643e5';
-import { modalPagarHtml } from '../telas/financeiro.js?v=62643e5';
-import { modalRelatorioHtml } from './relatorio.js?v=62643e5';
+import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=a06169a';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a06169a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a06169a';
+import { docNota } from './comuns.js?v=a06169a';
+import { esc, brl, dataBR } from '../util/formato.js?v=a06169a';
+import { podeFiscal } from '../nucleo/regras.js?v=a06169a';
+import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=a06169a';
+import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=a06169a';
+import { modalFotosBoletoHtml, modalVerNotaHtml } from '../telas/recebimento.js?v=a06169a';
+import { modalPagarHtml } from '../telas/financeiro.js?v=a06169a';
+import { modalRelatorioHtml } from './relatorio.js?v=a06169a';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 
@@ -97,6 +97,7 @@ export function modalHtml() {
   if (estado.modal.tipo === 'editar-pessoa') return modalEditarPessoaHtml();
   if (estado.modal.tipo === 'mensagem-acesso') return modalMensagemAcessoHtml();
   if (estado.modal.tipo === 'fotos-boleto') return modalFotosBoletoHtml();
+  if (estado.modal.tipo === 'ver-nota') return modalVerNotaHtml();
   if (estado.modal.tipo === 'pagar') return modalPagarHtml();
   if (estado.modal.tipo === 'relatorio') return modalRelatorioHtml();
   if (estado.modal.tipo === 'parcelas') return modalParcelasHtml();

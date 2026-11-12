@@ -5,20 +5,20 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=62643e5';
-import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=62643e5';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=62643e5';
-import { obterApi } from './servicos/api.js?v=62643e5';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=62643e5';
-import { menuHtml } from './componentes/menu.js?v=62643e5';
-import { modalHtml } from './componentes/modal-pessoa.js?v=62643e5';
-import { painelHtml } from './componentes/painel-boleto.js?v=62643e5';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=62643e5';
-import { CONFIG } from './config.js?v=62643e5';
-import { prepararInstalacao } from './util/instalar.js?v=62643e5';
-import { bip } from './util/camera.js?v=62643e5';
-import { numeroDaChave } from './util/chave.js?v=62643e5';
-import { limparFotosProduto } from './telas/conferencia.js?v=62643e5';
+import { estado } from './nucleo/estado.js?v=a06169a';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=a06169a';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=a06169a';
+import { obterApi } from './servicos/api.js?v=a06169a';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=a06169a';
+import { menuHtml } from './componentes/menu.js?v=a06169a';
+import { modalHtml } from './componentes/modal-pessoa.js?v=a06169a';
+import { painelHtml } from './componentes/painel-boleto.js?v=a06169a';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=a06169a';
+import { CONFIG } from './config.js?v=a06169a';
+import { prepararInstalacao } from './util/instalar.js?v=a06169a';
+import { bip } from './util/camera.js?v=a06169a';
+import { numeroDaChave } from './util/chave.js?v=a06169a';
+import { limparFotosProduto } from './telas/conferencia.js?v=a06169a';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();

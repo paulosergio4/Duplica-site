@@ -9,14 +9,14 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=62643e5';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=62643e5';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=62643e5';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=62643e5';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=62643e5';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=62643e5';
-import { abrirCamera, bip } from '../util/camera.js?v=62643e5';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=62643e5';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=a06169a';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a06169a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a06169a';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=a06169a';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=a06169a';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=a06169a';
+import { abrirCamera, bip } from '../util/camera.js?v=a06169a';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=a06169a';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -125,6 +125,7 @@ function linhaNota(n, r) {
     : r.tem_boleto === false ? '<span class="pill p-esperado">Sem boleto</span>'
     : `<span class="pill p-breve">${temBoletoNoSistema ? 'Boleto: não informado' : 'Boleto: não informado'}</span>`;
   const acoes = [
+    n ? `<button class="bg" type="button" data-acao="rec-ver-nota" data-id="${n.id}">Ver nota</button>` : '',
     !r && n ? `<button class="bp" type="button" data-acao="rec-marcar" data-id="${n.id}">Marcar que chegou</button>` : '',
     r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
     r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
@@ -140,6 +141,48 @@ function linhaNota(n, r) {
     <div class="rec-selos">${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}</div>
     <div class="acoes rec-acoes">${acoes}</div></div>`;
 }
+
+/** Janela "Ver nota": tudo da nota (dados, boletos, produtos) e os mesmos botões do ticket */
+export function modalVerNotaHtml() {
+  const m = estado.modal, n = notaDe(m.notaId);
+  if (!n) return '';
+  const f = filialDe(n.filial_id), r = recebimentoDaNota(n.id);
+  const boletos = estado.boletos.filter((b) => b.nota_id === n.id).sort((a, b) => (a.parcela || 0) - (b.parcela || 0));
+  const campo = (rot, val) => `<div class="kv"><small>${rot}</small><b>${val}</b></div>`;
+  const numBR = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+  const itens = m.itens === null ? '<p class="nota-vazio">Carregando os produtos…</p>'
+    : !m.itens.length ? '<p class="nota-vazio">Os produtos desta nota ainda não chegaram pelo importador.</p>'
+    : `<div class="nota-itens">${m.itens.map((i) => `<div class="nota-item${i.conferido_em ? ' ok' : ''}">
+        <div><b>${esc(i.descricao)}</b><small>${i.ean ? `EAN <span class="num">${esc(i.ean)}</span>` : 'Sem código de barras'}${i.conferido_em ? ` · conferido por ${esc(i.conferido_por || '')}` : ''}</small></div>
+        <span class="num">${i.quantidade != null ? `${numBR(i.quantidade)} ${esc(i.unidade || '')}` : ''}</span>
+        <span class="num">${i.valor != null ? brl(i.valor) : ''}</span></div>`).join('')}</div>`;
+  const botoes = [
+    !r ? `<button class="bp" type="button" data-acao="rec-marcar" data-id="${n.id}">Marcar que chegou</button>` : '',
+    r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
+    r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
+    r && m.itens?.length ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
+  ].join('');
+  return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal modal-nota" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <div class="nota-topo"><div><h2 id="m-t">${esc(n.fornecedor)}</h2><small>${docNota(n)} · ${esc(f?.nome || '')}</small></div>
+      <button class="bg" type="button" data-acao="fechar-modal">Fechar</button></div>
+    <div class="nota-campos">
+      ${campo('Emissão', `<span class="num">${dataBR(n.emissao)}</span>`)}
+      ${campo('Valor da nota', `<span class="num">${brl(n.valor)}</span>`)}
+      ${campo('CNPJ do fornecedor', `<span class="num">${esc(cnpjFormatado(n.fornecedor_cnpj))}</span>`)}
+      ${campo('Situação', !r ? 'Não chegou' : `${r.situacao === 'pendente' ? 'Recebida · aguardando XML' : 'Chegou'} · ${esc(r.nome)} · <span class="num">${dataHoraBR(r.feito_em)}</span>`)}
+    </div>
+    ${n.chave ? `<div class="kv"><small>Chave de acesso</small><b class="num nota-chave">${esc(chaveFormatada(n.chave))}</b></div>` : ''}
+    <h3 class="nota-sub">Boletos</h3>
+    ${boletos.length ? `<div class="nota-boletos">${boletos.map((b) => `<div class="nota-boleto"><span class="num">${b.parcela ? `${b.parcela}ª` : '—'}</span>
+        <span class="num">${b.vencimento ? dataBR(b.vencimento) : 'sem vencimento'}</span><b class="num">${brl(b.valor)}</b>${pillEtapa(b)}</div>`).join('')}</div>`
+      : '<p class="nota-vazio">Esta nota não tem boleto.</p>'}
+    <h3 class="nota-sub">Produtos${m.itens?.length ? ` <span class="num">(${m.itens.length})</span>` : ''}</h3>
+    ${itens}
+    ${botoes ? `<div class="botoes nota-botoes">${botoes}</div>` : ''}
+  </div></div>`;
+}
+
+const cnpjFormatado = (c) => { const d = String(c || '').replace(/\D/g, ''); return d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d; };
 
 /** Janela com as fotos do boleto */
 export function modalFotosBoletoHtml() {
@@ -242,12 +285,25 @@ registrarAcoes({
   }),
   'rec-concluir': () => { estado.ultimoRecebimento = null; desenhar(); },
   // Fiscal marca na tela que a nota chegou (sem bipar)
+  'rec-ver-nota': async (el) => {
+    const notaId = el.dataset.id;
+    estado.modal = { tipo: 'ver-nota', notaId, itens: null };
+    desenhar();
+    try {
+      const itens = await estado.api.itensDaNota(notaId);
+      if (estado.modal?.tipo === 'ver-nota' && estado.modal.notaId === notaId) { estado.modal.itens = itens; desenhar(); }
+    } catch {
+      if (estado.modal?.tipo === 'ver-nota') { estado.modal.itens = []; desenhar(); }
+    }
+  },
   'rec-marcar': async (el) => {
+    estado.modal = null;
     const n = notaDe(el.dataset.id);
     if (n && await receber(n.chave, true)) window.scrollTo({ top: 0, behavior: 'smooth' });
   },
   // Fiscal anexa o boleto de uma nota que já chegou
   'rec-anexar': (el) => {
+    estado.modal = null;
     const r = estado.recebimentos.find((x) => String(x.id) === el.dataset.id), n = r?.nota_id ? notaDe(r.nota_id) : null;
     if (!r) return;
     estado.ultimoRecebimento = { situacao: 'ja', recebimento_id: r.id, tem_boleto: null, recebido_por: r.nome, recebido_em: r.feito_em, chave: r.chave,
