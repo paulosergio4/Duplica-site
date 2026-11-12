@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=a06169a';
-import { dvChave } from '../util/chave.js?v=a06169a';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=d903c9a';
+import { dvChave } from '../util/chave.js?v=d903c9a';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -301,15 +301,16 @@ export const apiDemo = {
     return { conferidos: da.filter((x) => x.conferido_em).length, total: da.length };
   },
 
-  async conferirItem(itemId, eanLido, foto, manual = false) {
+  async conferirItem(itemId, eanLido, foto, manual = false, divergente = false) {
     const p = eu(), d = carregar();
     if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal conferem produtos.');
     const i = (d.itens || []).find((x) => x.id === itemId);
     if (!i) throw new Error('Produto não encontrado.');
     const lido = String(eanLido || '').replace(/\D/g, '');
-    if (lido && i.ean && lido.replace(/^0+/, '') !== i.ean.replace(/^0+/, '')) throw new Error(`O código lido (${lido}) não é o deste produto (${i.ean}).`);
+    const diverge = Boolean(lido && i.ean && lido.replace(/^0+/, '') !== i.ean.replace(/^0+/, ''));
+    if (diverge && (!divergente || !foto)) throw new Error(`O código lido (${lido}) não é o deste produto (${i.ean}).`);
     if (!lido && !foto && !manual) throw new Error('Tire a foto do produto para conferir sem o código.');
-    Object.assign(i, { conferido_perfil: p.id, conferido_por: p.nome, conferido_em: agora(), ean_lido: lido || null, sem_codigo: !lido, foto: foto || i.foto, manual: !lido && !foto });
+    Object.assign(i, { conferido_perfil: p.id, conferido_por: p.nome, conferido_em: agora(), ean_lido: lido || null, sem_codigo: !lido, foto: foto || i.foto, manual: !lido && !foto, ean_divergente: diverge || Boolean(lido && !i.ean) });
     salvar();
     const da = d.itens.filter((x) => x.nota_id === i.nota_id);
     return { conferidos: da.filter((x) => x.conferido_em).length, total: da.length };

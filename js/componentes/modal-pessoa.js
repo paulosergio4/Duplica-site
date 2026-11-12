@@ -9,17 +9,18 @@
 //   data-acao="avancar"       data-id="<boleto>"
 //   data-acao="avancar-lote"  data-nota="<nota>" data-etapa="esperado|chegou|enviado"
 // =====================================================================
-import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=a06169a';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a06169a';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a06169a';
-import { docNota } from './comuns.js?v=a06169a';
-import { esc, brl, dataBR } from '../util/formato.js?v=a06169a';
-import { podeFiscal } from '../nucleo/regras.js?v=a06169a';
-import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=a06169a';
-import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=a06169a';
-import { modalFotosBoletoHtml, modalVerNotaHtml } from '../telas/recebimento.js?v=a06169a';
-import { modalPagarHtml } from '../telas/financeiro.js?v=a06169a';
-import { modalRelatorioHtml } from './relatorio.js?v=a06169a';
+import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=d903c9a';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=d903c9a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=d903c9a';
+import { docNota } from './comuns.js?v=d903c9a';
+import { esc, brl, dataBR } from '../util/formato.js?v=d903c9a';
+import { podeFiscal } from '../nucleo/regras.js?v=d903c9a';
+import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=d903c9a';
+import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=d903c9a';
+import { modalFotosBoletoHtml, modalVerNotaHtml } from '../telas/recebimento.js?v=d903c9a';
+import { modalQualProdutoHtml } from '../telas/conferencia.js?v=d903c9a';
+import { modalPagarHtml } from '../telas/financeiro.js?v=d903c9a';
+import { modalRelatorioHtml } from './relatorio.js?v=d903c9a';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 
@@ -98,6 +99,7 @@ export function modalHtml() {
   if (estado.modal.tipo === 'mensagem-acesso') return modalMensagemAcessoHtml();
   if (estado.modal.tipo === 'fotos-boleto') return modalFotosBoletoHtml();
   if (estado.modal.tipo === 'ver-nota') return modalVerNotaHtml();
+  if (estado.modal.tipo === 'qual-produto') return modalQualProdutoHtml();
   if (estado.modal.tipo === 'pagar') return modalPagarHtml();
   if (estado.modal.tipo === 'relatorio') return modalRelatorioHtml();
   if (estado.modal.tipo === 'parcelas') return modalParcelasHtml();

@@ -273,3 +273,7 @@
 .nota-item.ok{background:var(--musgo-bg)}
 .nota-botoes{flex-wrap:wrap}
 @media (max-width:760px){.nota-item{grid-template-columns:1fr auto}.nota-item>span:last-child{display:none}.nota-boleto{grid-template-columns:36px 1fr auto}.nota-boleto>.pill{grid-column:1 / -1;justify-self:start}}
+.conf-divergente{color:#B7791F;font-size:12px;font-weight:600}
+.qual-lista{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto}
+.qual-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;height:auto !important;padding:12px 14px !important;text-align:left}
+.qual-item small{color:var(--terra);font-weight:500}

@@ -8,11 +8,11 @@
 //   - As fotos ficam 3 meses; depois o Fiscal/Admin apaga sozinho (ver
 //     limparFotosProduto) e fica só quem conferiu e quando.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=a06169a';
-import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=a06169a';
-import { desenhar } from '../nucleo/desenhar.js?v=a06169a';
-import { esc, plural, dataHoraBR } from '../util/formato.js?v=a06169a';
-import { abrirCamera, bip } from '../util/camera.js?v=a06169a';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=d903c9a';
+import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=d903c9a';
+import { desenhar } from '../nucleo/desenhar.js?v=d903c9a';
+import { esc, plural, dataHoraBR } from '../util/formato.js?v=d903c9a';
+import { abrirCamera, bip } from '../util/camera.js?v=d903c9a';
 
 const semZeros = (t) => String(t || '').replace(/\D/g, '').replace(/^0+/, '');
 
@@ -90,23 +90,27 @@ function linhaItem(i) {
   const como = !ok ? '' : i.manual ? 'Marcado' : i.sem_codigo ? 'Conferido pela foto' : 'Conferido pelo código';
   const acoes = [
     i.foto ? `<button class="bg" type="button" data-acao="conf-ver-foto" data-id="${i.id}">Ver foto</button>` : (i.foto_apagada ? '<small class="conf-quem">Foto apagada (mais de 3 meses)</small>' : ''),
-    !ok ? `<button class="bg" type="button" data-acao="conf-foto-item" data-id="${i.id}">${i.ean ? 'Não lê? Foto' : 'Conferir com foto'}</button>` : '',
+    !ok && !i.ean ? `<button class="bp" type="button" data-acao="conf-ler-item" data-id="${i.id}">Bipar o código deste produto</button>` : '',
+    !ok ? `<button class="bg" type="button" data-acao="conf-foto-item" data-id="${i.id}">${i.ean ? 'Não lê? Foto' : 'Sem código? Foto do produto'}</button>` : '',
   ].join('');
   return `<div class="conf-item${ok ? ' ok' : ''}">
     <button class="conf-check" type="button" role="checkbox" aria-checked="${ok}" aria-label="${ok ? 'Desmarcar' : 'Marcar como conferido'}: ${esc(i.descricao)}" data-acao="conf-check" data-id="${i.id}">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     <div class="conf-meio"><b>${esc(i.descricao)}</b><small>${codigo}</small>
       ${ok ? `<small class="conf-quem">${como} · ${esc(i.conferido_por || '')} · <span class="num">${dataHoraBR(i.conferido_em)}</span></small>` : ''}
+      ${ok && i.ean_divergente && i.ean_lido ? `<small class="conf-divergente">${i.ean ? 'Código do produto diferente da nota' : 'Código lido'}: <span class="num">${esc(i.ean_lido)}</span></small>` : ''}
       ${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>
     ${quantidadeHtml(i)}
   </div>`;
 }
 
 /** Guarda a foto e confere o produto (manual = marcou a caixinha); atualiza a lista e o resumo */
-async function conferir(item, eanLido, blob, manual = false) {
+async function conferir(item, eanLido, blob, manual = false, divergente = false) {
   const foto = blob ? await estado.api.enviarFotoProduto(item.id, blob) : null;
-  const r = await estado.api.conferirItem(item.id, eanLido, foto, manual);
-  Object.assign(item, { conferido_em: new Date().toISOString(), conferido_por: estado.perfil.nome, ean_lido: eanLido || null, sem_codigo: !eanLido, foto: foto || item.foto, manual: !eanLido && !foto });
+  const r = await estado.api.conferirItem(item.id, eanLido, foto, manual, divergente);
+  const lido = String(eanLido || '').replace(/\D/g, '') || null;
+  Object.assign(item, { conferido_em: new Date().toISOString(), conferido_por: estado.perfil.nome, ean_lido: lido, sem_codigo: !lido, foto: foto || item.foto, manual: !lido && !foto,
+    ean_divergente: Boolean(lido && (!item.ean || semZeros(item.ean) !== semZeros(lido))) });
   atualizarResumo(r);
   return r;
 }
@@ -137,7 +141,101 @@ export async function limparFotosProduto() {
   } catch { /* tenta de novo outro dia */ }
 }
 
+/** Dígito verificador de código de produto (EAN-8, UPC-A, EAN-13, DUN-14) */
+function eanValido(texto) {
+  const c = String(texto || '').replace(/\D/g, '');
+  if (![8, 12, 13, 14].includes(c.length)) return false;
+  const corpo = c.slice(0, -1).split('').reverse();
+  const soma = corpo.reduce((s, d, i) => s + Number(d) * (i % 2 === 0 ? 3 : 1), 0);
+  return (10 - (soma % 10)) % 10 === Number(c.slice(-1));
+}
+
+/** Produto sem código na nota: abre a câmera para bipar o código dele (fica a foto e o código lido) */
+async function lerCodigoDoItem(item) {
+  try {
+    await abrirCamera({
+      titulo: `Bipe o código de barras de: ${item.descricao}`,
+      dica: 'A nota não traz o código deste produto. Bipe o código de barras na embalagem; a foto fica guardada.',
+      aoLer: async (texto, { foto }) => {
+        if (!eanValido(texto)) return 'Esse não é um código de barras de produto. Aponte para o código da embalagem.';
+        try {
+          const r = await conferir(item, texto, await foto(), false, true);
+          bip(true);
+          desenhar();
+          avisar(r.conferidos >= r.total ? 'Todos os produtos da nota foram conferidos.' : `Conferido: ${item.descricao} (${r.conferidos} de ${r.total})`);
+          return true;
+        } catch (e) { bip(false); return e.message; }
+      },
+    });
+  } catch (e) { avisar(e.message, true); }
+}
+
+/** Câmera aberta bipando um produto atrás do outro */
+async function bipar() {
+  const c = estado.conferindo;
+  if (!c?.itens) return;
+  try {
+    await abrirCamera({
+      titulo: 'Bipe o código de barras de cada produto',
+      dica: 'Um produto de cada vez. A câmera fica aberta: bipe o próximo assim que ouvir o bip.',
+      aoLer: async (texto, { foto }) => {
+        const lido = semZeros(texto);
+        if (String(texto).replace(/\D/g, '').length === 44) return 'Esse é o código da nota. Bipe o código de barras dos produtos.';
+        const iguais = c.itens.filter((i) => (i.ean && semZeros(i.ean) === lido) || (i.ean_lido && semZeros(i.ean_lido) === lido));
+        if (!iguais.length) {
+          if (!eanValido(texto)) return 'Esse não é um código de barras de produto.';
+          // código que não está na nota: guarda a foto e pergunta qual produto é
+          bip(false);
+          estado.modal = { tipo: 'qual-produto', codigo: String(texto).replace(/\D/g, ''), foto: await foto() };
+          desenhar();
+          return true;
+        }
+        const item = iguais.find((i) => !i.conferido_em);
+        if (!item) return `Já conferido: ${iguais[0].descricao}`;
+        try {
+          const r = await conferir(item, texto, await foto());
+          bip(true);
+          desenhar();
+          if (r.conferidos >= r.total) { avisar('Todos os produtos da nota foram conferidos.'); return true; }
+          return `✓ ${item.descricao} · ${r.conferidos} de ${r.total}`;
+        } catch (e) { bip(false); return e.message; }
+      },
+    });
+  } catch (e) { avisar(e.message, true); }
+}
+
+/** Janela: o código bipado não está na nota — qual produto é? */
+export function modalQualProdutoHtml() {
+  const m = estado.modal, c = estado.conferindo;
+  const pendentes = (c?.itens || []).filter((i) => !i.conferido_em);
+  return `<div class="modal-fundo"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <h2 id="m-t">Código fora da nota</h2>
+    <p style="margin:0">O código <b class="num">${esc(m.codigo)}</b> não está nesta nota. A foto do código já foi tirada. Qual produto é esse?</p>
+    <div class="qual-lista">${pendentes.map((i) => `<button class="bg qual-item" type="button" data-acao="conf-qual" data-id="${i.id}">
+        <b>${esc(i.descricao)}</b><small>${i.ean ? `Na nota: EAN <span class="num">${esc(i.ean)}</span>` : 'Sem código na nota'}</small></button>`).join('')
+      || '<p style="margin:0">Todos os produtos já foram conferidos.</p>'}</div>
+    <div class="botoes"><button class="bg" type="button" data-acao="conf-qual-nenhum" style="flex:1;height:46px">Não é desta nota · voltar a bipar</button></div>
+  </div></div>`;
+}
+
 registrarAcoes({
+  'conf-ler-item': (el) => {
+    const item = estado.conferindo?.itens?.find((x) => String(x.id) === el.dataset.id);
+    if (item) lerCodigoDoItem(item);
+  },
+  'conf-qual': async (el) => {
+    const m = estado.modal, item = estado.conferindo?.itens?.find((x) => String(x.id) === el.dataset.id);
+    if (!item || !m?.foto) return;
+    estado.modal = null;
+    try {
+      const r = await conferir(item, m.codigo, m.foto, false, true);
+      bip(true);
+      desenhar();
+      if (r.conferidos >= r.total) { avisar('Todos os produtos da nota foram conferidos.'); return; }
+      bipar();          // volta para a câmera
+    } catch (e) { avisar(`Não conferiu: ${e.message}`, true); desenhar(); }
+  },
+  'conf-qual-nenhum': () => { estado.modal = null; desenhar(); bipar(); },
   'conf-abrir': (el) => { estado.modal = null; abrirConferencia(el.dataset.id); },
   'conf-fechar': () => { estado.conferindo = null; desenhar(); },
 
@@ -151,6 +249,10 @@ registrarAcoes({
         const r = await estado.api.desconferirItem(item.id);
         Object.assign(item, { conferido_em: null, conferido_por: null, ean_lido: null, sem_codigo: false, manual: false, foto: null });
         atualizarResumo(r);
+      } else if (!item.ean) {
+        delete el.dataset.ocupado;
+        await lerCodigoDoItem(item);       // sem código na nota: pede o código (e a foto) do produto
+        return;
       } else {
         const r = await conferir(item, null, null, true);
         if (r.conferidos >= r.total) avisar('Todos os produtos da nota foram conferidos.');
@@ -159,30 +261,7 @@ registrarAcoes({
     } catch (e) { avisar(e.message, true); delete el.dataset.ocupado; }
   },
 
-  'conf-camera': async () => {
-    const c = estado.conferindo;
-    try {
-      await abrirCamera({
-        titulo: 'Bipe o código de barras de cada produto',
-        dica: 'Um produto de cada vez. A câmera fica aberta: bipe o próximo assim que ouvir o bip.',
-        aoLer: async (texto, { foto }) => {
-          const lido = semZeros(texto);
-          if (String(texto).replace(/\D/g, '').length === 44) return 'Esse é o código da nota. Bipe o código de barras dos produtos.';
-          const iguais = c.itens.filter((i) => i.ean && semZeros(i.ean) === lido);
-          if (!iguais.length) { bip(false); return `O código ${texto} não está nesta nota.`; }
-          const item = iguais.find((i) => !i.conferido_em);
-          if (!item) return `Já conferido: ${iguais[0].descricao}`;
-          try {
-            const r = await conferir(item, texto, await foto());
-            bip(true);
-            desenhar();
-            if (r.conferidos >= r.total) { avisar('Todos os produtos da nota foram conferidos.'); return true; }
-            return `✓ ${item.descricao} · ${r.conferidos} de ${r.total}`;
-          } catch (e) { bip(false); return e.message; }
-        },
-      });
-    } catch (e) { avisar(e.message, true); }
-  },
+  'conf-camera': () => bipar(),
 
   // foto de um produto (sem código, ou que a câmera não lê)
   'conf-foto-item': (el) => {
