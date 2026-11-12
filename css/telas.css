@@ -156,3 +156,22 @@
 .camera-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .camera-mira{position:absolute;left:6%;right:6%;top:38%;height:24%;border:3px solid #F5F7FA;border-radius:14px;box-shadow:0 0 0 2000px rgba(13,0,13,.45)}
 .camera-dica{margin:0;padding:14px 16px max(18px,env(safe-area-inset-bottom,0px));font-size:14px;text-align:center;color:#F5F7FA}
+
+/* ---------- celular: sem rolagem lateral; cada linha vira um cartão com os botões embaixo ---------- */
+@media (max-width:760px){
+  .rolagem{overflow-x:visible}
+  .linha,.grupo,.u-linha{min-width:0 !important;flex-wrap:wrap;gap:8px 14px;padding:14px 16px}
+  .linha .kv,.u-linha .kv{width:auto !important;flex:0 1 auto !important;min-width:0 !important}
+  .linha .kv:first-child,.u-linha .kv:first-child{flex:1 1 100% !important}
+  .linha .parc{flex:0 0 auto}
+  .linha .pill,.u-linha .pill{white-space:normal}
+  .linha .acoes,.u-linha .acoes{flex:1 1 100%;margin-left:0;flex-wrap:wrap;gap:6px;justify-content:flex-start}
+  .linha .bp,.linha .bg,.linha .visto,.linha .bs,.u-linha .bg,.u-linha .bp,.grupo .bp,.grupo .bg,.grupo .visto{height:36px;padding:0 12px;font-size:13px;border-radius:9px}
+  .linha>button,.linha>.pill{flex:0 0 auto}
+  .secao-h{flex-wrap:wrap;padding:14px 16px}
+  .nota-h,.nota-topo{flex-wrap:wrap}
+  input[type="date"].inp{min-width:0;width:100%}
+  .filtro-emissao .field,.emissao .field{flex:1 1 130px;min-width:0}
+}
+@media (max-width:760px){.periodo{flex-wrap:wrap}.periodo .field{flex:1 1 120px;min-width:0}}
+@media (max-width:760px){.u-linha button,.linha .acoes button{height:36px;padding:0 12px;font-size:13px;border-radius:9px}}
