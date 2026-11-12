@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=d903c9a';
-import { dvChave } from '../util/chave.js?v=d903c9a';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=59d8fd7';
+import { dvChave } from '../util/chave.js?v=59d8fd7';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -258,9 +258,32 @@ export const apiDemo = {
       marcados++;
     }
     Object.assign(r, { tem_boleto: true, fotos: [...(r.fotos || []), ...fotos], boletos: (r.boletos || 0) + marcados });
+    // a nota não tem boleto no sistema: cria um, já como "Chegou", com o valor da nota
+    let criado = false;
+    if (r.nota_id && !d.boletos.some((b) => b.nota_id === r.nota_id)) {
+      const n = d.notas.find((x) => x.id === r.nota_id);
+      const b = { id: id(), nota_id: n.id, parcela: 1, total_parcelas: 1, vencimento: null, valor: n.valor, etapa: 'chegou', recebido_por: p.nome,
+        chegou_marcado_por: p.nome, chegou_em: agora(), anotacao: 'Criado pelo recebimento: o boleto chegou junto com a nota, mas o XML não trazia duplicata. Confira valor e vencimento (o valor é o da nota).', foto_path: null };
+      d.boletos.push(b); reg(b.id, 'Chegou', `boleto criado pelo recebimento (${p.nome}): não estava no XML da nota`, p);
+      r.boleto_id = b.id; criado = true;
+    }
     salvar();
     ouvintes.forEach((f) => setTimeout(() => f(r, true), 300));
-    return { marcados };
+    return { marcados, criado, precisa_codigo: criado || !r.nota_id };
+  },
+
+  async recebimentoCodigoBoleto(idRec, { barras, linha, valor, vencimento }) {
+    const p = eu(), d = carregar();
+    const r = (d.recebimentos || []).find((x) => x.id === idRec);
+    if (!r) throw new Error('Recebimento não encontrado.');
+    Object.assign(r, { boleto_barras: barras, boleto_linha: linha, boleto_valor: valor, boleto_vencimento: vencimento, tem_boleto: true });
+    const b = d.boletos.find((x) => x.id === r.boleto_id);
+    if (b && !b.pago_em && ['esperado', 'chegou'].includes(b.etapa)) {
+      Object.assign(b, { valor, vencimento, codigo_barras: barras, linha_digitavel: linha, anotacao: 'Criado pelo recebimento a partir do código de barras do boleto.' });
+      reg(b.id, 'Código do boleto lido', 'valor e vencimento lidos do código de barras no recebimento por ' + p.nome, p);
+    }
+    salvar();
+    return { ok: true };
   },
 
   // ---------- conferência de produtos (demonstração: produtos de exemplo) ----------

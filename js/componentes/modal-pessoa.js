@@ -9,18 +9,18 @@
 //   data-acao="avancar"       data-id="<boleto>"
 //   data-acao="avancar-lote"  data-nota="<nota>" data-etapa="esperado|chegou|enviado"
 // =====================================================================
-import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=d903c9a';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=d903c9a';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=d903c9a';
-import { docNota } from './comuns.js?v=d903c9a';
-import { esc, brl, dataBR } from '../util/formato.js?v=d903c9a';
-import { podeFiscal } from '../nucleo/regras.js?v=d903c9a';
-import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=d903c9a';
-import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=d903c9a';
-import { modalFotosBoletoHtml, modalVerNotaHtml } from '../telas/recebimento.js?v=d903c9a';
-import { modalQualProdutoHtml } from '../telas/conferencia.js?v=d903c9a';
-import { modalPagarHtml } from '../telas/financeiro.js?v=d903c9a';
-import { modalRelatorioHtml } from './relatorio.js?v=d903c9a';
+import { estado, boletoDe, notaDe, filialDe, pessoasAtivas } from '../nucleo/estado.js?v=59d8fd7';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=59d8fd7';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=59d8fd7';
+import { docNota } from './comuns.js?v=59d8fd7';
+import { esc, brl, dataBR } from '../util/formato.js?v=59d8fd7';
+import { podeFiscal } from '../nucleo/regras.js?v=59d8fd7';
+import { modalAvulsoHtml, modalParcelasHtml } from './modal-avulso.js?v=59d8fd7';
+import { modalEditarPessoaHtml, modalMensagemAcessoHtml } from '../telas/usuarios.js?v=59d8fd7';
+import { modalFotosBoletoHtml, modalVerNotaHtml } from '../telas/recebimento.js?v=59d8fd7';
+import { modalQualProdutoHtml } from '../telas/conferencia.js?v=59d8fd7';
+import { modalPagarHtml } from '../telas/financeiro.js?v=59d8fd7';
+import { modalRelatorioHtml } from './relatorio.js?v=59d8fd7';
 
 const ROTULO = { esperado: 'Chegou', chegou: 'Enviado ao financeiro', enviado: 'Visto do financeiro' };
 

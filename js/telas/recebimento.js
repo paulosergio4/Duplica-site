@@ -9,14 +9,15 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=d903c9a';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=d903c9a';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=d903c9a';
-import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=d903c9a';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=d903c9a';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=d903c9a';
-import { abrirCamera, bip } from '../util/camera.js?v=d903c9a';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=d903c9a';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=59d8fd7';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=59d8fd7';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=59d8fd7';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=59d8fd7';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=59d8fd7';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=59d8fd7';
+import { abrirCamera, bip } from '../util/camera.js?v=59d8fd7';
+import { lerBoleto } from '../util/boleto.js?v=59d8fd7';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=59d8fd7';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -96,7 +97,13 @@ function resultadoHtml(r) {
   if (r.recebimento_id && r.situacao !== 'erro') {
     const fotos = r.fotos || 0;
     if (r.enviando) boleto = '<div class="tem-boleto"><b>Enviando a foto…</b></div>';
+    else if (r.tem_boleto === true && r.pedirCodigo && !r.codigoLido) boleto = `<div class="tem-boleto"><b style="color:var(--musgo)">Boleto anexado${fotos ? ` (${plural(fotos, 'foto', 'fotos')})` : ''}</b>
+        <small>${r.criado ? 'Esse boleto não estava no sistema: já foi criado na aba Fiscal com o valor da nota.' : 'A nota ainda não entrou no sistema: o boleto será criado quando o XML chegar.'}
+          Bipe o código de barras do boleto para preencher o valor e o vencimento certos.</small>
+        <div class="tem-boleto-b"><button class="bp" type="button" data-acao="rec-codigo-boleto">Bipar código do boleto</button><button class="bg" type="button" data-acao="rec-concluir">Agora não</button></div>
+        ${r.erroCodigo ? `<small style="color:var(--alerta)">${esc(r.erroCodigo)}</small>` : ''}</div>`;
     else if (r.tem_boleto === true) boleto = `<div class="tem-boleto"><b style="color:var(--musgo)">Boleto anexado${fotos ? ` (${plural(fotos, 'foto', 'fotos')})` : ''}${r.marcados ? ` · ${plural(r.marcados, 'boleto marcado', 'boletos marcados')} como "Chegou"` : ''}</b>
+        ${r.codigoLido ? `<small>${r.criado ? 'Boleto criado na aba Fiscal' : 'Boleto guardado'}: <b class="num">${brl(r.codigoLido.valor)}</b>${r.codigoLido.vencimento ? `, vence <b class="num">${dataBR(r.codigoLido.vencimento)}</b>` : ''}.</small>` : r.criado ? '<small>Esse boleto não estava no sistema: foi criado na aba Fiscal com o valor da nota (confira o vencimento lá).</small>' : ''}
         <div class="tem-boleto-b">${botaoFoto('Tirar mais uma foto', 'bg')}<button class="bg" type="button" data-acao="rec-concluir">Concluir</button></div></div>`;
     else if (r.tem_boleto === false) boleto = '<div class="tem-boleto"><b>Sem boleto junto com a nota.</b></div>';
     else boleto = `<div class="tem-boleto"><b>Tem boleto junto com a nota?</b>
@@ -265,7 +272,8 @@ registrarCampo('rec-foto', async (el) => {
     const foto = await reduzirFoto(arquivo);
     const caminho = await estado.api.enviarFotoBoleto(u.recebimento_id, foto);
     const r = await estado.api.recebimentoBoleto(u.recebimento_id, true, [caminho]);
-    Object.assign(u, { enviando: false, tem_boleto: true, fotos: (u.fotos || 0) + 1, marcados: (u.marcados || 0) + (r?.marcados || 0) });
+    Object.assign(u, { enviando: false, tem_boleto: true, fotos: (u.fotos || 0) + 1, marcados: (u.marcados || 0) + (r?.marcados || 0),
+      criado: u.criado || r?.criado, pedirCodigo: u.pedirCodigo || Boolean(r?.precisa_codigo) });
     bip(true);
     await recarregar();
   } catch (e) {
@@ -284,6 +292,28 @@ registrarAcoes({
     await recarregar();
   }),
   'rec-concluir': () => { estado.ultimoRecebimento = null; desenhar(); },
+  // boleto que não estava no sistema: lê o código de barras para preencher valor e vencimento
+  'rec-codigo-boleto': async () => {
+    const u = estado.ultimoRecebimento;
+    if (!u?.recebimento_id) return;
+    try {
+      await abrirCamera({
+        titulo: 'Bipe o código de barras do boleto',
+        dica: 'O código comprido no pé do boleto. Em pé ou deitado, com boa luz.',
+        aoLer: async (texto) => {
+          const res = lerBoleto(texto);
+          if (!res.ok) return chaveValida(String(texto).replace(/\D/g, '')) ? 'Esse é o código da nota. Bipe o código do boleto.' : false;
+          try {
+            await estado.api.recebimentoCodigoBoleto(u.recebimento_id, { barras: res.barras, linha: res.linha, valor: res.valor, vencimento: res.vencimento });
+            bip(true);
+            Object.assign(u, { codigoLido: { valor: res.valor, vencimento: res.vencimento }, erroCodigo: '' });
+            await recarregar();
+            return true;
+          } catch (e) { bip(false); u.erroCodigo = e.message; return e.message; }
+        },
+      });
+    } catch (e) { avisar(e.message, true); }
+  },
   // Fiscal marca na tela que a nota chegou (sem bipar)
   'rec-ver-nota': async (el) => {
     const notaId = el.dataset.id;
