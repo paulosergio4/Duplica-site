@@ -8,11 +8,11 @@
 //   - As fotos ficam 3 meses; depois o Fiscal/Admin apaga sozinho (ver
 //     limparFotosProduto) e fica só quem conferiu e quando.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=59d8fd7';
-import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=59d8fd7';
-import { desenhar } from '../nucleo/desenhar.js?v=59d8fd7';
-import { esc, plural, dataHoraBR } from '../util/formato.js?v=59d8fd7';
-import { abrirCamera, bip } from '../util/camera.js?v=59d8fd7';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=ca8aa5f';
+import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=ca8aa5f';
+import { desenhar } from '../nucleo/desenhar.js?v=ca8aa5f';
+import { esc, plural, dataHoraBR } from '../util/formato.js?v=ca8aa5f';
+import { abrirCamera, bip } from '../util/camera.js?v=ca8aa5f';
 
 const semZeros = (t) => String(t || '').replace(/\D/g, '').replace(/^0+/, '');
 

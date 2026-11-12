@@ -8,16 +8,16 @@
 //                                    (e-mail, DDA, em mãos) e marca com visto
 //   5. Vencem nos próximos 7 dias   → só consulta, qualquer etapa (menos os já pagos)
 // =====================================================================
-import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=59d8fd7';
-import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=59d8fd7';
-import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=59d8fd7';
-import '../componentes/modal-avulso.js?v=59d8fd7';
-import { leitorHtml } from '../componentes/ler-boleto.js?v=59d8fd7';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=59d8fd7';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=59d8fd7';
-import { ICONE } from '../componentes/icones.js?v=59d8fd7';
-import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=59d8fd7';
-import { botaoRelatorio } from '../componentes/relatorio.js?v=59d8fd7';
+import { estado, notaDe, filialDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=ca8aa5f';
+import { podeFinanceiro, podePagar } from '../nucleo/regras.js?v=ca8aa5f';
+import { registrarCampo, registrarAcoes, avisar, executar } from '../nucleo/eventos.js?v=ca8aa5f';
+import '../componentes/modal-avulso.js?v=ca8aa5f';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=ca8aa5f';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ca8aa5f';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, vazio, docNota } from '../componentes/comuns.js?v=ca8aa5f';
+import { ICONE } from '../componentes/icones.js?v=ca8aa5f';
+import { esc, brl, dataBR, dataHoraBR, diasAte, plural } from '../util/formato.js?v=ca8aa5f';
+import { botaoRelatorio } from '../componentes/relatorio.js?v=ca8aa5f';
 
 const aviso = (t) => `<span style="margin-left:auto;font-size:12px;color:var(--terra);font-weight:600;white-space:nowrap">${t}</span>`;
 

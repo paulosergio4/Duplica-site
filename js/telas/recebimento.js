@@ -9,15 +9,15 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=59d8fd7';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=59d8fd7';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=59d8fd7';
-import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=59d8fd7';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=59d8fd7';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=59d8fd7';
-import { abrirCamera, bip } from '../util/camera.js?v=59d8fd7';
-import { lerBoleto } from '../util/boleto.js?v=59d8fd7';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=59d8fd7';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=ca8aa5f';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=ca8aa5f';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ca8aa5f';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=ca8aa5f';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=ca8aa5f';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=ca8aa5f';
+import { abrirCamera, bip } from '../util/camera.js?v=ca8aa5f';
+import { lerBoleto } from '../util/boleto.js?v=ca8aa5f';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=ca8aa5f';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -98,7 +98,7 @@ function resultadoHtml(r) {
     const fotos = r.fotos || 0;
     if (r.enviando) boleto = '<div class="tem-boleto"><b>Enviando a foto…</b></div>';
     else if (r.tem_boleto === true && r.pedirCodigo && !r.codigoLido) boleto = `<div class="tem-boleto"><b style="color:var(--musgo)">Boleto anexado${fotos ? ` (${plural(fotos, 'foto', 'fotos')})` : ''}</b>
-        <small>${r.criado ? 'Esse boleto não estava no sistema: já foi criado na aba Fiscal com o valor da nota.' : 'A nota ainda não entrou no sistema: o boleto será criado quando o XML chegar.'}
+        <small>Esse boleto não estava no sistema: já foi criado na aba Fiscal com o valor da nota.
           Bipe o código de barras do boleto para preencher o valor e o vencimento certos.</small>
         <div class="tem-boleto-b"><button class="bp" type="button" data-acao="rec-codigo-boleto">Bipar código do boleto</button><button class="bg" type="button" data-acao="rec-concluir">Agora não</button></div>
         ${r.erroCodigo ? `<small style="color:var(--alerta)">${esc(r.erroCodigo)}</small>` : ''}</div>`;
@@ -135,7 +135,7 @@ function linhaNota(n, r) {
     n ? `<button class="bg" type="button" data-acao="rec-ver-nota" data-id="${n.id}">Ver nota</button>` : '',
     !r && n ? `<button class="bp" type="button" data-acao="rec-marcar" data-id="${n.id}">Marcar que chegou</button>` : '',
     r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
-    r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
+    r && (r.tem_boleto !== true || (n && !temBoletoNoSistema)) && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
     r && n && resumoDaNota(n.id) ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
   ].join('');
   // colunas fixas (sempre as mesmas, mesmo vazias) para tudo ficar alinhado de um ticket para o outro
@@ -166,7 +166,7 @@ export function modalVerNotaHtml() {
   const botoes = [
     !r ? `<button class="bp" type="button" data-acao="rec-marcar" data-id="${n.id}">Marcar que chegou</button>` : '',
     r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
-    r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
+    r && (r.tem_boleto !== true || !boletos.length) && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
     r && m.itens?.length ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
   ].join('');
   return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal modal-nota" role="dialog" aria-modal="true" aria-labelledby="m-t">
@@ -273,7 +273,7 @@ registrarCampo('rec-foto', async (el) => {
     const caminho = await estado.api.enviarFotoBoleto(u.recebimento_id, foto);
     const r = await estado.api.recebimentoBoleto(u.recebimento_id, true, [caminho]);
     Object.assign(u, { enviando: false, tem_boleto: true, fotos: (u.fotos || 0) + 1, marcados: (u.marcados || 0) + (r?.marcados || 0),
-      criado: u.criado || r?.criado, pedirCodigo: u.pedirCodigo || Boolean(r?.precisa_codigo) });
+      criado: u.criado || r?.criado, pedirCodigo: u.pedirCodigo || Boolean(r?.criado) });
     bip(true);
     await recarregar();
   } catch (e) {

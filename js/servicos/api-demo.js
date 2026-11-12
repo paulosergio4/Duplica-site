@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=59d8fd7';
-import { dvChave } from '../util/chave.js?v=59d8fd7';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=ca8aa5f';
+import { dvChave } from '../util/chave.js?v=ca8aa5f';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -269,7 +269,7 @@ export const apiDemo = {
     }
     salvar();
     ouvintes.forEach((f) => setTimeout(() => f(r, true), 300));
-    return { marcados, criado, precisa_codigo: criado || !r.nota_id };
+    return { marcados, criado, precisa_codigo: criado };
   },
 
   async recebimentoCodigoBoleto(idRec, { barras, linha, valor, vencimento }) {
