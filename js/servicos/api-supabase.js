@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=1ec4033';
-import { normalizarLogin } from '../util/formato.js?v=1ec4033';
+import { CONFIG } from '../config.js?v=6140a37';
+import { normalizarLogin } from '../util/formato.js?v=6140a37';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -200,8 +200,14 @@ export const apiSupabase = {
     return caminho;
   },
 
-  async conferirItem(itemId, eanLido, foto) {
-    const { data, error } = await sb.rpc('conferir_item', { p_item: itemId, p_ean_lido: eanLido || null, p_foto: foto || null });
+  async conferirItem(itemId, eanLido, foto, manual = false) {
+    const { data, error } = await sb.rpc('conferir_item', { p_item: itemId, p_ean_lido: eanLido || null, p_foto: foto || null, p_manual: manual });
+    falha(error);
+    return data;
+  },
+
+  async desconferirItem(itemId) {
+    const { data, error } = await sb.rpc('desconferir_item', { p_item: itemId });
     falha(error);
     return data;
   },

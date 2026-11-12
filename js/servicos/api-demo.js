@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=1ec4033';
-import { dvChave } from '../util/chave.js?v=1ec4033';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=6140a37';
+import { dvChave } from '../util/chave.js?v=6140a37';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -268,9 +268,9 @@ export const apiDemo = {
     const d = carregar();
     d.itens = d.itens || [];
     if (!d.itens.some((i) => i.nota_id === notaId)) {
-      const exemplos = [['7894900011517', 'REFRIGERANTE COLA 2L', 'FD', 10, 450], ['7891000100103', 'LEITE CONDENSADO 395G', 'CX', 4, 312.4],
-        ['7896004000855', 'ARROZ TIPO 1 5KG', 'FD', 6, 690], [null, 'GELO EM CUBOS 5KG', 'UN', 12, 96], ['7891910000197', 'ACUCAR REFINADO 1KG', 'FD', 5, 250]];
-      exemplos.forEach(([ean, descricao, unidade, quantidade, valor], i) => d.itens.push({ id: id(), nota_id: notaId, n_item: i + 1, codigo: String(100 + i), ean, descricao, unidade, quantidade, valor, conferido_em: null }));
+      const exemplos = [['7894900011517', 'REFRIGERANTE COLA 2L', 'FD', 10, 450, 60, 'UN'], ['7891000100103', 'LEITE CONDENSADO 395G', 'CX', 50, 312.4, 600, 'UN'],
+        ['7896004000855', 'ARROZ TIPO 1 5KG', 'FD', 6, 690, 36, 'UN'], [null, 'GELO EM CUBOS 5KG', 'PC', 40, 96, 40, 'PC'], ['7891910000197', 'ACUCAR REFINADO 1KG', 'FD', 5, 250, 50, 'UN']];
+      exemplos.forEach(([ean, descricao, unidade, quantidade, valor, quantidade_trib, unidade_trib], i) => d.itens.push({ id: id(), nota_id: notaId, n_item: i + 1, codigo: String(100 + i), ean, descricao, unidade, quantidade, valor, quantidade_trib, unidade_trib, conferido_em: null }));
       salvar();
     }
     return d.itens.filter((i) => i.nota_id === notaId).sort((a, b) => a.n_item - b.n_item);
@@ -292,15 +292,24 @@ export const apiDemo = {
     return caminho;
   },
 
-  async conferirItem(itemId, eanLido, foto) {
+  async desconferirItem(itemId) {
+    const d = carregar(), i = (d.itens || []).find((x) => x.id === itemId);
+    if (!i) throw new Error('Produto não encontrado.');
+    Object.assign(i, { conferido_perfil: null, conferido_por: null, conferido_em: null, ean_lido: null, sem_codigo: false, manual: false, foto: null });
+    salvar();
+    const da = d.itens.filter((x) => x.nota_id === i.nota_id);
+    return { conferidos: da.filter((x) => x.conferido_em).length, total: da.length };
+  },
+
+  async conferirItem(itemId, eanLido, foto, manual = false) {
     const p = eu(), d = carregar();
     if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal conferem produtos.');
     const i = (d.itens || []).find((x) => x.id === itemId);
     if (!i) throw new Error('Produto não encontrado.');
     const lido = String(eanLido || '').replace(/\D/g, '');
     if (lido && i.ean && lido.replace(/^0+/, '') !== i.ean.replace(/^0+/, '')) throw new Error(`O código lido (${lido}) não é o deste produto (${i.ean}).`);
-    if (!lido && !foto) throw new Error('Tire a foto do produto para conferir sem o código.');
-    Object.assign(i, { conferido_perfil: p.id, conferido_por: p.nome, conferido_em: agora(), ean_lido: lido || null, sem_codigo: !lido, foto: foto || i.foto });
+    if (!lido && !foto && !manual) throw new Error('Tire a foto do produto para conferir sem o código.');
+    Object.assign(i, { conferido_perfil: p.id, conferido_por: p.nome, conferido_em: agora(), ean_lido: lido || null, sem_codigo: !lido, foto: foto || i.foto, manual: !lido && !foto });
     salvar();
     const da = d.itens.filter((x) => x.nota_id === i.nota_id);
     return { conferidos: da.filter((x) => x.conferido_em).length, total: da.length };

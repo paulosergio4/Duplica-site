@@ -9,14 +9,14 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=1ec4033';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=1ec4033';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=1ec4033';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=1ec4033';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=1ec4033';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=1ec4033';
-import { abrirCamera, bip } from '../util/camera.js?v=1ec4033';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=1ec4033';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=6140a37';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=6140a37';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=6140a37';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=6140a37';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=6140a37';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=6140a37';
+import { abrirCamera, bip } from '../util/camera.js?v=6140a37';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=6140a37';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {

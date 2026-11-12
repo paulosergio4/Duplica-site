@@ -8,11 +8,11 @@
 //   - As fotos ficam 3 meses; depois o Fiscal/Admin apaga sozinho (ver
 //     limparFotosProduto) e fica só quem conferiu e quando.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=1ec4033';
-import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=1ec4033';
-import { desenhar } from '../nucleo/desenhar.js?v=1ec4033';
-import { esc, plural, dataHoraBR } from '../util/formato.js?v=1ec4033';
-import { abrirCamera, bip } from '../util/camera.js?v=1ec4033';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=6140a37';
+import { registrarAcoes, registrarCampo, avisar } from '../nucleo/eventos.js?v=6140a37';
+import { desenhar } from '../nucleo/desenhar.js?v=6140a37';
+import { esc, plural, dataHoraBR } from '../util/formato.js?v=6140a37';
+import { abrirCamera, bip } from '../util/camera.js?v=6140a37';
 
 const semZeros = (t) => String(t || '').replace(/\D/g, '').replace(/^0+/, '');
 
@@ -69,29 +69,51 @@ export function conferenciaHtml() {
   </section>`;
 }
 
-function linhaItem(i) {
-  const qtd = i.quantidade != null ? `${Number(i.quantidade).toLocaleString('pt-BR', { maximumFractionDigits: 3 })} ${esc(i.unidade || '')}` : '';
-  const codigo = i.ean ? `EAN <span class="num">${esc(i.ean)}</span>` : 'Sem código de barras';
-  const feito = i.conferido_em
-    ? `<span class="pill p-visto">${i.sem_codigo ? 'Conferido pela foto' : 'Conferido'}</span>
-       <small class="conf-quem">${esc(i.conferido_por || '')} · <span class="num">${dataHoraBR(i.conferido_em)}</span></small>`
-    : '<span class="pill p-esperado">Falta conferir</span>';
-  const acoes = [
-    i.foto ? `<button class="bg" type="button" data-acao="conf-ver-foto" data-id="${i.id}">Ver foto</button>` : (i.foto_apagada ? '<small class="conf-quem">Foto apagada (mais de 3 meses)</small>' : ''),
-    !i.conferido_em ? `<button class="bg" type="button" data-acao="conf-foto-item" data-id="${i.id}">${i.ean ? 'Não lê? Foto' : 'Conferir com foto'}</button>` : '',
-  ].join('');
-  return `<div class="linha"><div class="kv" style="flex:1 1 260px;min-width:0"><b>${esc(i.descricao)}</b><small>${codigo}${qtd ? ` · ${qtd}` : ''}</small></div>
-    ${feito}${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>`;
+const numBR = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+
+/** Quantidade em destaque: "40 PC" ou "50 CX" + "com 12 · 600 UN" (unidade de caixa do XML) */
+function quantidadeHtml(i) {
+  if (i.quantidade == null) return '';
+  const q = Number(i.quantidade), u = (i.unidade || '').toUpperCase();
+  const qt = Number(i.quantidade_trib), ut = (i.unidade_trib || '').toUpperCase();
+  let detalhe = '';
+  if (qt > 0 && ut && (ut !== u || qt !== q)) {
+    const por = qt / q;
+    detalhe = `<small>${Number.isInteger(por) || por > 1 ? `com ${numBR(por)} · ` : ''}${numBR(qt)} ${esc(ut)}</small>`;
+  }
+  return `<div class="conf-qtd"><b class="num">${numBR(q)} <span>${esc(u)}</span></b>${detalhe}</div>`;
 }
 
-/** Guarda a foto e confere o produto; atualiza a lista e o resumo */
-async function conferir(item, eanLido, blob) {
+function linhaItem(i) {
+  const ok = Boolean(i.conferido_em);
+  const codigo = i.ean ? `EAN <span class="num">${esc(i.ean)}</span>` : 'Sem código de barras';
+  const como = !ok ? '' : i.manual ? 'Marcado' : i.sem_codigo ? 'Conferido pela foto' : 'Conferido pelo código';
+  const acoes = [
+    i.foto ? `<button class="bg" type="button" data-acao="conf-ver-foto" data-id="${i.id}">Ver foto</button>` : (i.foto_apagada ? '<small class="conf-quem">Foto apagada (mais de 3 meses)</small>' : ''),
+    !ok ? `<button class="bg" type="button" data-acao="conf-foto-item" data-id="${i.id}">${i.ean ? 'Não lê? Foto' : 'Conferir com foto'}</button>` : '',
+  ].join('');
+  return `<div class="conf-item${ok ? ' ok' : ''}">
+    <button class="conf-check" type="button" role="checkbox" aria-checked="${ok}" aria-label="${ok ? 'Desmarcar' : 'Marcar como conferido'}: ${esc(i.descricao)}" data-acao="conf-check" data-id="${i.id}">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    <div class="conf-meio"><b>${esc(i.descricao)}</b><small>${codigo}</small>
+      ${ok ? `<small class="conf-quem">${como} · ${esc(i.conferido_por || '')} · <span class="num">${dataHoraBR(i.conferido_em)}</span></small>` : ''}
+      ${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>
+    ${quantidadeHtml(i)}
+  </div>`;
+}
+
+/** Guarda a foto e confere o produto (manual = marcou a caixinha); atualiza a lista e o resumo */
+async function conferir(item, eanLido, blob, manual = false) {
   const foto = blob ? await estado.api.enviarFotoProduto(item.id, blob) : null;
-  const r = await estado.api.conferirItem(item.id, eanLido, foto);
-  Object.assign(item, { conferido_em: new Date().toISOString(), conferido_por: estado.perfil.nome, ean_lido: eanLido || null, sem_codigo: !eanLido, foto: foto || item.foto });
+  const r = await estado.api.conferirItem(item.id, eanLido, foto, manual);
+  Object.assign(item, { conferido_em: new Date().toISOString(), conferido_por: estado.perfil.nome, ean_lido: eanLido || null, sem_codigo: !eanLido, foto: foto || item.foto, manual: !eanLido && !foto });
+  atualizarResumo(r);
+  return r;
+}
+
+function atualizarResumo(r) {
   const resumo = (estado.conferencia = estado.conferencia || []).find((x) => x.nota_id === estado.conferindo.notaId);
   if (resumo) Object.assign(resumo, r); else estado.conferencia.push({ nota_id: estado.conferindo.notaId, ...r });
-  return r;
 }
 
 /** Diminui a foto escolhida (lado maior até 1280 px, JPEG) */
@@ -118,6 +140,24 @@ export async function limparFotosProduto() {
 registrarAcoes({
   'conf-abrir': (el) => abrirConferencia(el.dataset.id),
   'conf-fechar': () => { estado.conferindo = null; desenhar(); },
+
+  // caixinha: marca o produto como conferido na mão (ou desmarca)
+  'conf-check': async (el) => {
+    const item = estado.conferindo?.itens?.find((x) => String(x.id) === el.dataset.id);
+    if (!item || el.dataset.ocupado) return;
+    el.dataset.ocupado = '1';
+    try {
+      if (item.conferido_em) {
+        const r = await estado.api.desconferirItem(item.id);
+        Object.assign(item, { conferido_em: null, conferido_por: null, ean_lido: null, sem_codigo: false, manual: false, foto: null });
+        atualizarResumo(r);
+      } else {
+        const r = await conferir(item, null, null, true);
+        if (r.conferidos >= r.total) avisar('Todos os produtos da nota foram conferidos.');
+      }
+      desenhar();
+    } catch (e) { avisar(e.message, true); delete el.dataset.ocupado; }
+  },
 
   'conf-camera': async () => {
     const c = estado.conferindo;

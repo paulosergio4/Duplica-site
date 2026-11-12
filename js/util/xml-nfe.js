@@ -71,7 +71,8 @@ export function lerXmlNfe(texto) {
       const prod = el(det, 'prod');
       const ean = [txt(prod, 'cEAN'), txt(prod, 'cEANTrib')].map((v) => v.replace(/\D/g, '')).find((v) => [8, 12, 13, 14].includes(v.length)) || '';
       return { n_item: Number(det.getAttribute('nItem')) || i + 1, codigo: txt(prod, 'cProd'), ean, descricao: txt(prod, 'xProd'),
-        quantidade: txt(prod, 'qCom'), unidade: txt(prod, 'uCom'), valor: txt(prod, 'vProd') };
+        quantidade: txt(prod, 'qCom'), unidade: txt(prod, 'uCom'), valor: txt(prod, 'vProd'),
+        quantidade_trib: txt(prod, 'qTrib'), unidade_trib: txt(prod, 'uTrib') };
     }),
   };
 }
