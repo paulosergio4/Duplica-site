@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=eb710ef';
-import { dvChave } from '../util/chave.js?v=eb710ef';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=1ec4033';
+import { dvChave } from '../util/chave.js?v=1ec4033';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -157,6 +157,7 @@ export const apiDemo = {
     if (d.notas.some((n) => n.chave === dados.chave)) return 'duplicada';
     const filial = d.filiais.find((f) => f.cnpj && f.cnpj === soDigitos(dados.dest_cnpj));
     if (!filial) return 'filial_desconhecida';
+    if (d.filiais.some((f) => f.cnpj && f.cnpj.slice(0, 8) === soDigitos(dados.fornecedor_cnpj).slice(0, 8))) return 'transferencia';   // entre as lojas: não entra
     const nota = { id: id(), filial_id: filial.id, numero: dados.numero, serie: dados.serie, fornecedor: dados.fornecedor,
       chave: dados.chave, emissao: dados.emissao, valor: dados.valor };
     d.notas.push(nota);
