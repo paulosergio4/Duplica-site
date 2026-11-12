@@ -5,11 +5,11 @@
 // "Não chegou" no começo do mês do vencimento (só o mês corrente), para ninguém esquecer.
 // Quem vê: Fiscal, Financeiro e gerente.
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=030b138';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=030b138';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=030b138';
-import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=030b138';
-import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=030b138';
+import { estado, filialDe } from '../nucleo/estado.js?v=543c57a';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=543c57a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=543c57a';
+import { cabecalho, toastHtml, vazio } from '../componentes/comuns.js?v=543c57a';
+import { esc, brl, cnpjFormatado, mascaraCnpj, plural } from '../util/formato.js?v=543c57a';
 
 const numero = (t) => Number(String(t).replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'));
 const valorBR = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });

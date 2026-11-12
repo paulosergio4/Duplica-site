@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=030b138';
-import { dvChave } from '../util/chave.js?v=030b138';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=543c57a';
+import { dvChave } from '../util/chave.js?v=543c57a';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -27,10 +27,11 @@ function emDias(n) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 const agora = () => new Date().toISOString();
+const fotosDemo = new Map();   // fotos de boleto (só na memória)
 
 // ------------------------- dados de exemplo -------------------------
 function dadosIniciais() {
-  const emp = { id: 'emp1', nome: 'Supermercado São Luiz', codigo: 'saoluiz', cidade: 'Pompéu – MG' };
+  const emp = { id: 'emp1', nome: 'Supermercado São Luiz', codigo: 'saoluiz', cidade: 'Pompéu – MG', recebimento_desde: emDias(-12) };
   const filiais = [
     ['Loja 1 · CD', '25123899000160'], ['Loja 2 · MV', '25123899000241'], ['Loja 3 · Matriz', '25123899000322'],
     ['Loja 4 · MD', '25123899000403'], ['Loja 5 · Populares', '25123899000594'], ['Loja 6', null],
@@ -127,7 +128,7 @@ export const apiDemo = {
   async carregarTudo() {
     eu();
     const d = carregar();
-    const hoje = new Date(); hoje.setHours(0, 0, 0, 0); hoje.setDate(hoje.getDate() - 30);
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0); hoje.setDate(hoje.getDate() - 45);
     const recebimentos = (d.recebimentos || []).filter((r) => new Date(r.feito_em) >= hoje).sort((a, b) => (a.feito_em < b.feito_em ? 1 : -1));
     return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };   // (no demo, notas já traz as sem boleto)
   },
@@ -211,29 +212,52 @@ export const apiDemo = {
     return n;
   },
 
-  async receberNota(chave) {
+  async receberNota(chave, manual = false) {
     const p = eu(), d = carregar();
-    if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal bipam notas.');
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal recebem notas.');
     const c = String(chave).replace(/\D/g, '');
     if (c.length !== 44) throw new Error(`Li ${c.length} números. A chave da nota tem 44: bipe o código de barras da DANFE.`);
     d.recebimentos = d.recebimentos || [];
     const n = d.notas.find((x) => x.chave === c);
-    const novo = (extra) => { const r = { id: id(), chave: c, perfil_id: p.id, nome: p.nome, boletos: 0, situacao: 'casada', feito_em: agora(), nota_id: null, ...extra }; d.recebimentos.push(r); salvar(); ouvintes.forEach((f) => setTimeout(() => f(r), 300)); return r; };
+    const novo = (extra) => { const r = { id: id(), chave: c, perfil_id: p.id, nome: p.nome, boletos: 0, situacao: 'casada', feito_em: agora(), nota_id: null, tem_boleto: null, fotos: [], manual, ...extra }; d.recebimentos.push(r); salvar(); ouvintes.forEach((f) => setTimeout(() => f(r, false), 300)); return r; };
     if (!n) {
-      if (d.recebimentos.some((r) => r.chave === c && r.situacao === 'pendente')) return { situacao: 'repetida' };
-      novo({ situacao: 'pendente' });
-      return { situacao: 'pendente' };
+      const ja = d.recebimentos.find((r) => r.chave === c && r.situacao === 'pendente');
+      if (ja) return { situacao: 'repetida', recebimento_id: ja.id, tem_boleto: ja.tem_boleto, recebido_por: ja.nome, recebido_em: ja.feito_em };
+      return { situacao: 'pendente', recebimento_id: novo({ situacao: 'pendente' }).id };
     }
-    const bs = d.boletos.filter((b) => b.nota_id === n.id && b.etapa !== 'cancelado');
+    const f = d.filiais.find((x) => x.id === n.filial_id);
+    const base = { nota_id: n.id, fornecedor: n.fornecedor, numero: n.numero, filial: f?.nome, esperados: d.boletos.filter((b) => b.nota_id === n.id && b.etapa === 'esperado').length };
+    const ja = d.recebimentos.find((r) => r.nota_id === n.id && r.situacao === 'casada');
+    if (ja) return { situacao: 'ja', recebimento_id: ja.id, tem_boleto: ja.tem_boleto, recebido_por: ja.nome, recebido_em: ja.feito_em, ...base };
+    return { situacao: 'casada', recebimento_id: novo({ nota_id: n.id }).id, ...base };
+  },
+
+  async enviarFotoBoleto(recebimentoId, blob) {
+    const caminho = `demo/${recebimentoId}-${Date.now()}.jpg`;
+    fotosDemo.set(caminho, URL.createObjectURL(blob));
+    return caminho;
+  },
+
+  async recebimentoBoleto(idRec, tem, fotos = []) {
+    const p = eu(), d = carregar();
+    const r = (d.recebimentos || []).find((x) => x.id === idRec);
+    if (!r) throw new Error('Recebimento não encontrado.');
+    if (!tem) { if (r.tem_boleto == null) r.tem_boleto = false; salvar(); return { marcados: 0 }; }
     let marcados = 0;
-    for (const b of bs.filter((x) => x.etapa === 'esperado')) {
+    for (const b of d.boletos.filter((x) => r.nota_id && x.nota_id === r.nota_id && x.etapa === 'esperado')) {
       Object.assign(b, { etapa: 'chegou', recebido_por: p.nome, chegou_marcado_por: p.nome, chegou_em: agora() });
-      reg(b.id, 'Chegou', 'nota bipada no recebimento por ' + p.nome, p);
+      reg(b.id, 'Chegou', 'boleto recebido junto com a nota por ' + p.nome + (fotos.length ? ' (foto anexada)' : ''), p);
       marcados++;
     }
-    novo({ nota_id: n.id, boletos: marcados, situacao: d.recebimentos.some((r) => r.nota_id === n.id && r.situacao === 'casada') ? 'repetida' : 'casada' });
-    const f = d.filiais.find((x) => x.id === n.filial_id);
-    return { situacao: marcados || !bs.length ? 'casada' : 'ja', nota_id: n.id, fornecedor: n.fornecedor, numero: n.numero, filial: f?.nome, marcados, total: bs.length };
+    Object.assign(r, { tem_boleto: true, fotos: [...(r.fotos || []), ...fotos], boletos: (r.boletos || 0) + marcados });
+    salvar();
+    ouvintes.forEach((f) => setTimeout(() => f(r, true), 300));
+    return { marcados };
+  },
+
+  async urlFotoBoleto(caminho) {
+    if (!fotosDemo.has(caminho)) throw new Error('No modo demonstração a foto some quando a página é recarregada.');
+    return fotosDemo.get(caminho);
   },
 
   ouvirRecebimentos(aoReceber) { ouvintes.push(aoReceber); return () => { ouvintes = ouvintes.filter((f) => f !== aoReceber); }; },

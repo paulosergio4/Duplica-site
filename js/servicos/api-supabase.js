@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=030b138';
-import { normalizarLogin } from '../util/formato.js?v=030b138';
+import { CONFIG } from '../config.js?v=543c57a';
+import { normalizarLogin } from '../util/formato.js?v=543c57a';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -83,7 +83,7 @@ export const apiSupabase = {
     const corte = new Date(); corte.setDate(corte.getDate() - 120);
     const corteISO = corte.toISOString().slice(0, 10);
 
-    const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0); inicioDia.setDate(inicioDia.getDate() - 30);   // recebimentos dos últimos 30 dias
+    const inicioDia = new Date(); inicioDia.setHours(0, 0, 0, 0); inicioDia.setDate(inicioDia.getDate() - 45);   // recebimentos e notas dos últimos 45 dias
     const [emp, filiais, perfis, boletos, recorrencias, recebimentos] = await Promise.all([
       sb.from('empresas').select('*').maybeSingle(),
       buscarTodas(() => sb.from('filiais').select('*').order('ordem')),
@@ -103,6 +103,14 @@ export const apiSupabase = {
     for (const b of boletos) { if (b.nota) notas.set(b.nota.id, b.nota); delete b.nota; }
     // notas bipadas hoje (inclui as SEM boleto, que não vêm na lista acima)
     for (const r of recebimentos) { if (r.nota) notas.set(r.nota.id, r.nota); delete r.nota; }
+    // Recebimento de mercadoria: toda nota com XML emitida desde empresas.recebimento_desde (no máximo 45 dias)
+    if (emp.data?.recebimento_desde) {
+      const de = [emp.data.recebimento_desde, inicioDia.toISOString().slice(0, 10)].sort().pop();
+      const doXml = await buscarTodas(() => sb.from('notas')
+        .select('id,filial_id,tipo,numero,serie,valor,fornecedor,fornecedor_cnpj,descricao,chave,emissao')
+        .not('chave', 'is', null).gte('emissao', de).order('emissao', { ascending: false }));
+      for (const n of doXml) if (!notas.has(n.id)) notas.set(n.id, n);
+    }
     return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias, recebimentos };
   },
 
@@ -115,17 +123,41 @@ export const apiSupabase = {
     return buscarTodas(() => sb.from('boletos').select(`*, ${rel}`).gte(filtro, de).lte(filtro, ate).order('vencimento'));
   },
 
-  /** Recebimento: bipou a DANFE (chave de 44 números) */
-  async receberNota(chave) {
-    const { data, error } = await sb.rpc('receber_nota', { chave });
+  /** Recebimento: bipou a DANFE (chave de 44 números) ou o Fiscal marcou na tela (manual) */
+  async receberNota(chave, manual = false) {
+    const { data, error } = await sb.rpc('receber_nota', { chave, manual });
     falha(error);
     return data;
   },
 
-  /** Avisa na hora quando alguém da empresa bipa uma nota (Supabase Realtime) */
+  /** Guarda a foto do boleto (Storage, pasta da empresa) e devolve o caminho */
+  async enviarFotoBoleto(recebimentoId, blob) {
+    const p = await meuPerfil();
+    const caminho = `${p.empresa_id}/${recebimentoId}-${Date.now()}.jpg`;
+    const { error } = await sb.storage.from('boletos-fotos').upload(caminho, blob, { contentType: 'image/jpeg' });
+    falha(error);
+    return caminho;
+  },
+
+  /** Resposta do "Tem boleto?": com fotos, os boletos da nota viram "Chegou" */
+  async recebimentoBoleto(id, tem, fotos = []) {
+    const { data, error } = await sb.rpc('recebimento_boleto', { p_id: id, tem, p_fotos: fotos });
+    falha(error);
+    return data;
+  },
+
+  /** Endereço temporário (10 min) para ver uma foto */
+  async urlFotoBoleto(caminho) {
+    const { data, error } = await sb.storage.from('boletos-fotos').createSignedUrl(caminho, 600);
+    falha(error);
+    return data.signedUrl;
+  },
+
+  /** Avisa na hora quando alguém da empresa recebe uma nota ou anexa o boleto (Supabase Realtime) */
   ouvirRecebimentos(aoReceber) {
     const canal = sb.channel('recebimentos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'recebimentos' }, (ev) => aoReceber(ev.new))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'recebimentos' }, (ev) => aoReceber(ev.new, false))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'recebimentos' }, (ev) => aoReceber(ev.new, true))
       .subscribe();
     return () => sb.removeChannel(canal);
   },

@@ -175,3 +175,9 @@
 }
 @media (max-width:760px){.periodo{flex-wrap:wrap}.periodo .field{flex:1 1 120px;min-width:0}}
 @media (max-width:760px){.u-linha button,.linha .acoes button{height:36px;padding:0 12px;font-size:13px;border-radius:9px}}
+
+/* ---------- recebimento: "Tem boleto?" ---------- */
+.tem-boleto{display:flex;flex-direction:column;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid var(--linha)}
+.tem-boleto-b{display:flex;gap:8px;flex-wrap:wrap}
+.tem-boleto-b>*{flex:1 1 140px;min-height:52px;font-size:16px;justify-content:center}
+.botao-foto{display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}

@@ -5,30 +5,34 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=030b138';
-import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=030b138';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=030b138';
-import { obterApi } from './servicos/api.js?v=030b138';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=030b138';
-import { menuHtml } from './componentes/menu.js?v=030b138';
-import { modalHtml } from './componentes/modal-pessoa.js?v=030b138';
-import { painelHtml } from './componentes/painel-boleto.js?v=030b138';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=030b138';
-import { CONFIG } from './config.js?v=030b138';
-import { prepararInstalacao } from './util/instalar.js?v=030b138';
-import { bip } from './util/camera.js?v=030b138';
-import { numeroDaChave } from './util/chave.js?v=030b138';
+import { estado } from './nucleo/estado.js?v=543c57a';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=543c57a';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=543c57a';
+import { obterApi } from './servicos/api.js?v=543c57a';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=543c57a';
+import { menuHtml } from './componentes/menu.js?v=543c57a';
+import { modalHtml } from './componentes/modal-pessoa.js?v=543c57a';
+import { painelHtml } from './componentes/painel-boleto.js?v=543c57a';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=543c57a';
+import { CONFIG } from './config.js?v=543c57a';
+import { prepararInstalacao } from './util/instalar.js?v=543c57a';
+import { bip } from './util/camera.js?v=543c57a';
+import { numeroDaChave } from './util/chave.js?v=543c57a';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
 
-/** Some com a tela de carregamento só depois que a animação do logo terminou
- *  (o visto acaba de se desenhar em ~1,55 s; o "pulo" final vai até ~2,1 s; mais uma pausa) */
-function esconderSplash() {
+/** A animação do logo (traço do D, visto e "pulo") vai até ~2,1 s. A tela pesada do sistema só é
+ *  desenhada DEPOIS disso, para não engasgar a animação; aí a abertura some suave (só opacidade/escala). */
+const DURACAO_LOGO = 2250;
+const logoPronto = new Promise((ok) => setTimeout(ok, Math.max(0, DURACAO_LOGO - performance.now())));
+const quadro = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+async function esconderSplash() {
   const splash = document.getElementById('splash');
   if (!splash) return;
-  const falta = Math.max(0, 2500 - (performance.now() - inicioCarga));
-  setTimeout(() => { splash.classList.add('saindo'); setTimeout(() => splash.remove(), 500); }, falta);
+  await quadro();                       // a tela já está desenhada por baixo
+  splash.classList.add('saindo');
+  setTimeout(() => splash.remove(), 700);
 }
 
 /** Dias que faltam do teste grátis (null = não está em teste) */
@@ -66,15 +70,16 @@ function telaBloqueio() {
 }
 
 /** "A nota e o boleto chegaram, fulano recebeu" */
-async function avisoRecebimento(r) {
-  if (r.perfil_id === estado.perfil.id) return;          // fui eu mesmo que bipei
+async function avisoRecebimento(r, atualizou) {
+  if (r.perfil_id === estado.perfil.id) return;          // fui eu mesmo
+  if (atualizou && r.tem_boleto !== true) return;        // só interessa quando o boleto foi anexado
   await recarregar();
   const n = r.nota_id ? estado.notas.find((x) => x.id === r.nota_id) : null;
   const f = n ? estado.filiais.find((x) => x.id === n.filial_id) : null;
-  const texto = r.situacao === 'pendente'
-    ? `${r.nome} bipou a NF ${numeroDaChave(r.chave)}, que ainda não entrou no sistema. Quando o XML chegar, os boletos já entram como "Chegou".`
-    : n ? `Chegou: ${n.fornecedor} · NF ${n.numero}${f ? ' · ' + f.nome : ''}. ${r.boletos === 0 ? 'A nota chegou (sem boleto)' : r.boletos === 1 ? 'A nota e o boleto chegaram' : `A nota e os ${r.boletos} boletos chegaram`}, ${r.nome} recebeu.`
-    : `${r.nome} bipou uma nota.`;
+  const qual = n ? `${n.fornecedor} · NF ${n.numero}${f ? ' · ' + f.nome : ''}` : `NF ${numeroDaChave(r.chave)}`;
+  const texto = atualizou ? `Boleto chegou junto com a nota: ${qual}. ${r.nome} recebeu${r.fotos?.length ? ' e anexou a foto' : ''}.`
+    : r.situacao === 'pendente' ? `${r.nome} recebeu a NF ${numeroDaChave(r.chave)}, que ainda não entrou no sistema (aguardando o XML).`
+    : `Nota chegou: ${qual}. ${r.nome} recebeu.`;
   bip(true);
   avisar(texto, false, 12000);
 }
@@ -118,7 +123,7 @@ async function iniciar() {
   ligarEventos(raiz, desenhar);
   // cria os boletos das contas fixas que já entraram no prazo (nunca duplica)
   try { await estado.api.gerarRecorrentes(); } catch (e) { console.warn('Contas fixas:', e.message); }
-  await recarregar();
+  await recarregar(logoPronto);
   esconderSplash();
   // Fiscal e Admin: aviso na hora quando alguém bipa uma nota no recebimento
   if (estado.perfil.papel === 'gerente' || estado.perfil.setor === 'Fiscal') {

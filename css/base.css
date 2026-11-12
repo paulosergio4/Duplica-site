@@ -64,23 +64,24 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical}
 /* ---------- tela de carregamento (html/app.html) ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 35%,#1E4A75 0%,#0F2A43 50%,#081A2B 100%);color:#FFFFFF;
-  transition:opacity .45s ease,visibility .45s ease}
-.splash.saindo{opacity:0;visibility:hidden}
-.splash-brilho{position:absolute;width:520px;height:520px;border-radius:50%;
+  will-change:opacity;transition:opacity .55s cubic-bezier(.4,0,.2,1)}
+.splash.saindo{opacity:0;pointer-events:none}
+.splash.saindo .splash-centro{transform:scale(1.06)}
+.splash-brilho{position:absolute;width:520px;height:520px;border-radius:50%;will-change:transform,opacity;
   background:radial-gradient(circle,rgba(18,161,80,.28),rgba(18,161,80,0) 65%);animation:splash-brilho 3.2s ease-in-out infinite}
-.splash-centro{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
-.splash-logo{filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));animation:splash-entra .7s cubic-bezier(.2,.9,.3,1.3) both}
-.splash-logo svg{animation:splash-pronto .5s cubic-bezier(.3,1.6,.5,1) 1.6s both}
-@keyframes splash-pronto{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
-.splash-logo .logo-d{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .9s ease-out .25s forwards}
-.splash-logo .logo-v{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .55s cubic-bezier(.5,0,.2,1) 1s forwards}
-.splash-nome{font-size:30px;font-weight:800;letter-spacing:-.6px;animation:splash-sobe .6s ease .5s both}
-.splash-barra{width:160px;height:4px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;animation:splash-sobe .6s ease .7s both}
-.splash-barra span{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#12A150,#7BE0A8);animation:splash-corre 1.1s ease-in-out infinite}
-.splash-texto{font-size:13px;color:#B8C7D6;letter-spacing:.3px;animation:splash-sobe .6s ease .85s both}
+.splash-centro{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.splash-logo{width:96px;height:96px;border-radius:28px;box-shadow:0 18px 40px rgba(0,0,0,.45);will-change:transform,opacity;animation:splash-entra .8s cubic-bezier(.22,1,.36,1) both}
+.splash-logo svg{display:block;will-change:transform;animation:splash-pronto .6s cubic-bezier(.34,1.4,.64,1) 1.55s both}
+@keyframes splash-pronto{0%{transform:scale(1)}40%{transform:scale(1.09)}100%{transform:scale(1)}}
+.splash-logo .logo-d{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .9s cubic-bezier(.4,0,.2,1) .3s forwards}
+.splash-logo .logo-v{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .5s cubic-bezier(.4,0,.2,1) 1.05s forwards}
+.splash-nome{font-size:30px;font-weight:800;letter-spacing:-.6px;animation:splash-sobe .7s cubic-bezier(.22,1,.36,1) .45s both}
+.splash-barra{width:160px;height:4px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;animation:splash-sobe .7s cubic-bezier(.22,1,.36,1) .6s both}
+.splash-barra span{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#12A150,#7BE0A8);will-change:transform;animation:splash-corre 1.2s cubic-bezier(.45,0,.55,1) infinite}
+.splash-texto{font-size:13px;color:#B8C7D6;letter-spacing:.3px;animation:splash-sobe .7s cubic-bezier(.22,1,.36,1) .75s both}
 @keyframes splash-traco{to{stroke-dashoffset:0}}
-@keyframes splash-entra{from{opacity:0;transform:scale(.6) rotate(-8deg)}to{opacity:1;transform:none}}
-@keyframes splash-sobe{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes splash-entra{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+@keyframes splash-sobe{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes splash-corre{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
 @keyframes splash-brilho{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.08);opacity:1}}
 @media (prefers-reduced-motion:reduce){

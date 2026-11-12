@@ -4,14 +4,15 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=030b138';
-import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=030b138';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=030b138';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=030b138';
-import { ICONE } from './icones.js?v=030b138';
-import { docNota } from './comuns.js?v=030b138';
-import { linhaDigitavelHtml } from './ler-boleto.js?v=030b138';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=030b138';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=543c57a';
+import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=543c57a';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=543c57a';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=543c57a';
+import { ICONE } from './icones.js?v=543c57a';
+import { docNota } from './comuns.js?v=543c57a';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=543c57a';
+import { fotosDaNotaHtml } from '../telas/recebimento.js?v=543c57a';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=543c57a';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
@@ -104,6 +105,7 @@ export function painelHtml() {
       <small>por ${esc(b.cancelado_por || '')} · ${dataHoraBR(b.cancelado_em)}</small></div>` : ''}
     <ol class="etapas">${passos}</ol>
     ${linhaDigitavelHtml(b)}
+    ${fotosDaNotaHtml(b.nota_id)}
     <div class="field"><label for="anot">Anotação</label>
       ${b.anotacao ? `<div style="background:var(--creme-2);border-radius:10px;padding:10px 12px;font-size:14px;white-space:pre-wrap">${esc(b.anotacao)}</div>` : ''}
       <textarea class="inp" id="anot" rows="3" placeholder="${b.anotacao ? 'Escreva uma nova anotação (substitui a de cima)' : 'ex.: entregue para fulano no balcão'}"></textarea>

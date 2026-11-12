@@ -3,8 +3,8 @@
 // Tudo que está na tela vem deste objeto "estado". As telas LEEM daqui;
 // as ações MUDAM aqui e depois chamam render() para redesenhar.
 // =====================================================================
-import { hojeISO, diasAte } from '../util/formato.js?v=030b138';
-import { CONFIG } from '../config.js?v=030b138';
+import { hojeISO, diasAte } from '../util/formato.js?v=543c57a';
+import { CONFIG } from '../config.js?v=543c57a';
 
 export const estado = {
   api: null,          // funções de dados (demo ou Supabase) – ver servicos/api.js
@@ -19,7 +19,7 @@ export const estado = {
   recorrencias: [],   // contas fixas
   recebimentos: [],   // notas bipadas hoje no recebimento
   impMes: 0,          // Contabilidade: 0 = este mês, 1 = mês que vem, -1 = mês passado
-  recDias: 1,         // Recebimento de mercadoria: 1 = hoje, 7, 30
+  recFiltro: 'falta', // Recebimento de mercadoria: 'falta' | 'chegou' | 'todas'
   recBusca: '',
   ultimoRecebimento: null, // resultado da última nota bipada nesta tela
 
