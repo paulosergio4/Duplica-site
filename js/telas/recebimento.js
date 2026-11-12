@@ -9,13 +9,13 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=e0df3f1';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=e0df3f1';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=e0df3f1';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=e0df3f1';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=e0df3f1';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=e0df3f1';
-import { abrirCamera, bip } from '../util/camera.js?v=e0df3f1';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=91dee6c';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=91dee6c';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=91dee6c';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=91dee6c';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=91dee6c';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=91dee6c';
+import { abrirCamera, bip } from '../util/camera.js?v=91dee6c';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -172,7 +172,7 @@ async function reduzirFoto(arquivo) {
 }
 
 /** Manda a chave para o banco e mostra o resultado */
-async function receber(texto, manual = false) {
+export async function receber(texto, manual = false) {
   const chave = String(texto).replace(/\D/g, '');
   if (!chaveValida(chave)) {
     bip(false);
@@ -249,7 +249,7 @@ registrarAcoes({
       await abrirCamera({
         titulo: 'Bipe o código de barras da DANFE',
         // só fecha a câmera quando ler uma chave válida (44 números)
-        dica: 'Encaixe o código de barras grande da nota no retângulo, com boa luz. Se ficar embaçado, afaste um pouco o celular.',
+        dica: 'Pode ser com o celular em pé ou deitado. Encaixe o código de barras da nota no retângulo, com boa luz; se ficar embaçado, afaste um pouco.',
         aoLer: async (texto) => {
           // código de barras = só os 44 números; QR da NFC-e = endereço com a chave dentro
           const t = String(texto), achado = t.match(/\d{44}/);

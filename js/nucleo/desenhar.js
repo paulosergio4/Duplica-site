@@ -4,7 +4,7 @@
 // recarregar() → busca de novo os dados no banco e redesenha
 // Qualquer arquivo pode importar e chamar essas duas funções.
 // =====================================================================
-import { estado } from './estado.js?v=e0df3f1';
+import { estado } from './estado.js?v=91dee6c';
 
 let _desenhar = () => {};
 

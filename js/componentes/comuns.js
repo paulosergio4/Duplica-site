@@ -3,12 +3,12 @@
 // Pedaços de tela usados em várias telas: aviso (toast), cabeçalho,
 // faixa de filiais e etiquetas de etapa/prazo.
 // =====================================================================
-import { estado, notaDe } from '../nucleo/estado.js?v=e0df3f1';
-import { NOME_ETAPA } from '../nucleo/regras.js?v=e0df3f1';
-import { registrarAcoes } from '../nucleo/eventos.js?v=e0df3f1';
-import { desenhar } from '../nucleo/desenhar.js?v=e0df3f1';
-import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=e0df3f1';
-import { CONFIG } from '../config.js?v=e0df3f1';
+import { estado, notaDe } from '../nucleo/estado.js?v=91dee6c';
+import { NOME_ETAPA } from '../nucleo/regras.js?v=91dee6c';
+import { registrarAcoes } from '../nucleo/eventos.js?v=91dee6c';
+import { desenhar } from '../nucleo/desenhar.js?v=91dee6c';
+import { esc, diasAte, hojeExtenso } from '../util/formato.js?v=91dee6c';
+import { CONFIG } from '../config.js?v=91dee6c';
 
 /** Aviso no topo (sucesso em azul, erro em terracota) */
 export function toastHtml() {

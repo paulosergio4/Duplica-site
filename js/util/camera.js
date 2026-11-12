@@ -10,8 +10,8 @@
 //   - Se a leitura ao vivo não sair, "Tirar foto" usa a câmera do celular
 //     em resolução máxima e lê da foto (bem mais nítido).
 //   - Lanterna, quando o aparelho permite.
-//   - Lê com o celular DEITADO (paisagem): no Android a tela vira sozinha;
-//     onde não dá para travar (iPhone), a tela é desenhada deitada.
+//   - Lê com o celular em pé ou deitado: se a pessoa virar o celular,
+//     a tela acompanha (CSS de paisagem em telas.css).
 // A janela da câmera fica num elemento PRÓPRIO no <body>, fora do
 // redesenho das telas, para o vídeo não piscar.
 // =====================================================================
@@ -77,8 +77,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   const caixa = document.createElement('div');
   caixa.className = 'camera';
   caixa.innerHTML = `<div class="camera-topo"><b>${titulo}</b><button type="button" class="bg camera-fechar">Fechar</button></div>
-    <div class="camera-video"><video playsinline muted></video><div class="camera-mira"><span class="camera-linha"></span></div>
-      <div class="camera-deitado" aria-hidden="true"><b>Vire o celular deitado ↻</b><span>${dica}</span><em class="camera-deitado-status"></em></div></div>
+    <div class="camera-video"><video playsinline muted></video><div class="camera-mira"><span class="camera-linha"></span></div></div>
     <div class="camera-baixo">
       <p class="camera-dica">${dica}</p>
       <p class="camera-status" role="status">Abrindo a câmera…</p>
@@ -89,34 +88,14 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
     </div>`;
   document.body.appendChild(caixa);
   const video = caixa.querySelector('video'), mira = caixa.querySelector('.camera-mira');
-  const status = caixa.querySelector('.camera-status'), statusDeitado = caixa.querySelector('.camera-deitado-status');
-  const dizer = (t) => { status.textContent = t; statusDeitado.textContent = t; };
+  const status = caixa.querySelector('.camera-status');
+  const dizer = (t) => { status.textContent = t; };
   let parado = false, stream = null, timer = null;
-
-  // Paisagem: tenta virar a tela sozinho (Android: tela cheia + trava em paisagem).
-  // Se o aparelho não deixar (iPhone, rotação travada), a tela fica em pé mas tudo
-  // é desenhado "deitado": a pessoa vira o celular e lê o código na horizontal.
-  const emPe = window.matchMedia('(orientation: portrait)');
-  const ajustarDeitado = () => caixa.classList.toggle('deitado', emPe.matches);
-  ajustarDeitado();
-  emPe.addEventListener?.('change', ajustarDeitado);
-  let travou = false;
-  (async () => {
-    try {
-      if (caixa.requestFullscreen && !document.fullscreenElement) await caixa.requestFullscreen({ navigationUI: 'hide' });
-      await screen.orientation.lock('landscape');
-      travou = true;
-    } catch { /* aparelho não deixa: fica o modo "deitado" */ }
-    ajustarDeitado();
-  })();
 
   const parar = () => {
     parado = true;
     clearTimeout(timer);
     stream?.getTracks().forEach((t) => t.stop());
-    emPe.removeEventListener?.('change', ajustarDeitado);
-    if (travou) { try { screen.orientation.unlock(); } catch { /* ok */ } }
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     caixa.remove();
     aberto = null;
   };

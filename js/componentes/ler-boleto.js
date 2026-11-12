@@ -9,13 +9,15 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=e0df3f1';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=e0df3f1';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=e0df3f1';
-import { pillEtapa, docNota } from './comuns.js?v=e0df3f1';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=e0df3f1';
-import { abrirCamera, bip } from '../util/camera.js?v=e0df3f1';
-import { esc, brl, dataBR } from '../util/formato.js?v=e0df3f1';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=91dee6c';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=91dee6c';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=91dee6c';
+import { pillEtapa, docNota } from './comuns.js?v=91dee6c';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=91dee6c';
+import { abrirCamera, bip } from '../util/camera.js?v=91dee6c';
+import { chaveValida, numeroDaChave } from '../util/chave.js?v=91dee6c';
+import { receber } from '../telas/recebimento.js?v=91dee6c';
+import { esc, brl, dataBR } from '../util/formato.js?v=91dee6c';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
@@ -55,7 +57,16 @@ function botao(b, tela) {
 export function leitorHtml(tela) {
   const l = estado.leitura && estado.leitura.tela === tela ? estado.leitura : null;
   let resultado = '';
-  if (l && !l.res.ok) {
+  if (l && l.res.chaveNota) {
+    const c = l.res.chaveNota, n = estado.notas.find((x) => x.chave === c);
+    const pode = estado.perfil.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(estado.perfil.setor);
+    resultado = `<div class="lote ler-sugestao" role="status" style="border-radius:12px;display:flex;flex-direction:column;gap:10px">
+        <b>Esse é o código de barras da nota, não do boleto.</b>
+        <small>${n ? `${esc(n.fornecedor)} · NF ${esc(n.numero)} · ${esc(filialDe(n.filial_id)?.nome || '')}` : `NF ${esc(numeroDaChave(c))} (o XML ainda não entrou no sistema)`}</small>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${pode ? '<button class="bp" type="button" data-acao="ler-receber-nota">Marcar que a nota chegou</button>' : ''}
+        ${n ? '<button class="bg" type="button" data-acao="ler-ver-nota">Ver boletos desta nota</button>' : ''}</div>
+        <small>Para ler o boleto, aponte para o código de barras que fica no pé do boleto.</small></div>`;
+  } else if (l && !l.res.ok) {
     resultado = `<p class="erro" role="alert" style="margin:0">${esc(l.res.erro)}</p>`;
   } else if (l) {
     const r = l.res;
@@ -119,10 +130,20 @@ registrarAcoes({
     try {
       await abrirCamera({
         titulo: 'Aponte para o código de barras do boleto',
-        dica: 'Deite o celular (de lado) e encaixe o código de barras do boleto inteiro no retângulo, bem iluminado.',
+        dica: 'Pode ser com o celular em pé ou deitado. Encaixe o código de barras do boleto inteiro no retângulo, bem iluminado.',
         aoLer: (texto) => {
           const res = lerBoleto(texto);
-          if (!res.ok) return false;             // leitura incompleta: continua tentando
+          if (!res.ok) {
+            // leu o código da NOTA (DANFE) em vez do boleto: avisa e oferece receber a nota
+            const c = String(texto).match(/\d{44}/)?.[0];
+            if (c && chaveValida(c)) {
+              bip(true);
+              estado.leitura = { tela, texto: c, res: { ok: false, chaveNota: c, erro: '' } };
+              desenhar();
+              return true;
+            }
+            return false;                        // leitura incompleta: continua tentando
+          }
           bip(true);
           estado.leitura = { tela, texto: res.linha || res.barras, res };
           desenhar();
@@ -130,6 +151,20 @@ registrarAcoes({
         },
       });
     } catch (e) { avisar(e.message, true); }
+  },
+  // leu a DANFE no lugar do boleto
+  'ler-receber-nota': async () => {
+    const c = estado.leitura.res.chaveNota;
+    estado.leitura = null;
+    Object.assign(estado, { tela: 'receber', sel: null, modal: null });
+    await receber(c, true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+  'ler-ver-nota': () => {
+    const n = estado.notas.find((x) => x.chave === estado.leitura.res.chaveNota);
+    estado.leitura = null;
+    estado.busca = n ? String(n.numero) : '';
+    desenhar();
   },
   'ler-limpar': () => { estado.leitura = null; desenhar(); document.getElementById('ler-codigo')?.focus(); },
 
