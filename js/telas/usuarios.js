@@ -6,12 +6,12 @@
 // Ninguém é apagado: quem sai é DESATIVADO (o nome fica no histórico).
 // "Editar" abre uma janela para mudar nome, usuário, setor ou dar senha nova.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=499bdd4';
-import { ehGerente, podeAlterarPessoa, NOME_PAPEL } from '../nucleo/regras.js?v=499bdd4';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=499bdd4';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=499bdd4';
-import { cabecalho, toastHtml } from '../componentes/comuns.js?v=499bdd4';
-import { esc, normalizarLogin } from '../util/formato.js?v=499bdd4';
+import { estado } from '../nucleo/estado.js?v=030b138';
+import { ehGerente, podeAlterarPessoa, NOME_PAPEL } from '../nucleo/regras.js?v=030b138';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=030b138';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=030b138';
+import { cabecalho, toastHtml } from '../componentes/comuns.js?v=030b138';
+import { esc, normalizarLogin } from '../util/formato.js?v=030b138';
 
 const SETORES = [['Fiscal', 'marca chegou e envia'], ['Financeiro', 'dá o visto'], ['Contabilidade', 'etapa própria'], ['Recebimento', 'bipa as notas no celular']];
 
@@ -55,7 +55,7 @@ export const telaUsuarios = {
             ${geral ? '' : '<span style="font-size:12px;color:var(--terra)">Você só cadastra pessoas no seu setor.</span>'}</div>
           ${geral ? '<label class="check"><input type="checkbox" id="na">Admin do setor: pode cadastrar e desativar pessoas do próprio setor</label>' : ''}
           <div class="field"><label for="nsenha">Senha provisória</label><input class="inp" id="nsenha" data-rascunho="1" placeholder="mínimo 6 caracteres" autocomplete="new-password" value="${esc(r.nsenha || '')}"></div>
-          <p style="margin:0;font-size:13px;line-height:1.5;color:var(--terra)">Passe a senha provisória para a pessoa. No primeiro acesso ela cria a própria senha; até lá aparece como “Aguardando primeiro acesso”.</p>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:var(--terra)">Depois de cadastrar, aparece uma mensagem pronta com os dados de acesso para você copiar e mandar. No primeiro acesso ela cria a própria senha; até lá aparece como “Aguardando primeiro acesso”.</p>
           ${erro ? `<p class="erro" role="alert">${esc(erro)}</p>` : ''}
           <button class="bp" type="submit">Cadastrar</button></form></div>`;
   },
@@ -84,12 +84,51 @@ export function modalEditarPessoaHtml() {
   </form></div>`;
 }
 
+/** Texto pronto para mandar à pessoa (WhatsApp, e-mail…) com os dados de acesso */
+function mensagemAcesso({ nome, usuario, senha, setor }, nova) {
+  const emp = estado.empresa || {};
+  return [
+    `Olá, ${nome.split(' ')[0]}!`,
+    nova ? `Sua senha do Duplica (${emp.nome || 'controle de boletos'}) foi trocada. Seguem os dados para entrar:`
+      : `Seu acesso ao Duplica (${emp.nome || 'controle de boletos'}) foi criado, no setor ${setor}. Seguem os dados para entrar:`,
+    '',
+    `Site: ${location.origin}`,
+    `Empresa: ${emp.codigo || ''}`,
+    `Usuário: ${usuario}`,
+    `Senha provisória: ${senha}`,
+    '',
+    'No primeiro acesso o sistema pede para você criar a sua própria senha. Não passe a senha para outra pessoa.',
+  ].join('\n');
+}
+
+/** Janela com a mensagem pronta para copiar (aparece depois de cadastrar ou de dar senha nova) */
+export function modalMensagemAcessoHtml() {
+  const m = estado.modal;
+  return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <h2 id="m-t">${esc(m.titulo)}</h2>
+    <p class="dica-campo" style="margin:0;font-size:13px">Copie a mensagem abaixo e mande para a pessoa. A senha provisória não aparece de novo depois que você fechar.</p>
+    <textarea class="inp" id="msg-acesso" readonly rows="10" style="min-height:230px;font-size:14px;line-height:1.5">${esc(m.texto)}</textarea>
+    <div class="botoes">
+      <button class="bp" type="button" data-acao="copiar-acesso" style="flex:1;height:46px">${m.copiado ? 'Copiado ✓' : 'Copiar mensagem'}</button>
+      <button class="bg" type="button" data-acao="whats-acesso" style="height:46px">WhatsApp</button>
+      <button class="bg" type="button" data-acao="fechar-modal" style="height:46px">Fechar</button>
+    </div>
+  </div></div>`;
+}
+
 function limparEdicao() {
   for (const k of ['ednome', 'edusuario', 'edsetor', 'edsenha']) delete estado.rascunho[k];
   estado.erroForm.editar = '';
 }
 
 registrarAcoes({
+  'copiar-acesso': () => executar(async () => {
+    const t = estado.modal.texto;
+    try { await navigator.clipboard.writeText(t); }
+    catch { const c = document.getElementById('msg-acesso'); c.select(); document.execCommand('copy'); }
+    estado.modal.copiado = true; desenhar();
+  }),
+  'whats-acesso': () => { window.open('https://wa.me/?text=' + encodeURIComponent(estado.modal.texto), '_blank', 'noopener'); },
   'editar-pessoa': (el) => { limparEdicao(); estado.modal = { tipo: 'editar-pessoa', id: el.dataset.id }; desenhar(); },
   'ativar-pessoa': (el) => executar(async () => {
     const u = estado.perfis.find((p) => p.id === el.dataset.id);
@@ -124,7 +163,7 @@ registrarFormulario('form-editar-pessoa', () => executar(async () => {
     await estado.api.editarUsuario(dados);
   } catch (e) { estado.erroForm.editar = e.message; desenhar(); return; }
   limparEdicao();
-  estado.modal = null;
+  estado.modal = dados.senha ? { tipo: 'mensagem-acesso', titulo: `Senha nova de ${dados.nome.split(' ')[0]}`, texto: mensagemAcesso(dados, true) } : null;
   await recarregar();
   avisar(`${dados.nome} atualizado.${dados.usuario !== u.usuario ? ` Agora entra com o usuário “${dados.usuario}”.` : ''}${dados.senha ? ' Passe a senha provisória nova para a pessoa.' : ''}`);
 }));
@@ -147,6 +186,7 @@ registrarFormulario('form-usuario', () => executar(async () => {
   } catch (e) { estado.erroForm.usuario = e.message; desenhar(); return; }
   estado.erroForm.usuario = '';
   estado.rascunho.nn = estado.rascunho.nl = estado.rascunho.nsenha = '';
+  estado.modal = { tipo: 'mensagem-acesso', titulo: `${dados.nome.split(' ')[0]} cadastrado`, texto: mensagemAcesso(dados, false) };
   await recarregar();
   avisar(`${dados.nome} cadastrado no ${dados.setor}. Entra com a empresa “${estado.empresa.codigo}”, usuário “${dados.usuario}” e a senha provisória.`);
 }));

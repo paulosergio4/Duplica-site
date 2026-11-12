@@ -5,11 +5,11 @@
 //   - primeiro acesso: troca da senha provisória
 // Depois de entrar, vai para html/app.html
 // =====================================================================
-import { ligarBotaoTema } from './util/tema.js?v=499bdd4';
-import { prepararInstalacao } from './util/instalar.js?v=499bdd4';
-import { obterApi } from './servicos/api.js?v=499bdd4';
-import { MODO_DEMO } from './config.js?v=499bdd4';
-import { normalizarLogin } from './util/formato.js?v=499bdd4';
+import { ligarBotaoTema } from './util/tema.js?v=030b138';
+import { prepararInstalacao } from './util/instalar.js?v=030b138';
+import { obterApi } from './servicos/api.js?v=030b138';
+import { MODO_DEMO } from './config.js?v=030b138';
+import { normalizarLogin } from './util/formato.js?v=030b138';
 
 const $ = (id) => document.getElementById(id);
 let api;
