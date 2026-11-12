@@ -7,11 +7,11 @@
 //
 // Botão que abre: data-acao="abrir-avulso"   (Fiscal e Financeiro)
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=5329690';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=5329690';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=5329690';
-import { esc, brl, dataBR, hojeISO, mascaraCnpj } from '../util/formato.js?v=5329690';
-import { TIPOS_NOTA } from './comuns.js?v=5329690';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=62643e5';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=62643e5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=62643e5';
+import { esc, brl, dataBR, hojeISO, mascaraCnpj } from '../util/formato.js?v=62643e5';
+import { TIPOS_NOTA } from './comuns.js?v=62643e5';
 
 /** Copia o que está digitado na janela para o estado (para não perder ao redesenhar) */
 function lerCampos() {

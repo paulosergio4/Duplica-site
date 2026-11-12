@@ -3,8 +3,8 @@
 // Tudo que está na tela vem deste objeto "estado". As telas LEEM daqui;
 // as ações MUDAM aqui e depois chamam render() para redesenhar.
 // =====================================================================
-import { hojeISO, diasAte } from '../util/formato.js?v=5329690';
-import { CONFIG } from '../config.js?v=5329690';
+import { hojeISO, diasAte } from '../util/formato.js?v=62643e5';
+import { CONFIG } from '../config.js?v=62643e5';
 
 export const estado = {
   api: null,          // funções de dados (demo ou Supabase) – ver servicos/api.js

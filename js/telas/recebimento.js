@@ -9,14 +9,14 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=5329690';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=5329690';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=5329690';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=5329690';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=5329690';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=5329690';
-import { abrirCamera, bip } from '../util/camera.js?v=5329690';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=5329690';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=62643e5';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=62643e5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=62643e5';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=62643e5';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=62643e5';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=62643e5';
+import { abrirCamera, bip } from '../util/camera.js?v=62643e5';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=62643e5';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -130,12 +130,15 @@ function linhaNota(n, r) {
     r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
     r && n && resumoDaNota(n.id) ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
   ].join('');
-  return `<div class="linha rec-ticket ${!r ? 'falta' : r.situacao === 'pendente' ? 'aguarda' : 'chegou'}"><div class="kv" style="flex:1 1 240px;min-width:0"><b style="color:var(--petroleo)">${n ? esc(n.fornecedor) : 'Nota ainda sem XML'}</b>
+  // colunas fixas (sempre as mesmas, mesmo vazias) para tudo ficar alinhado de um ticket para o outro
+  return `<div class="linha rec-ticket ${!r ? 'falta' : r.situacao === 'pendente' ? 'aguarda' : 'chegou'}">
+    <div class="kv rec-forn"><b style="color:var(--petroleo)">${n ? esc(n.fornecedor) : 'Nota ainda sem XML'}</b>
       <small>${n ? `${docNota(n)} · ${esc(f?.nome || '')}` : `NF ${esc(numeroDaChave(r.chave))}`}</small></div>
-    ${n ? `<div class="kv" style="width:96px"><small>Emissão</small><b class="num">${dataBR(n.emissao)}</b></div>
-    <div class="kv" style="width:120px"><small>Valor da nota</small><b class="num">${brl(n.valor)}</b></div>` : ''}
-    ${r ? `<div class="kv" style="width:190px"><small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)} · <span class="num">${dataHoraBR(r.feito_em)}</span></b></div>` : ''}
-    ${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>`;
+    <div class="kv rec-col">${n ? `<small>Emissão</small><b class="num">${dataBR(n.emissao)}</b>` : ''}</div>
+    <div class="kv rec-col">${n ? `<small>Valor da nota</small><b class="num">${brl(n.valor)}</b>` : ''}</div>
+    <div class="kv rec-col rec-quem">${r ? `<small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)}</b><small class="num">${dataHoraBR(r.feito_em)}</small>` : ''}</div>
+    <div class="rec-selos">${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}</div>
+    <div class="acoes rec-acoes">${acoes}</div></div>`;
 }
 
 /** Janela com as fotos do boleto */

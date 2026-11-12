@@ -15,7 +15,7 @@
 // A janela da câmera fica num elemento PRÓPRIO no <body>, fora do
 // redesenho das telas, para o vídeo não piscar.
 // =====================================================================
-import { temScandit, abrirScandit } from './scandit.js?v=5329690';
+import { temScandit, abrirScandit } from './scandit.js?v=62643e5';
 
 const ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm';
 const FORMATOS = ['code_128', 'itf', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code'];

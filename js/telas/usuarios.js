@@ -6,12 +6,12 @@
 // Ninguém é apagado: quem sai é DESATIVADO (o nome fica no histórico).
 // "Editar" abre uma janela para mudar nome, usuário, setor ou dar senha nova.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=5329690';
-import { ehGerente, podeAlterarPessoa, NOME_PAPEL } from '../nucleo/regras.js?v=5329690';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=5329690';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=5329690';
-import { cabecalho, toastHtml } from '../componentes/comuns.js?v=5329690';
-import { esc, normalizarLogin } from '../util/formato.js?v=5329690';
+import { estado } from '../nucleo/estado.js?v=62643e5';
+import { ehGerente, podeAlterarPessoa, NOME_PAPEL } from '../nucleo/regras.js?v=62643e5';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=62643e5';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=62643e5';
+import { cabecalho, toastHtml } from '../componentes/comuns.js?v=62643e5';
+import { esc, normalizarLogin } from '../util/formato.js?v=62643e5';
 
 const SETORES = [['Fiscal', 'marca chegou e envia'], ['Financeiro', 'dá o visto'], ['Contabilidade', 'etapa própria'], ['Recebimento', 'bipa as notas no celular']];
 
