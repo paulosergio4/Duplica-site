@@ -8,13 +8,13 @@
 // Se a nota ainda não entrou pelo XML, fica guardada e é marcada sozinha
 // quando o XML chegar.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=bebe11c';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar } from '../nucleo/eventos.js?v=bebe11c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=bebe11c';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=bebe11c';
-import { esc, plural, brl, dataHoraBR } from '../util/formato.js?v=bebe11c';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=bebe11c';
-import { abrirCamera, bip } from '../util/camera.js?v=bebe11c';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=e593a61';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar } from '../nucleo/eventos.js?v=e593a61';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=e593a61';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=e593a61';
+import { esc, plural, brl, dataHoraBR } from '../util/formato.js?v=e593a61';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=e593a61';
+import { abrirCamera, bip } from '../util/camera.js?v=e593a61';
 
 export const telaRecebimento = {
   id: 'receber',

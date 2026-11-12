@@ -5,18 +5,19 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=bebe11c';
-import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=bebe11c';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=bebe11c';
-import { obterApi } from './servicos/api.js?v=bebe11c';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=bebe11c';
-import { menuHtml } from './componentes/menu.js?v=bebe11c';
-import { modalHtml } from './componentes/modal-pessoa.js?v=bebe11c';
-import { painelHtml } from './componentes/painel-boleto.js?v=bebe11c';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=bebe11c';
-import { CONFIG } from './config.js?v=bebe11c';
-import { bip } from './util/camera.js?v=bebe11c';
-import { numeroDaChave } from './util/chave.js?v=bebe11c';
+import { estado } from './nucleo/estado.js?v=e593a61';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=e593a61';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=e593a61';
+import { obterApi } from './servicos/api.js?v=e593a61';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=e593a61';
+import { menuHtml } from './componentes/menu.js?v=e593a61';
+import { modalHtml } from './componentes/modal-pessoa.js?v=e593a61';
+import { painelHtml } from './componentes/painel-boleto.js?v=e593a61';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=e593a61';
+import { CONFIG } from './config.js?v=e593a61';
+import { prepararInstalacao } from './util/instalar.js?v=e593a61';
+import { bip } from './util/camera.js?v=e593a61';
+import { numeroDaChave } from './util/chave.js?v=e593a61';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
@@ -135,3 +136,5 @@ iniciar().catch((e) => {
   document.getElementById('splash')?.remove();
   raiz.innerHTML = `<div class="carregando">Não foi possível abrir o sistema: ${esc(e.message)}<br><a href="../index.html">Voltar ao login</a></div>`;
 });
+
+prepararInstalacao();

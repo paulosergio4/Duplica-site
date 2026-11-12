@@ -1,0 +1,367 @@
+<!doctype html>
+<!--
+  DUPLICA · apresentacao/index.html  (site de apresentação / vendas)
+  Página única, sem dependência do sistema: pode ser publicada sozinha em
+  outro domínio (copie a pasta "apresentacao" inteira).
+  O que trocar quando tiver os dados:
+    - PREÇOS: procure por "precos" (seção de planos)
+    - CONTATO: procure por "contato" (WhatsApp e e-mail no rodapé)
+    - LINKS do sistema: constantes APP_ENTRAR e APP_CRIAR no fim do arquivo
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duplica: controle dos boletos das notas de entrada</title>
+  <meta name="description" content="O Duplica acompanha cada boleto das suas notas de entrada: da chegada da mercadoria ao pagamento. Para supermercados e redes com várias lojas. Teste grátis por 14 dias.">
+  <meta name="theme-color" content="#0F2A43">
+  <link rel="icon" href="../icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --marinho:#0F2A43; --marinho-2:#16395A; --noite:#081A2B;
+      --verde:#12A150; --verde-esc:#0B6B36; --verde-claro:#DDF3E6;
+      --papel:#FFFDF6; --fundo:#F5F7FA; --branco:#FFFFFF;
+      --tinta:#1F2933; --tinta-2:#52606D; --linha:#E1E7EE; --ambar:#B7791F; --ambar-bg:#F6EBCF; --carimbo:#B4472E;
+      --titulo:'Bricolage Grotesque','Plus Jakarta Sans',system-ui,sans-serif;
+      --texto:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:var(--texto);color:var(--tinta);background:var(--fundo);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    img{max-width:100%;display:block}
+    a{color:inherit}
+    :focus-visible{outline:3px solid var(--verde);outline-offset:3px;border-radius:6px}
+    .dentro{width:100%;max-width:1160px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px))}
+    h1,h2,h3{font-family:var(--titulo);margin:0;line-height:1.05;letter-spacing:-.02em;text-wrap:balance}
+    h2{font-size:clamp(30px,4.2vw,46px);font-weight:700}
+    h3{font-size:22px;font-weight:700;letter-spacing:-.01em}
+    p{margin:0}
+
+    .botao{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 24px;border-radius:14px;font-weight:700;font-size:16px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
+    .botao-verde{background:var(--verde);color:#fff}
+    .botao-verde:hover{background:#0E8E46}
+    .botao-claro{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.38)}
+    .botao-claro:hover{background:rgba(255,255,255,.08)}
+    .botao-marinho{background:var(--marinho);color:#fff}
+    .botao-marinho:hover{background:var(--marinho-2)}
+
+    /* ---------- topo ---------- */
+    .topo{position:sticky;top:0;z-index:20;background:rgba(15,42,67,.94);backdrop-filter:blur(8px);color:#fff}
+    .topo .dentro{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px}
+    .marca{display:flex;align-items:center;gap:10px;font-family:var(--titulo);font-weight:800;font-size:22px;text-decoration:none;letter-spacing:-.02em}
+    .topo nav{display:flex;align-items:center;gap:22px;font-size:15px;font-weight:600}
+    .topo nav a{text-decoration:none;opacity:.86}
+    .topo nav a:hover{opacity:1}
+    .topo .botao{min-height:42px;padding:0 16px;font-size:14px;opacity:1}
+    @media (max-width:820px){.topo nav a.some{display:none}}
+
+    /* ---------- abertura: o boleto atravessando as etapas ---------- */
+    .abertura{background:radial-gradient(90% 120% at 85% 10%,#1B4A76 0%,var(--marinho) 46%,var(--noite) 100%);color:#fff;overflow:hidden}
+    .abertura .dentro{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:48px;align-items:center;padding-block:72px 88px}
+    .abertura h1{font-size:clamp(40px,6.4vw,78px);font-weight:800}
+    .abertura .sub{margin-top:22px;font-size:clamp(17px,1.6vw,20px);line-height:1.55;color:#C9D6E3;max-width:34em}
+    .abertura .acoes{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px}
+    .abertura .nota{margin-top:16px;font-size:14px;color:#9FB1C4}
+    @media (max-width:940px){.abertura .dentro{grid-template-columns:1fr;padding-block:48px 56px;gap:36px}}
+
+    .cena{position:relative;display:flex;justify-content:center}
+    .boleto{position:relative;width:min(100%,470px);background:var(--papel);color:#1b1b1b;border-radius:10px;padding:20px 22px 18px;box-shadow:0 30px 60px rgba(0,0,0,.45);transform:rotate(-2.2deg);font-size:13px}
+    .boleto::before,.boleto::after{content:"";position:absolute;left:0;right:0;height:10px;background:radial-gradient(circle at 6px -2px,transparent 6px,var(--papel) 6.5px) 0 0/12px 10px repeat-x}
+    .boleto::before{top:-9px;transform:scaleY(-1)}
+    .boleto::after{bottom:-9px}
+    .b-topo{display:flex;justify-content:space-between;gap:12px;border-bottom:1.5px solid #1b1b1b;padding-bottom:8px;font-weight:700}
+    .b-topo span:last-child{font-variant-numeric:tabular-nums;letter-spacing:.02em;font-size:12px}
+    .b-grade{display:grid;grid-template-columns:1.5fr 1fr;border-bottom:1px solid #c9c4b6}
+    .b-grade div{padding:7px 0 6px;border-bottom:1px solid #e2ddcf}
+    .b-grade div:nth-child(odd){border-right:1px solid #e2ddcf;padding-right:10px}
+    .b-grade div:nth-child(even){padding-left:10px}
+    .b-grade small{display:block;font-size:10px;color:#6a6658}
+    .b-grade b{font-size:14px;font-variant-numeric:tabular-nums}
+    .barras{margin-top:12px;height:54px;background:repeating-linear-gradient(90deg,#111 0 2px,transparent 2px 3px,#111 3px 4px,transparent 4px 7px,#111 7px 10px,transparent 10px 11px,#111 11px 12px,transparent 12px 15px,#111 15px 17px,transparent 17px 21px)}
+    .carimbo{position:absolute;font-family:var(--titulo);font-weight:800;font-size:19px;letter-spacing:.04em;padding:5px 12px 4px;border:3px solid currentColor;border-radius:8px;opacity:0;transform:scale(1.9) rotate(var(--giro));animation:carimbar .34s cubic-bezier(.2,1.3,.4,1) forwards;}
+    .carimbo small{display:block;font-family:var(--texto);font-size:10.5px;font-weight:600;letter-spacing:0;margin-top:-2px}
+    .c1{--giro:-7deg;color:#1D4E7A;left:38%;top:34px;animation-delay:.7s}
+    .c2{--giro:6deg;color:var(--ambar);right:14px;top:150px;animation-delay:1.5s}
+    .c3{--giro:-5deg;color:var(--verde-esc);left:34px;bottom:18px;font-size:28px;background:rgba(255,253,246,.82);animation-delay:2.4s}
+    @media (max-width:520px){.b-topo span:last-child{display:none}.boleto{font-size:12px}.c1{left:44%;top:10px}}
+    @keyframes carimbar{to{opacity:.92;transform:scale(1) rotate(var(--giro))}}
+    @media (prefers-reduced-motion:reduce){.carimbo{animation:none;opacity:.92;transform:rotate(var(--giro))}html{scroll-behavior:auto}}
+
+    /* ---------- faixa: o que se perde hoje ---------- */
+    .dor{background:var(--branco);border-bottom:1px solid var(--linha)}
+    .dor .dentro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding-block:0}
+    .dor .dentro>div{padding:30px 26px;border-right:1px solid var(--linha)}
+    .dor .dentro>div:first-child{padding-left:0}
+    .dor .dentro>div:last-child{border-right:0}
+    .dor b{display:block;font-family:var(--titulo);font-size:21px;line-height:1.2;margin-bottom:6px;color:var(--marinho)}
+    .dor p{font-size:15.5px;color:var(--tinta-2)}
+    @media (max-width:820px){.dor .dentro{grid-template-columns:1fr}.dor .dentro>div{border-right:0;border-bottom:1px solid var(--linha);padding-inline:0}.dor .dentro>div:last-child{border-bottom:0}}
+
+    section.bloco{padding-block:88px}
+    @media (max-width:820px){section.bloco{padding-block:60px}}
+    .intro{max-width:44em;margin-bottom:44px}
+    .intro p{margin-top:16px;color:var(--tinta-2);font-size:18px}
+
+    /* ---------- o caminho do boleto (sequência de verdade: numerada) ---------- */
+    .caminho{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;counter-reset:passo;border-top:3px solid var(--marinho)}
+    .caminho li{counter-increment:passo;padding:22px 22px 6px 0;position:relative}
+    .caminho li::before{content:counter(passo);font-family:var(--titulo);font-weight:800;font-size:44px;line-height:1;color:var(--marinho);display:block;margin-bottom:12px}
+    .caminho li:last-child::before{color:var(--verde)}
+    .caminho h3{font-size:20px;margin-bottom:6px}
+    .caminho p{font-size:15.5px;color:var(--tinta-2)}
+    .caminho .quem{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--marinho);background:#DCEAF7;padding:3px 10px;border-radius:999px}
+    @media (max-width:900px){.caminho{grid-template-columns:1fr 1fr;row-gap:18px}}
+    @media (max-width:520px){.caminho{grid-template-columns:1fr}}
+
+    /* ---------- telas ---------- */
+    .telas{background:var(--marinho);color:#fff}
+    .telas .intro p{color:#C9D6E3}
+    .abas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+    .abas button{min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;font:600 15px var(--texto);cursor:pointer}
+    .abas button[aria-selected="true"]{background:#fff;color:var(--marinho);border-color:#fff}
+    .janela{background:#0A1D30;border-radius:18px;padding:12px;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+    .janela img{border-radius:10px;width:100%;height:auto}
+    .janela.estreita{max-width:360px;margin-inline:auto}
+    .legenda{margin-top:18px;color:#C9D6E3;font-size:16px;max-width:46em}
+
+    /* ---------- o que tem ---------- */
+    .lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 56px}
+    .lista article{padding:24px 0;border-top:1px solid var(--linha)}
+    .lista h3{margin-bottom:6px}
+    .lista p{color:var(--tinta-2);font-size:16px}
+    @media (max-width:820px){.lista{grid-template-columns:1fr}}
+
+    /* ---------- precos ---------- */
+    .precos{background:var(--branco);border-block:1px solid var(--linha)}
+    .planos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:860px}
+    .plano{border:1.5px solid var(--linha);border-radius:20px;padding:30px;display:flex;flex-direction:column;gap:14px;background:var(--fundo)}
+    .plano.destaque{border-color:var(--marinho);background:var(--branco);box-shadow:0 18px 40px rgba(15,42,67,.12)}
+    .plano .valor{font-family:var(--titulo);font-weight:800;font-size:54px;line-height:1;color:var(--marinho);letter-spacing:-.03em}
+    .plano .valor small{font-family:var(--texto);font-size:15px;font-weight:600;color:var(--tinta-2);letter-spacing:0}
+    .plano ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15.5px}
+    .plano li{padding-left:26px;position:relative}
+    .plano li::before{content:"";position:absolute;left:0;top:.45em;width:14px;height:8px;border-left:2.5px solid var(--verde);border-bottom:2.5px solid var(--verde);transform:rotate(-45deg)}
+    .plano .botao{margin-top:auto}
+    .etiqueta{align-self:flex-start;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--ambar-bg);color:#6E5119}
+    .obs-preco{margin-top:22px;font-size:15px;color:var(--tinta-2);max-width:46em}
+    @media (max-width:760px){.planos{grid-template-columns:1fr}}
+
+    /* ---------- perguntas ---------- */
+    .perguntas{max-width:820px}
+    details{border-top:1px solid var(--linha);padding:18px 0}
+    details:last-child{border-bottom:1px solid var(--linha)}
+    summary{cursor:pointer;font-family:var(--titulo);font-weight:700;font-size:20px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"+";font-size:26px;line-height:.9;color:var(--verde);flex:none}
+    details[open] summary::after{content:"–"}
+    details p{margin-top:10px;color:var(--tinta-2);max-width:44em}
+
+    /* ---------- fechamento ---------- */
+    .fim{background:var(--noite);color:#fff;text-align:left}
+    .fim .dentro{padding-block:80px;display:flex;flex-wrap:wrap;gap:28px;align-items:center;justify-content:space-between}
+    .fim h2{max-width:14em}
+    .fim p{margin-top:12px;color:#B8C7D6}
+    footer{background:var(--noite);color:#8CA0B5;font-size:14px;border-top:1px solid rgba(255,255,255,.1)}
+    footer .dentro{padding-block:24px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
+    footer a{color:#C9D6E3}
+  </style>
+</head>
+<body>
+
+  <header class="topo">
+    <div class="dentro">
+      <a class="marca" href="#inicio" aria-label="Duplica, início">
+        <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><rect x="2" y="2" width="44" height="44" rx="14" fill="#fff"/><path d="M27.6 14.3A10.5 10.5 0 0 0 23.5 13.5h-9v21h9a10.5 10.5 0 0 0 10.3-12.6" fill="none" stroke="#0F2A43" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.4 23.6l4 4L36 13.8" fill="none" stroke="#12A150" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Duplica
+      </a>
+      <nav aria-label="Seções">
+        <a class="some" href="#caminho">Como funciona</a>
+        <a class="some" href="#telas">Telas</a>
+        <a class="some" href="#precos">Preços</a>
+        <a class="some" data-link="entrar" href="../index.html">Entrar</a>
+        <a class="botao botao-verde" data-link="criar" href="../html/criar-conta.html">Testar grátis</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="abertura">
+      <div class="dentro">
+        <div>
+          <h1>Nenhum boleto perdido entre a doca e o financeiro.</h1>
+          <p class="sub">O Duplica acompanha cada boleto das suas notas de entrada, da chegada da mercadoria até o pagamento. Todo mundo sabe o que chegou, com quem está e o que vence esta semana.</p>
+          <div class="acoes">
+            <a class="botao botao-verde" data-link="criar" href="../html/criar-conta.html">Testar grátis por 14 dias</a>
+            <a class="botao botao-claro" href="#caminho">Ver como funciona</a>
+          </div>
+          <p class="nota">Sem cartão de crédito. Pronto em 5 minutos.</p>
+        </div>
+
+        <div class="cena" aria-hidden="true">
+          <div class="boleto">
+            <div class="b-topo"><span>Banco 341-7</span><span>34191.09008 10109.110923 52472.230003 5</span></div>
+            <div class="b-grade">
+              <div><small>Beneficiário</small><b>Laticínios Serra Azul Ltda</b></div>
+              <div><small>Vencimento</small><b>24/11/2026</b></div>
+              <div><small>Pagador</small><b>Supermercado · Loja 3</b></div>
+              <div><small>Valor do documento</small><b>R$ 1.620,00</b></div>
+              <div><small>Nota fiscal</small><b>NF 48213 · parcela 2/3</b></div>
+              <div><small>Nosso número</small><b>109/00048213-2</b></div>
+            </div>
+            <div class="barras"></div>
+            <span class="carimbo c1">CHEGOU<small>recebido por Carlos, 08:12</small></span>
+            <span class="carimbo c2">VISTO<small>financeiro, Rafaela</small></span>
+            <span class="carimbo c3">PAGO</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dor" aria-label="O problema">
+      <div class="dentro">
+        <div><b>O boleto chegou com a mercadoria e sumiu.</b><p>Ficou na prancheta do conferente, na gaveta do fiscal ou no carro do entregador. Ninguém sabe dizer.</p></div>
+        <div><b>O financeiro só descobre no dia do vencimento.</b><p>Aí vem a multa, os juros e a ligação constrangedora para o fornecedor.</p></div>
+        <div><b>O controle mora num caderno.</b><p>Funciona enquanto a mesma pessoa cuida de tudo. Com várias lojas, não funciona mais.</p></div>
+      </div>
+    </section>
+
+    <section class="bloco" id="caminho">
+      <div class="dentro">
+        <div class="intro">
+          <h2>O caminho de um boleto dentro do Duplica</h2>
+          <p>Cada etapa tem um dono e fica registrada com nome e hora. Se o boleto parar, dá para ver exatamente onde.</p>
+        </div>
+        <ol class="caminho">
+          <li><h3>A nota entra sozinha</h3><p>O Duplica lê o XML de cada nota de entrada e já cria os boletos esperados, com parcelas e vencimentos.</p><span class="quem">Automático</span></li>
+          <li><h3>A mercadoria chega</h3><p>O conferente aponta o celular para o código de barras da nota. O sistema marca "chegou" e avisa o fiscal na hora.</p><span class="quem">Recebimento</span></li>
+          <li><h3>O fiscal envia</h3><p>Confere, anexa foto se quiser e envia ao financeiro. Boleto pago por Pix ou cheque também fica registrado.</p><span class="quem">Fiscal</span></li>
+          <li><h3>O financeiro paga</h3><p>Dá o visto, copia a linha digitável e marca como pago. O calendário mostra o que vence nos próximos dias.</p><span class="quem">Financeiro</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="bloco telas" id="telas">
+      <div class="dentro">
+        <div class="intro">
+          <h2>Feito para quem passa o dia nele</h2>
+          <p>Telas diretas, letras grandes, um clique por etapa. Funciona no computador do escritório e no celular da loja.</p>
+        </div>
+        <div class="abas" role="tablist" aria-label="Telas do Duplica">
+          <button role="tab" aria-selected="true" data-img="fiscal" data-leg="Fiscal: todas as notas com os boletos de cada uma. Dá para filtrar por loja, ver o que não chegou e o que vence logo.">Fiscal</button>
+          <button role="tab" aria-selected="false" data-img="financeiro" data-leg="Financeiro: o que está aguardando visto, o que falta pagar e o que vence nos próximos 7 dias.">Financeiro</button>
+          <button role="tab" aria-selected="false" data-img="celular" data-estreita="1" data-leg="Recebimento no celular: o conferente bipa a nota com a câmera e o boleto já fica como “chegou”, com o nome dele.">Recebimento</button>
+          <button role="tab" aria-selected="false" data-img="impostos" data-leg="Impostos: o calendário do mês com ICMS por loja, INSS, FGTS, PIS, COFINS, IRPJ e CSLL, e o aviso das guias que faltam.">Impostos</button>
+          <button role="tab" aria-selected="false" data-img="calendario" data-leg="Calendário: os vencimentos do mês por dia, com o total de cada um.">Calendário</button>
+        </div>
+        <div class="janela" id="janela"><img id="tela-img" src="img/fiscal.jpg" width="1920" height="1200" alt="Tela Fiscal do Duplica com a lista de notas e boletos"></div>
+        <p class="legenda" id="tela-leg">Fiscal: todas as notas com os boletos de cada uma. Dá para filtrar por loja, ver o que não chegou e o que vence logo.</p>
+      </div>
+    </section>
+
+    <section class="bloco">
+      <div class="dentro">
+        <div class="intro"><h2>O que vem junto</h2></div>
+        <div class="lista">
+          <article><h3>Leitor de boleto</h3><p>Bipe o código de barras ou cole a linha digitável. O Duplica acha a nota pelo valor e vencimento e guarda a linha para o financeiro copiar.</p></article>
+          <article><h3>Várias lojas, um lugar só</h3><p>Cada CNPJ é uma loja. Veja tudo junto ou filtre por loja, com os totais de cada uma.</p></article>
+          <article><h3>Contas fixas e impostos</h3><p>Internet, sistema, aluguel e as guias de imposto do mês aparecem sozinhas, para ninguém esquecer.</p></article>
+          <article><h3>Relatório em Excel</h3><p>Todos os boletos de um período, pagos e não pagos, com quem fez cada etapa. Um clique.</p></article>
+          <article><h3>Histórico de tudo</h3><p>Quem recebeu, quem enviou, quem pagou e quando. Correções pedem motivo e ficam registradas.</p></article>
+          <article><h3>Aplicativo no celular</h3><p>Instale direto do navegador, sem loja de aplicativos. Tem tema claro e escuro.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloco precos" id="precos">
+      <div class="dentro">
+        <div class="intro">
+          <h2>Preço por loja, sem surpresa</h2>
+          <p>Você paga pelo número de lojas (CNPJs) que usa. Usuários são ilimitados.</p>
+        </div>
+        <div class="planos">
+          <div class="plano destaque">
+            <h3>Essencial</h3>
+            <div class="valor">R$ 99 <small>por loja, por mês</small></div>
+            <ul>
+              <li>Notas entrando sozinhas pelo XML</li>
+              <li>Recebimento pelo celular</li>
+              <li>Fiscal, financeiro e contabilidade</li>
+              <li>Calendário, contas fixas e impostos</li>
+              <li>Relatório em Excel e histórico completo</li>
+              <li>Usuários ilimitados</li>
+            </ul>
+            <a class="botao botao-marinho" data-link="criar" href="../html/criar-conta.html">Começar o teste grátis</a>
+          </div>
+          <div class="plano">
+            <span class="etiqueta">Em breve</span>
+            <h3>Completo</h3>
+            <div class="valor">R$ 149 <small>por loja, por mês</small></div>
+            <ul>
+              <li>Tudo do Essencial</li>
+              <li>Boletos do banco (DDA) casados com a nota automaticamente</li>
+              <li>Guias de imposto lidas direto do PDF do contador</li>
+            </ul>
+            <a class="botao botao-claro" style="color:var(--marinho);border-color:var(--marinho)" data-link="criar" href="../html/criar-conta.html">Testar o Essencial agora</a>
+          </div>
+        </div>
+        <p class="obs-preco">14 dias grátis, sem cartão. Depois do teste, você decide se assina. Sem fidelidade: cancela quando quiser.</p>
+      </div>
+    </section>
+
+    <section class="bloco">
+      <div class="dentro">
+        <div class="intro"><h2>Perguntas comuns</h2></div>
+        <div class="perguntas">
+          <details><summary>Preciso trocar o meu sistema (ERP)?</summary><p>Não. O Duplica trabalha ao lado dele: lê os XMLs das notas que o seu sistema já recebe e cuida só do caminho dos boletos.</p></details>
+          <details><summary>Como as notas entram?</summary><p>Um programinha instalado em um computador da empresa envia os XMLs novos a cada 15 minutos. Também dá para arrastar os XMLs na tela ou lançar um boleto à mão.</p></details>
+          <details><summary>O Duplica paga os boletos?</summary><p>Não. Ele controla: mostra o que vence, guarda a linha digitável para copiar e registra quem pagou. O pagamento continua no seu banco.</p></details>
+          <details><summary>Os dados da minha empresa ficam seguros?</summary><p>Cada empresa só enxerga os próprios dados, a conexão é criptografada e há cópias de segurança. Você pode pedir a exportação ou a exclusão dos dados quando quiser.</p></details>
+          <details><summary>Funciona no celular?</summary><p>Sim. Abre no navegador e pode ser instalado como aplicativo. O recebimento de notas foi pensado para o celular, usando a câmera.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="fim">
+      <div class="dentro">
+        <div>
+          <h2>Comece pelo próximo boleto que chegar.</h2>
+          <p>Cadastre a empresa e as lojas agora e teste com as suas notas de verdade.</p>
+        </div>
+        <a class="botao botao-verde" data-link="criar" href="../html/criar-conta.html">Testar grátis por 14 dias</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="dentro">
+      <span>Duplica · controle de boletos das notas de entrada</span>
+      <!-- contato: coloque aqui o WhatsApp e o e-mail de vendas quando tiver -->
+      <span><a data-link="entrar" href="../index.html">Entrar no sistema</a> · <a href="../html/termos.html" data-link="termos">Termos e privacidade</a></span>
+    </div>
+  </footer>
+
+  <script>
+    // Endereço do sistema. Se esta página for para OUTRO domínio, troque por
+    // endereços completos, ex.: 'https://duplicaboletos.com.br/index.html'
+    const APP_ENTRAR = '../index.html';
+    const APP_CRIAR = '../html/criar-conta.html';
+    const APP_TERMOS = '../html/termos.html';
+    document.querySelectorAll('[data-link="entrar"]').forEach((a) => { a.href = APP_ENTRAR; });
+    document.querySelectorAll('[data-link="criar"]').forEach((a) => { a.href = APP_CRIAR; });
+    document.querySelectorAll('[data-link="termos"]').forEach((a) => { a.href = APP_TERMOS; });
+
+    // abas das telas
+    const img = document.getElementById('tela-img'), leg = document.getElementById('tela-leg'), janela = document.getElementById('janela');
+    document.querySelectorAll('.abas button').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.abas button').forEach((x) => x.setAttribute('aria-selected', x === b));
+      img.src = `img/${b.dataset.img}.jpg`;
+      img.alt = 'Tela do Duplica: ' + b.textContent;
+      leg.textContent = b.dataset.leg;
+      janela.classList.toggle('estreita', !!b.dataset.estreita);
+    }));
+  </script>
+</body>
+</html>

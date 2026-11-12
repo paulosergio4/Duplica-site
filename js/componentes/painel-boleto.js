@@ -4,14 +4,14 @@
 // comprovante, correção de marcação e histórico.
 // O histórico e o link da foto são buscados só quando o painel abre.
 // =====================================================================
-import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=bebe11c';
-import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=bebe11c';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=bebe11c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=bebe11c';
-import { ICONE } from './icones.js?v=bebe11c';
-import { docNota } from './comuns.js?v=bebe11c';
-import { linhaDigitavelHtml } from './ler-boleto.js?v=bebe11c';
-import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=bebe11c';
+import { estado, boletoDe, notaDe } from '../nucleo/estado.js?v=e593a61';
+import { podeCorrigir, podeCancelar, podePagar, podePagarFiscal, podeAlterarVencimento, NOME_ETAPA } from '../nucleo/regras.js?v=e593a61';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=e593a61';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=e593a61';
+import { ICONE } from './icones.js?v=e593a61';
+import { docNota } from './comuns.js?v=e593a61';
+import { linhaDigitavelHtml } from './ler-boleto.js?v=e593a61';
+import { esc, brl, dataBR, dataHoraBR } from '../util/formato.js?v=e593a61';
 
 /** Abre o painel e busca histórico + foto */
 async function abrir(id) {
@@ -100,7 +100,7 @@ export function painelHtml() {
       <div style="display:flex;gap:8px"><button class="bp" type="button" data-acao="salvar-venc">Salvar vencimento</button>
         <button class="bg" type="button" data-acao="cancelar-venc">Cancelar</button></div>
       <small style="color:var(--terra)">A data antiga fica registrada no histórico.</small></div>` : ''}
-    ${b.etapa === 'cancelado' ? `<div class="erro" style="background:#EFD9D6;color:#190019"><b>Cancelado</b> · ${esc(b.cancelado_motivo || '')}<br>
+    ${b.etapa === 'cancelado' ? `<div class="erro" style="background:#E9EDF2;color:#1F2933"><b>Cancelado</b> · ${esc(b.cancelado_motivo || '')}<br>
       <small>por ${esc(b.cancelado_por || '')} · ${dataHoraBR(b.cancelado_em)}</small></div>` : ''}
     <ol class="etapas">${passos}</ol>
     ${linhaDigitavelHtml(b)}

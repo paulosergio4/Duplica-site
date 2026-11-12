@@ -5,9 +5,11 @@
 //   - primeiro acesso: troca da senha provisória
 // Depois de entrar, vai para html/app.html
 // =====================================================================
-import { obterApi } from './servicos/api.js?v=bebe11c';
-import { MODO_DEMO } from './config.js?v=bebe11c';
-import { normalizarLogin } from './util/formato.js?v=bebe11c';
+import { ligarBotaoTema } from './util/tema.js?v=e593a61';
+import { prepararInstalacao } from './util/instalar.js?v=e593a61';
+import { obterApi } from './servicos/api.js?v=e593a61';
+import { MODO_DEMO } from './config.js?v=e593a61';
+import { normalizarLogin } from './util/formato.js?v=e593a61';
 
 const $ = (id) => document.getElementById(id);
 let api;
@@ -75,3 +77,6 @@ $('form-senha').addEventListener('submit', async (ev) => {
 });
 
 iniciar().catch((e) => mostrarErro('erro-login', 'Não foi possível conectar: ' + e.message));
+
+ligarBotaoTema();
+prepararInstalacao();

@@ -4,13 +4,29 @@
    Para mudar uma cor do sistema inteiro, troque só a variável em :root.
    ===================================================================== */
 :root{
-  --petroleo:#2B124C; --petroleo-esc:#190019; --salvia:#DFB6B2; --nevoa:#854F6C;
-  --terra:#522B5B; --cafe:#190019; --creme:#FBE4D8; --creme-2:#F3D2C9; --linha:#E9C7C0; --branco:#FFF6F1;
-  --alerta:#A8503A; --alerta-txt:#8E3F2B; --alerta-bg:#F3DDD5; --alerta-row:#FBEDE7;
-  --ocre-txt:#6E5119; --ocre-bg:#F3E6CC; --musgo:#4F6A4A; --musgo-bg:#DDE7D8; --musgo-txt:#3F5A3B;
-  --azul-bg:#E6D9EC; --cinza-bg:#EADDE3; --hist-bg:#F6DCD3;
+  /* --petroleo = cor principal (títulos, botões)   --sobre = texto em cima da cor principal
+     --salvia = fundo da página   --creme = fundo dos cartões   --cafe = texto   --terra = texto secundário
+     --menu = fundo do menu, do login e da tela de carregamento (escuro nos dois temas) */
+  --petroleo:#0F2A43; --petroleo-esc:#1B3F63; --sobre:#FFFFFF; --salvia:#F5F7FA; --nevoa:#8A97A6;
+  --terra:#52606D; --cafe:#1F2933; --creme:#FFFFFF; --creme-2:#EEF2F6; --linha:#E1E7EE; --branco:#FFFFFF;
+  --alerta:#B4472E; --alerta-txt:#8E3F2B; --alerta-bg:#F6DFD8; --alerta-row:#FBEDE7;
+  --ocre-txt:#6E5119; --ocre-bg:#F6EBCF; --musgo:#12A150; --musgo-esc:#0D8743; --musgo-bg:#DDF3E6; --musgo-txt:#0B6B36;
+  --azul-bg:#DCEAF7; --azul-txt:#1D4E7A; --cinza-bg:#EDF1F5; --hist-bg:#F0F4F8; --hover:#FAFBFC; --apagado:#8A97A6;
+  --menu:#0F2A43; --menu-txt:#FFFFFF; --menu-txt2:#B8C7D6;
+  --sombra:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08); --sombra-alta:0 20px 50px rgba(16,24,40,.22); --veu:rgba(15,25,38,.55);
   --f:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   color-scheme:light;
+}
+/* ---------- modo escuro: <html data-tema="escuro"> (ver js/util/tema.js) ---------- */
+:root[data-tema="escuro"]{
+  --petroleo:#9CC4EC; --petroleo-esc:#BBD8F4; --sobre:#0B1622; --salvia:#0D151E; --nevoa:#5F7186;
+  --terra:#A3B1C2; --cafe:#E6EDF3; --creme:#17212C; --creme-2:#1F2B38; --linha:#2A3847; --branco:#101922;
+  --alerta:#D9644A; --alerta-txt:#F2A994; --alerta-bg:#3A211B; --alerta-row:#2A1A16;
+  --ocre-txt:#E8C77E; --ocre-bg:#3A3016; --musgo:#23A862; --musgo-esc:#2EBD6B; --musgo-bg:#12301F; --musgo-txt:#74DBA0;
+  --azul-bg:#17324D; --azul-txt:#9CC4EC; --cinza-bg:#1F2B38; --hist-bg:#1B2633; --hover:#1B2633; --apagado:#6B7C8F;
+  --menu:#0A121B; --menu-txt:#FFFFFF; --menu-txt2:#9FB1C4;
+  --sombra:0 0 0 1px #223040; --sombra-alta:0 20px 50px rgba(0,0,0,.55); --veu:rgba(0,0,0,.65);
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
@@ -25,7 +41,7 @@ h1,h2{text-wrap:balance}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* botões */
-.bp{height:46px;padding:0 18px;border:0;border-radius:12px;background:var(--petroleo);color:var(--creme);font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.bp{height:46px;padding:0 18px;border:0;border-radius:12px;background:var(--petroleo);color:var(--sobre);font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
 .bp:hover{background:var(--petroleo-esc)}
 .bg{height:40px;padding:0 14px;border:1.5px solid var(--nevoa);border-radius:10px;background:transparent;color:var(--petroleo);font-weight:700;font-size:13px;white-space:nowrap}
 .bg:hover{background:var(--creme-2)}
@@ -34,7 +50,7 @@ h1,h2{text-wrap:balance}
 .field label{font-size:13px;font-weight:700}
 .inp{height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--nevoa);background:var(--branco);color:var(--cafe)}
 textarea.inp{height:auto;padding:10px 12px;resize:vertical}
-.inp::placeholder{color:#7A4E68}
+.inp::placeholder{color:var(--apagado)}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
 .p-esperado{background:var(--cinza-bg);color:var(--cafe);border:1px solid var(--nevoa)}
 .p-chegou{background:var(--creme-2);color:var(--terra)}
@@ -43,25 +59,25 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical}
 .p-vencido{background:var(--alerta-bg);color:var(--alerta-txt)}
 .p-breve{background:var(--ocre-bg);color:var(--ocre-txt)}
 .erro{margin:0;padding:10px 12px;border-radius:10px;background:var(--alerta-bg);color:var(--alerta-txt);font-weight:600;font-size:14px}
-.toast{padding:12px 16px;border-radius:12px;background:var(--petroleo);color:var(--creme);font-weight:600;font-size:14px}
+.toast{padding:12px 16px;border-radius:12px;background:var(--petroleo);color:var(--sobre);font-weight:600;font-size:14px}
 
 /* ---------- tela de carregamento (html/app.html) ---------- */
 .splash{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;overflow:hidden;
-  background:radial-gradient(120% 90% at 50% 35%,#522B5B 0%,#2B124C 45%,#190019 100%);color:var(--creme);
+  background:radial-gradient(120% 90% at 50% 35%,#1E4A75 0%,#0F2A43 50%,#081A2B 100%);color:#FFFFFF;
   transition:opacity .45s ease,visibility .45s ease}
 .splash.saindo{opacity:0;visibility:hidden}
 .splash-brilho{position:absolute;width:520px;height:520px;border-radius:50%;
-  background:radial-gradient(circle,rgba(223,182,178,.35),rgba(223,182,178,0) 65%);animation:splash-brilho 3.2s ease-in-out infinite}
+  background:radial-gradient(circle,rgba(18,161,80,.28),rgba(18,161,80,0) 65%);animation:splash-brilho 3.2s ease-in-out infinite}
 .splash-centro{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
-.splash-logo{filter:drop-shadow(0 18px 40px rgba(25,0,25,.55));animation:splash-entra .7s cubic-bezier(.2,.9,.3,1.3) both}
+.splash-logo{filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));animation:splash-entra .7s cubic-bezier(.2,.9,.3,1.3) both}
 .splash-logo svg{animation:splash-pronto .5s cubic-bezier(.3,1.6,.5,1) 1.6s both}
 @keyframes splash-pronto{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
 .splash-logo .logo-d{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .9s ease-out .25s forwards}
 .splash-logo .logo-v{stroke-dasharray:100;stroke-dashoffset:100;animation:splash-traco .55s cubic-bezier(.5,0,.2,1) 1s forwards}
 .splash-nome{font-size:30px;font-weight:800;letter-spacing:-.6px;animation:splash-sobe .6s ease .5s both}
-.splash-barra{width:160px;height:4px;border-radius:99px;background:rgba(251,228,216,.15);overflow:hidden;animation:splash-sobe .6s ease .7s both}
-.splash-barra span{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#DFB6B2,#FBE4D8);animation:splash-corre 1.1s ease-in-out infinite}
-.splash-texto{font-size:13px;color:#DFB6B2;letter-spacing:.3px;animation:splash-sobe .6s ease .85s both}
+.splash-barra{width:160px;height:4px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;animation:splash-sobe .6s ease .7s both}
+.splash-barra span{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#12A150,#7BE0A8);animation:splash-corre 1.1s ease-in-out infinite}
+.splash-texto{font-size:13px;color:#B8C7D6;letter-spacing:.3px;animation:splash-sobe .6s ease .85s both}
 @keyframes splash-traco{to{stroke-dashoffset:0}}
 @keyframes splash-entra{from{opacity:0;transform:scale(.6) rotate(-8deg)}to{opacity:1;transform:none}}
 @keyframes splash-sobe{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -74,3 +90,7 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical}
 /* logo do menu: o visto se desenha uma vez ao abrir */
 .marca .logo .logo-v{stroke-dasharray:100;animation:logo-visto .6s ease .2s both}
 @keyframes logo-visto{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+
+/* cartões: contorno leve */
+.secao,.card,.login-card,.resultado{box-shadow:var(--sombra)}
+.login-card{box-shadow:var(--sombra-alta)}

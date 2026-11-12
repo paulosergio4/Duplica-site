@@ -7,12 +7,12 @@
 // A planilha tem duas abas: "Boletos" (uma linha por parcela) e "Resumo".
 // Gerada no navegador com a biblioteca SheetJS (carregada só na hora).
 // =====================================================================
-import { estado, filialDe } from '../nucleo/estado.js?v=bebe11c';
-import { registrarAcoes, avisar } from '../nucleo/eventos.js?v=bebe11c';
-import { desenhar } from '../nucleo/desenhar.js?v=bebe11c';
-import { NOME_ETAPA } from '../nucleo/regras.js?v=bebe11c';
-import { TIPOS_NOTA } from './comuns.js?v=bebe11c';
-import { esc, hojeISO, dataHoraBR, cnpjFormatado } from '../util/formato.js?v=bebe11c';
+import { estado, filialDe } from '../nucleo/estado.js?v=e593a61';
+import { registrarAcoes, avisar } from '../nucleo/eventos.js?v=e593a61';
+import { desenhar } from '../nucleo/desenhar.js?v=e593a61';
+import { NOME_ETAPA } from '../nucleo/regras.js?v=e593a61';
+import { TIPOS_NOTA } from './comuns.js?v=e593a61';
+import { esc, hojeISO, dataHoraBR, cnpjFormatado } from '../util/formato.js?v=e593a61';
 
 const URL_XLSX = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 

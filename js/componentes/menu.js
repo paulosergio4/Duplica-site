@@ -2,13 +2,14 @@
 // DUPLICA · componentes/menu.js
 // Menu lateral: marca, empresa, telas que a pessoa pode ver e botão Sair.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=bebe11c';
-import { NOME_PAPEL } from '../nucleo/regras.js?v=bebe11c';
-import { registrarAcoes } from '../nucleo/eventos.js?v=bebe11c';
-import { desenhar } from '../nucleo/desenhar.js?v=bebe11c';
-import { telasDe } from '../telas/index.js?v=bebe11c';
-import { ICONE } from './icones.js?v=bebe11c';
-import { esc } from '../util/formato.js?v=bebe11c';
+import { estado } from '../nucleo/estado.js?v=e593a61';
+import { NOME_PAPEL } from '../nucleo/regras.js?v=e593a61';
+import { registrarAcoes } from '../nucleo/eventos.js?v=e593a61';
+import { desenhar } from '../nucleo/desenhar.js?v=e593a61';
+import { telasDe } from '../telas/index.js?v=e593a61';
+import { ICONE } from './icones.js?v=e593a61';
+import { esc } from '../util/formato.js?v=e593a61';
+import { temaAtual, alternarTema, LUA, SOL } from '../util/tema.js?v=e593a61';
 
 export function menuHtml() {
   const p = estado.perfil;
@@ -36,7 +37,8 @@ export function menuHtml() {
     <div class="nav">${itens}</div>
     <div class="eu"><span class="av" aria-hidden="true">${esc(p.nome.charAt(0))}</span>
       <div><b>${esc(p.nome)}</b><small>${esc(papel)}</small></div>
-      <button class="sair" type="button" data-acao="sair" aria-label="Sair">${ICONE.sair()}</button></div>
+      <button class="sair" type="button" data-acao="alternar-tema" aria-label="${temaAtual() === 'escuro' ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'}" title="${temaAtual() === 'escuro' ? 'Tema claro' : 'Tema escuro'}">${temaAtual() === 'escuro' ? SOL : LUA}</button>
+      <button class="sair" type="button" data-acao="sair" aria-label="Sair" title="Sair">${ICONE.sair()}</button></div>
   </nav>`;
 }
 
@@ -45,6 +47,7 @@ registrarAcoes({
     Object.assign(estado, { tela: el.dataset.id, sel: null, corrigindo: false, modal: null, menuAberto: false });
     desenhar();
   },
+  'alternar-tema': () => { alternarTema(); desenhar(); },
   'alternar-menu': () => { estado.menuAberto = !estado.menuAberto; desenhar(); },
   sair: async () => {
     await estado.api.sair();

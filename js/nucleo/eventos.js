@@ -11,7 +11,7 @@
 // / registrarCampo. Para achar "o que acontece quando clico em X", procure
 // pelo nome do data-acao nos arquivos da pasta js/telas.
 // =====================================================================
-import { estado } from './estado.js?v=bebe11c';
+import { estado } from './estado.js?v=e593a61';
 
 const acoes = {};
 const formularios = {};
