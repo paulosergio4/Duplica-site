@@ -7,7 +7,7 @@
 // Se faltar a chave, a licença vencer ou o aparelho não aguentar
 // (sem WebGL etc.), quem chama cai no leitor próprio (util/camera.js).
 // =====================================================================
-import { CONFIG } from '../config.js?v=e9fe573';
+import { CONFIG } from '../config.js?v=31e0c6d';
 
 const VERSAO = '8.7.0';
 const LIB = `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@${VERSAO}/sdc-lib/`;
