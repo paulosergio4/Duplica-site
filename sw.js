@@ -5,7 +5,7 @@
 // arquivos do site só para abrir rápido e mostrar um aviso quando estiver
 // sem internet. Nada do Supabase passa por aqui.
 // =====================================================================
-const CACHE = 'duplica-77adb64';
+const CACHE = 'duplica-6ae5c33';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (ev) => {
@@ -29,7 +29,10 @@ self.addEventListener('fetch', (ev) => {
       // páginas e arquivos sem ?v=: sempre confere com o servidor (o GitHub Pages guarda 10 min no navegador
       // e a versão nova demorava a aparecer). Com ?v= o arquivo nunca muda, então pode usar o cache normal.
       const u = new URL(req.url);
-      const resp = await fetch(req, u.searchParams.has('v') ? {} : { cache: 'no-cache' });
+      // (pedido de página — mode "navigate" — não aceita opções: refaz pelo endereço)
+      const resp = u.searchParams.has('v') ? await fetch(req)
+        : req.mode === 'navigate' ? await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'follow' })
+        : await fetch(req, { cache: 'no-cache' });
       if (resp.ok) { const copia = resp.clone(); caches.open(CACHE).then((c) => c.put(req, copia)).catch(() => {}); }
       return resp;
     } catch {
