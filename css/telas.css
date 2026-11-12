@@ -227,3 +227,12 @@
 .conf-qtd b span{font-size:15px;font-weight:700;letter-spacing:0}
 .conf-qtd small{font-size:13px;font-weight:600;color:var(--terra);white-space:nowrap;margin-top:2px}
 .conf-item.ok .conf-qtd b{color:var(--musgo-txt)}
+
+/* ---------- recebimento: cada nota é um ticket separado ---------- */
+.rec-tickets{display:flex;flex-direction:column;gap:12px;padding:14px 16px 18px}
+.rec-tickets .rec-ticket{border:1px solid var(--linha);border-left:5px solid var(--nevoa);border-radius:14px;background:var(--creme);box-shadow:0 1px 2px rgba(15,42,67,.06);min-width:0;margin:0}
+.rec-tickets .rec-ticket.chegou{border-left-color:var(--musgo)}
+.rec-tickets .rec-ticket.falta{border-left-color:#D4A72C}
+.rec-tickets .rec-ticket.aguarda{border-left-color:var(--terra)}
+.rec-tickets .rec-ticket:last-child{border-bottom:1px solid var(--linha)}
+@media (max-width:760px){.rec-tickets{padding:12px 10px 14px;gap:10px}}

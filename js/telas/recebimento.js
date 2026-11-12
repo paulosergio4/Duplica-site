@@ -9,14 +9,14 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=6ae5c33';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=6ae5c33';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=6ae5c33';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=6ae5c33';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=6ae5c33';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=6ae5c33';
-import { abrirCamera, bip } from '../util/camera.js?v=6ae5c33';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=6ae5c33';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=5329690';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=5329690';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=5329690';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=5329690';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=5329690';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=5329690';
+import { abrirCamera, bip } from '../util/camera.js?v=5329690';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=5329690';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -51,7 +51,7 @@ function listaConferente() {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const lista = (estado.recebimentos || []).filter((r) => r.perfil_id === estado.perfil.id && new Date(r.feito_em) >= hoje);
   return `<section class="secao"><div class="secao-h"><h2>Você recebeu hoje</h2><span class="pill p-breve num">${plural(lista.length, 'nota', 'notas')}</span></div>
-    ${lista.length ? `<div class="rolagem">${lista.map((r) => linhaNota(r.nota_id ? notaDe(r.nota_id) : null, r)).join('')}</div>` : vazio('Nenhuma nota recebida hoje.')}</section>`;
+    ${lista.length ? `<div class="rec-tickets">${lista.map((r) => linhaNota(r.nota_id ? notaDe(r.nota_id) : null, r)).join('')}</div>` : vazio('Nenhuma nota recebida hoje.')}</section>`;
 }
 
 /** Fiscal e Admin: todas as notas (XML) desde empresas.recebimento_desde, chegou ou não */
@@ -72,7 +72,7 @@ function listaNotas() {
     <div style="padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--linha)">
       <div class="chips">${chip('falta', 'Não chegaram', total - chegaram)}${chip('chegou', 'Chegaram', chegaram)}${chip('todas', 'Todas', total)}</div>
       <input class="inp" id="rec-busca" placeholder="Buscar fornecedor, nota ou quem recebeu" value="${esc(estado.recBusca)}" style="flex:1 1 240px;min-width:0;height:40px"></div>
-    ${lista.length ? `<div class="rolagem">${lista.map((i) => linhaNota(i.n, i.r)).join('')}</div>`
+    ${lista.length ? `<div class="rec-tickets">${lista.map((i) => linhaNota(i.n, i.r)).join('')}</div>`
       : vazio(estado.recFiltro === 'falta' ? 'Nenhuma nota esperando: todas chegaram.' : 'Nenhuma nota aqui.')}</section>`;
 }
 
@@ -130,7 +130,7 @@ function linhaNota(n, r) {
     r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
     r && n && resumoDaNota(n.id) ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
   ].join('');
-  return `<div class="linha"><div class="kv" style="flex:1 1 240px;min-width:0"><b style="color:var(--petroleo)">${n ? esc(n.fornecedor) : 'Nota ainda sem XML'}</b>
+  return `<div class="linha rec-ticket ${!r ? 'falta' : r.situacao === 'pendente' ? 'aguarda' : 'chegou'}"><div class="kv" style="flex:1 1 240px;min-width:0"><b style="color:var(--petroleo)">${n ? esc(n.fornecedor) : 'Nota ainda sem XML'}</b>
       <small>${n ? `${docNota(n)} · ${esc(f?.nome || '')}` : `NF ${esc(numeroDaChave(r.chave))}`}</small></div>
     ${n ? `<div class="kv" style="width:96px"><small>Emissão</small><b class="num">${dataBR(n.emissao)}</b></div>
     <div class="kv" style="width:120px"><small>Valor da nota</small><b class="num">${brl(n.valor)}</b></div>` : ''}
