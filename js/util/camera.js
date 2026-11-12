@@ -83,6 +83,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
     <div class="camera-baixo">
       <p class="camera-dica">${dica}</p>
       <p class="camera-status" role="status">Abrindo a câmera…</p>
+      <small class="camera-info"></small>
       <div class="camera-botoes">
         <label class="bg camera-foto">Não lê? Tirar foto<input type="file" accept="image/*" capture="environment" hidden></label>
         <button type="button" class="bg camera-luz" hidden>Lanterna</button>
@@ -168,7 +169,8 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1440 } },
+      // pede o máximo (4K); o aparelho entrega o que tiver. Mais pixels = barras finas da nota legíveis com o celular em pé
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 } },
       audio: false,
     });
   } catch (e) {
@@ -183,10 +185,15 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   // foco contínuo, um pouco de zoom e lanterna (quando o aparelho deixa)
   const trilha = stream.getVideoTracks()[0];
   const cap = trilha.getCapabilities?.() || {};
-  const ajustes = {};
-  if (cap.focusMode?.includes('continuous')) ajustes.focusMode = 'continuous';
-  if (cap.zoom && cap.zoom.max >= 1.5) ajustes.zoom = Math.min(cap.zoom.max, 1.5);
-  if (Object.keys(ajustes).length) trilha.applyConstraints({ advanced: [ajustes] }).catch(() => {});
+  // Zoom 2x: o celular recorta do sensor inteiro (12 MP) antes de reduzir para o vídeo,
+  // então o código ganha detalhe — e a pessoa segura um pouco mais longe, onde o foco pega.
+  // Cada ajuste vai separado: se o aparelho recusar um, os outros continuam valendo.
+  let zoom = 1;
+  if (cap.zoom && cap.zoom.max > 1) {
+    zoom = Math.min(cap.zoom.max, 2);
+    await trilha.applyConstraints({ advanced: [{ zoom }] }).catch(() => { zoom = 1; });
+  }
+  if (cap.focusMode?.includes('continuous')) trilha.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
   if (cap.torch) {
     const luz = caixa.querySelector('.camera-luz');
     let acesa = false;
@@ -201,6 +208,8 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   video.srcObject = stream;
   await video.play().catch(() => {});
   dizer('Procurando o código…');
+  // informação técnica pequena (ajuda a entender quando um aparelho não lê)
+  caixa.querySelector('.camera-info').textContent = `${video.videoWidth}×${video.videoHeight}${zoom > 1 ? ` · zoom ${zoom}x` : ''}${'BarcodeDetector' in window ? '' : ' · zx'}`;
 
   // leitura ao vivo: alterna o recorte do retângulo (mais nítido) com o quadro inteiro
   const tela = document.createElement('canvas');

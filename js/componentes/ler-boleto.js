@@ -9,15 +9,15 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=9d7b914';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=9d7b914';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9d7b914';
-import { pillEtapa, docNota } from './comuns.js?v=9d7b914';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=9d7b914';
-import { abrirCamera, bip } from '../util/camera.js?v=9d7b914';
-import { chaveValida, numeroDaChave } from '../util/chave.js?v=9d7b914';
-import { receber } from '../telas/recebimento.js?v=9d7b914';
-import { esc, brl, dataBR } from '../util/formato.js?v=9d7b914';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=eb710ef';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=eb710ef';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=eb710ef';
+import { pillEtapa, docNota } from './comuns.js?v=eb710ef';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=eb710ef';
+import { abrirCamera, bip } from '../util/camera.js?v=eb710ef';
+import { chaveValida, numeroDaChave } from '../util/chave.js?v=eb710ef';
+import { receber } from '../telas/recebimento.js?v=eb710ef';
+import { esc, brl, dataBR } from '../util/formato.js?v=eb710ef';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
@@ -130,7 +130,7 @@ registrarAcoes({
     try {
       await abrirCamera({
         titulo: 'Aponte para o código de barras do boleto',
-        dica: 'Pode ser com o celular em pé ou deitado. Encaixe o código de barras do boleto inteiro no retângulo, bem iluminado.',
+        dica: 'Em pé ou deitado. Segure a uns 20 cm, com o código de barras do boleto inteiro no retângulo e boa luz.',
         aoLer: (texto) => {
           const res = lerBoleto(texto);
           if (!res.ok) {
