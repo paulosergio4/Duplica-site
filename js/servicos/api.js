@@ -9,7 +9,7 @@
 // As duas versões têm exatamente as mesmas funções (veja a lista em
 // api-demo.js, que é a mais fácil de ler).
 // =====================================================================
-import { MODO_DEMO } from '../config.js?v=31e0c6d';
+import { MODO_DEMO } from '../config.js?v=77adb64';
 
 let _api = null;
 
@@ -17,8 +17,8 @@ let _api = null;
 export async function obterApi() {
   if (!_api) {
     _api = MODO_DEMO
-      ? (await import('./api-demo.js?v=31e0c6d')).apiDemo
-      : (await import('./api-supabase.js?v=31e0c6d')).apiSupabase;
+      ? (await import('./api-demo.js?v=77adb64')).apiDemo
+      : (await import('./api-supabase.js?v=77adb64')).apiSupabase;
   }
   return _api;
 }
