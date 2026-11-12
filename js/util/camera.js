@@ -1,34 +1,98 @@
 // =====================================================================
 // DUPLICA · util/camera.js
-// Lê código de barras pela câmera do celular.
-//   1. Se o navegador tem o leitor próprio (BarcodeDetector: Chrome no
-//      Android), usa ele — é o mais rápido.
-//   2. Senão (iPhone, alguns PCs), carrega a biblioteca ZXing na hora.
+// Lê código de barras pela câmera do celular (chave da DANFE ou boleto).
+//   - Pede a câmera traseira na maior resolução que ela der, com foco
+//     contínuo e um pouco de zoom (código de nota é fino e denso).
+//   - A cada ~150 ms recorta a área do retângulo em resolução cheia e
+//     tenta ler: primeiro com o leitor do próprio navegador
+//     (BarcodeDetector, Chrome no Android); se não tiver, com a ZXing
+//     (iPhone, alguns PCs), carregada na hora.
+//   - Se a leitura ao vivo não sair, "Tirar foto" usa a câmera do celular
+//     em resolução máxima e lê da foto (bem mais nítido).
+//   - Lanterna, quando o aparelho permite.
 // A janela da câmera fica num elemento PRÓPRIO no <body>, fora do
 // redesenho das telas, para o vídeo não piscar.
 // =====================================================================
 const ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm';
+const FORMATOS = ['code_128', 'itf', 'ean_13', 'qr_code'];
 
 let aberto = null;   // { parar }
+let leitorZxing = null;
+
+/** Monta (uma vez) o leitor que serve para este aparelho. Devolve async (fonte) => [textos] */
+async function prepararLeitor() {
+  if ('BarcodeDetector' in window) {
+    try {
+      const suportados = await window.BarcodeDetector.getSupportedFormats();
+      const formats = FORMATOS.filter((f) => suportados.includes(f));
+      if (formats.includes('code_128')) {
+        const detector = new window.BarcodeDetector({ formats });
+        return async (fonte) => (await detector.detect(fonte)).map((c) => c.rawValue);
+      }
+    } catch { /* cai para a ZXing */ }
+  }
+  if (!leitorZxing) {
+    const { BrowserMultiFormatReader, BarcodeFormat } = await import(ZXING);
+    // 2 = POSSIBLE_FORMATS, 3 = TRY_HARDER (DecodeHintType da ZXing)
+    const dicas = new Map([[2, [BarcodeFormat.CODE_128, BarcodeFormat.ITF, BarcodeFormat.QR_CODE]], [3, true]]);
+    leitorZxing = new BrowserMultiFormatReader(dicas);
+  }
+  return async (fonte) => {
+    let tela = fonte;
+    if (!(fonte instanceof HTMLCanvasElement)) {
+      tela = document.createElement('canvas');
+      tela.width = fonte.videoWidth || fonte.width; tela.height = fonte.videoHeight || fonte.height;
+      tela.getContext('2d').drawImage(fonte, 0, 0);
+    }
+    try { return [leitorZxing.decodeFromCanvas(tela).getText()]; } catch { return []; }
+  };
+}
+
+/** Desenha num canvas a região do vídeo que está dentro do retângulo (um pouco maior, para sobrar margem) */
+function recortar(video, mira, tela) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  // o vídeo é mostrado com object-fit: cover → converter a posição da mira para pixels do vídeo
+  const caixa = video.getBoundingClientRect(), m = mira.getBoundingClientRect();
+  const escala = Math.max(caixa.width / vw, caixa.height / vh);
+  const dx = (caixa.width - vw * escala) / 2, dy = (caixa.height - vh * escala) / 2;
+  const folga = 0.12;
+  let x = (m.left - caixa.left - dx) / escala, y = (m.top - caixa.top - dy) / escala;
+  let w = m.width / escala, h = m.height / escala;
+  x -= w * folga; y -= h * folga; w *= 1 + 2 * folga; h *= 1 + 2 * folga;
+  x = Math.max(0, x); y = Math.max(0, y); w = Math.min(vw - x, w); h = Math.min(vh - y, h);
+  tela.width = Math.round(w); tela.height = Math.round(h);
+  tela.getContext('2d').drawImage(video, x, y, w, h, 0, 0, tela.width, tela.height);
+  return tela;
+}
 
 /**
  * Abre a câmera em tela cheia e chama aoLer(texto) com cada código lido.
  * aoLer devolve true para fechar a câmera (código aceito) ou false para continuar.
  */
-export async function abrirCamera({ titulo = 'Aponte para o código de barras', dica = 'Deixe o código de barras da nota inteiro dentro do retângulo, bem iluminado.', aoLer }) {
+export async function abrirCamera({ titulo = 'Aponte para o código de barras', dica = 'Encaixe o código de barras inteiro no retângulo, bem iluminado.', aoLer }) {
   fecharCamera();
   const caixa = document.createElement('div');
   caixa.className = 'camera';
   caixa.innerHTML = `<div class="camera-topo"><b>${titulo}</b><button type="button" class="bg camera-fechar">Fechar</button></div>
-    <div class="camera-video"><video playsinline muted></video><div class="camera-mira"></div></div>
-    <p class="camera-dica">${dica}</p>`;
+    <div class="camera-video"><video playsinline muted></video><div class="camera-mira"><span class="camera-linha"></span></div></div>
+    <div class="camera-baixo">
+      <p class="camera-dica">${dica}</p>
+      <p class="camera-status" role="status">Abrindo a câmera…</p>
+      <div class="camera-botoes">
+        <label class="bg camera-foto">Não lê? Tirar foto<input type="file" accept="image/*" capture="environment" hidden></label>
+        <button type="button" class="bg camera-luz" hidden>Lanterna</button>
+      </div>
+    </div>`;
   document.body.appendChild(caixa);
-  const video = caixa.querySelector('video');
-  let parado = false, stream = null, controleZxing = null;
+  const video = caixa.querySelector('video'), mira = caixa.querySelector('.camera-mira');
+  const status = caixa.querySelector('.camera-status');
+  const dizer = (t) => { status.textContent = t; };
+  let parado = false, stream = null, timer = null;
 
   const parar = () => {
     parado = true;
-    try { controleZxing?.stop(); } catch { /* já parou */ }
+    clearTimeout(timer);
     stream?.getTracks().forEach((t) => t.stop());
     caixa.remove();
     aberto = null;
@@ -36,37 +100,57 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   aberto = { parar };
   caixa.querySelector('.camera-fechar').addEventListener('click', parar);
 
-  let ocupado = false;
-  const entregar = async (texto) => {
-    if (parado || ocupado || !texto) return;
-    ocupado = true;
-    try { if (await aoLer(texto)) parar(); } finally { ocupado = false; }
+  let ocupado = false, recusados = 0;
+  const entregar = async (textos) => {
+    for (const texto of textos) {
+      if (parado || !texto) return;
+      if (await aoLer(texto)) { parar(); return; }
+      recusados++;
+      const n = String(texto).replace(/\D/g, '').length;
+      dizer(recusados > 2 ? `Li um código com ${n} números, que não é o certo. Aponte para o código de barras grande.` : 'Lendo… segure firme.');
+    }
   };
 
+  let ler;
   try {
-    if ('BarcodeDetector' in window) {
-      const formatos = await window.BarcodeDetector.getSupportedFormats();
-      if (formatos.includes('code_128') || formatos.includes('itf')) {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false });
-        video.srcObject = stream;
-        await video.play();
-        const detector = new window.BarcodeDetector({ formats: formatos.filter((f) => ['code_128', 'itf', 'ean_13', 'qr_code'].includes(f)) });
-        const passo = async () => {
-          if (parado) return;
-          try { const r = await detector.detect(video); for (const c of r) await entregar(c.rawValue); } catch { /* quadro ruim */ }
-          if (!parado) setTimeout(passo, 120);
-        };
-        passo();
-        return parar;
+    ler = await prepararLeitor();
+  } catch (e) {
+    parar();
+    throw new Error('Não consegui carregar o leitor de código. Confira a internet e tente de novo.');
+  }
+
+  // Plano B: foto em resolução máxima
+  caixa.querySelector('.camera-foto input').addEventListener('change', async (ev) => {
+    const arq = ev.target.files?.[0];
+    ev.target.value = '';
+    if (!arq) return;
+    dizer('Lendo a foto…');
+    ocupado = true;
+    try {
+      const img = await createImageBitmap(arq);
+      // tenta inteira, e também reduzida (algumas câmeras dão foto grande demais para o leitor)
+      const tentativas = [img];
+      if (Math.max(img.width, img.height) > 2000) {
+        const k = 2000 / Math.max(img.width, img.height), t = document.createElement('canvas');
+        t.width = Math.round(img.width * k); t.height = Math.round(img.height * k);
+        t.getContext('2d').drawImage(img, 0, 0, t.width, t.height);
+        tentativas.push(t);
       }
-    }
-    // sem leitor próprio: ZXing
-    const { BrowserMultiFormatReader } = await import(ZXING);
-    const leitor = new BrowserMultiFormatReader();
-    controleZxing = await leitor.decodeFromConstraints(
-      { video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false }, video,
-      (res) => { if (res) entregar(res.getText()); });
-    return parar;
+      for (const fonte of tentativas) {
+        const lidos = await ler(fonte).catch(() => []);
+        if (lidos.length) { await entregar(lidos); if (parado) return; }
+      }
+      if (!parado) dizer('Não achei o código na foto. Tire de novo mais perto, com o código reto e nítido.');
+    } catch {
+      dizer('Não consegui abrir a foto. Tente de novo.');
+    } finally { ocupado = false; }
+  });
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1440 } },
+      audio: false,
+    });
   } catch (e) {
     parar();
     const msg = /Permission|NotAllowed/i.test(e?.name + e?.message)
@@ -74,6 +158,47 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
       : /NotFound|Overconstrained/i.test(e?.name) ? 'Não achei a câmera deste aparelho.' : 'Não foi possível abrir a câmera: ' + (e?.message || e);
     throw new Error(msg);
   }
+  if (parado) { stream.getTracks().forEach((t) => t.stop()); return parar; }
+
+  // foco contínuo, um pouco de zoom e lanterna (quando o aparelho deixa)
+  const trilha = stream.getVideoTracks()[0];
+  const cap = trilha.getCapabilities?.() || {};
+  const ajustes = {};
+  if (cap.focusMode?.includes('continuous')) ajustes.focusMode = 'continuous';
+  if (cap.zoom && cap.zoom.max >= 1.5) ajustes.zoom = Math.min(cap.zoom.max, 1.5);
+  if (Object.keys(ajustes).length) trilha.applyConstraints({ advanced: [ajustes] }).catch(() => {});
+  if (cap.torch) {
+    const luz = caixa.querySelector('.camera-luz');
+    let acesa = false;
+    luz.hidden = false;
+    luz.addEventListener('click', () => {
+      acesa = !acesa;
+      trilha.applyConstraints({ advanced: [{ torch: acesa }] }).catch(() => {});
+      luz.textContent = acesa ? 'Apagar lanterna' : 'Lanterna';
+    });
+  }
+
+  video.srcObject = stream;
+  await video.play().catch(() => {});
+  dizer('Procurando o código…');
+
+  // leitura ao vivo: alterna o recorte do retângulo (mais nítido) com o quadro inteiro
+  const tela = document.createElement('canvas');
+  let volta = 0;
+  const passo = async () => {
+    if (parado) return;
+    if (!ocupado && video.readyState >= 2) {
+      ocupado = true;
+      try {
+        const fonte = volta++ % 3 === 2 ? video : recortar(video, mira, tela);
+        if (fonte) await entregar(await ler(fonte));
+      } catch { /* quadro ruim */ }
+      ocupado = false;
+    }
+    if (!parado) timer = setTimeout(passo, 150);
+  };
+  passo();
+  return parar;
 }
 
 export function fecharCamera() { aberto?.parar(); }

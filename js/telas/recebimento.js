@@ -9,13 +9,13 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=0dc39a4';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=0dc39a4';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=0dc39a4';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=0dc39a4';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=0dc39a4';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=0dc39a4';
-import { abrirCamera, bip } from '../util/camera.js?v=0dc39a4';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=2ef8d9d';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2ef8d9d';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2ef8d9d';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=2ef8d9d';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=2ef8d9d';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=2ef8d9d';
+import { abrirCamera, bip } from '../util/camera.js?v=2ef8d9d';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -249,8 +249,11 @@ registrarAcoes({
       await abrirCamera({
         titulo: 'Bipe o código de barras da DANFE',
         // só fecha a câmera quando ler uma chave válida (44 números)
+        dica: 'Encaixe o código de barras grande da nota no retângulo, com boa luz. Se ficar embaçado, afaste um pouco o celular.',
         aoLer: async (texto) => {
-          const c = String(texto).replace(/\D/g, '');
+          // código de barras = só os 44 números; QR da NFC-e = endereço com a chave dentro
+          const t = String(texto), achado = t.match(/\d{44}/);
+          const c = achado ? achado[0] : t.replace(/\D/g, '');
           if (!chaveValida(c)) return false;
           return receber(c);
         },

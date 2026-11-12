@@ -9,13 +9,13 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=0dc39a4';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=0dc39a4';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=0dc39a4';
-import { pillEtapa, docNota } from './comuns.js?v=0dc39a4';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=0dc39a4';
-import { abrirCamera, bip } from '../util/camera.js?v=0dc39a4';
-import { esc, brl, dataBR } from '../util/formato.js?v=0dc39a4';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=2ef8d9d';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=2ef8d9d';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2ef8d9d';
+import { pillEtapa, docNota } from './comuns.js?v=2ef8d9d';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=2ef8d9d';
+import { abrirCamera, bip } from '../util/camera.js?v=2ef8d9d';
+import { esc, brl, dataBR } from '../util/formato.js?v=2ef8d9d';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
