@@ -9,15 +9,15 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=91dee6c';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=91dee6c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=91dee6c';
-import { pillEtapa, docNota } from './comuns.js?v=91dee6c';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=91dee6c';
-import { abrirCamera, bip } from '../util/camera.js?v=91dee6c';
-import { chaveValida, numeroDaChave } from '../util/chave.js?v=91dee6c';
-import { receber } from '../telas/recebimento.js?v=91dee6c';
-import { esc, brl, dataBR } from '../util/formato.js?v=91dee6c';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=9d7b914';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=9d7b914';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9d7b914';
+import { pillEtapa, docNota } from './comuns.js?v=9d7b914';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=9d7b914';
+import { abrirCamera, bip } from '../util/camera.js?v=9d7b914';
+import { chaveValida, numeroDaChave } from '../util/chave.js?v=9d7b914';
+import { receber } from '../telas/recebimento.js?v=9d7b914';
+import { esc, brl, dataBR } from '../util/formato.js?v=9d7b914';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 

@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=91dee6c';
-import { dvChave } from '../util/chave.js?v=91dee6c';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=9d7b914';
+import { dvChave } from '../util/chave.js?v=9d7b914';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -130,7 +130,7 @@ export const apiDemo = {
     const d = carregar();
     const hoje = new Date(); hoje.setHours(0, 0, 0, 0); hoje.setDate(hoje.getDate() - 45);
     const recebimentos = (d.recebimentos || []).filter((r) => new Date(r.feito_em) >= hoje).sort((a, b) => (a.feito_em < b.feito_em ? 1 : -1));
-    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos };   // (no demo, notas já traz as sem boleto)
+    return { empresa: d.empresa, filiais: d.filiais, perfis: d.perfis.map(semSenha), notas: d.notas, boletos: d.boletos, recorrencias: d.recorrencias || [], recebimentos, conferencia: await this.resumoConferencia() };   // (no demo, notas já traz as sem boleto)
   },
 
   async relatorio(de, ate, campo = 'vencimento') {
@@ -145,8 +145,14 @@ export const apiDemo = {
     return carregar().historico.filter((h) => h.boleto_id === boletoId).sort((a, b) => (a.feito_em < b.feito_em ? -1 : 1));
   },
 
-  async importarNota(dados) {
+  async importarNota({ itens = [], ...dados }) {
     const p = eu(), d = carregar();
+    d.itens = d.itens || [];
+    const jaTem = d.notas.find((n) => n.chave === dados.chave);
+    if (jaTem && itens.length && !d.itens.some((i) => i.nota_id === jaTem.id)) {
+      itens.forEach((it) => d.itens.push({ id: id(), nota_id: jaTem.id, ...it, ean: it.ean || null, conferido_em: null }));
+      salvar();
+    }
     if (!(p.papel === 'gerente' || p.setor === 'Fiscal')) throw new Error('Só o Fiscal pode adicionar XML.');
     if (d.notas.some((n) => n.chave === dados.chave)) return 'duplicada';
     const filial = d.filiais.find((f) => f.cnpj && f.cnpj === soDigitos(dados.dest_cnpj));
@@ -154,6 +160,7 @@ export const apiDemo = {
     const nota = { id: id(), filial_id: filial.id, numero: dados.numero, serie: dados.serie, fornecedor: dados.fornecedor,
       chave: dados.chave, emissao: dados.emissao, valor: dados.valor };
     d.notas.push(nota);
+    itens.forEach((it) => d.itens.push({ id: id(), nota_id: nota.id, ...it, ean: it.ean || null, conferido_em: null }));
     if (!dados.duplicatas.length && !dados.pagamento_boleto) {   // sem boleto: guardada só para o recebimento bipar
       (d.recebimentos || []).filter((r) => r.chave === nota.chave && r.situacao === 'pendente').forEach((r) => Object.assign(r, { situacao: 'casada', nota_id: nota.id }));
       salvar();
@@ -254,6 +261,56 @@ export const apiDemo = {
     ouvintes.forEach((f) => setTimeout(() => f(r, true), 300));
     return { marcados };
   },
+
+  // ---------- conferência de produtos (demonstração: produtos de exemplo) ----------
+  async itensDaNota(notaId) {
+    const d = carregar();
+    d.itens = d.itens || [];
+    if (!d.itens.some((i) => i.nota_id === notaId)) {
+      const exemplos = [['7894900011517', 'REFRIGERANTE COLA 2L', 'FD', 10, 450], ['7891000100103', 'LEITE CONDENSADO 395G', 'CX', 4, 312.4],
+        ['7896004000855', 'ARROZ TIPO 1 5KG', 'FD', 6, 690], [null, 'GELO EM CUBOS 5KG', 'UN', 12, 96], ['7891910000197', 'ACUCAR REFINADO 1KG', 'FD', 5, 250]];
+      exemplos.forEach(([ean, descricao, unidade, quantidade, valor], i) => d.itens.push({ id: id(), nota_id: notaId, n_item: i + 1, codigo: String(100 + i), ean, descricao, unidade, quantidade, valor, conferido_em: null }));
+      salvar();
+    }
+    return d.itens.filter((i) => i.nota_id === notaId).sort((a, b) => a.n_item - b.n_item);
+  },
+
+  async resumoConferencia() {
+    const r = new Map();
+    for (const i of carregar().itens || []) {
+      const x = r.get(i.nota_id) || { nota_id: i.nota_id, total: 0, conferidos: 0 };
+      x.total++; if (i.conferido_em) x.conferidos++;
+      r.set(i.nota_id, x);
+    }
+    return [...r.values()];
+  },
+
+  async enviarFotoProduto(itemId, blob) {
+    const caminho = `demo/p-${itemId}-${Date.now()}.jpg`;
+    fotosDemo.set(caminho, URL.createObjectURL(blob));
+    return caminho;
+  },
+
+  async conferirItem(itemId, eanLido, foto) {
+    const p = eu(), d = carregar();
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Recebimento'].includes(p.setor))) throw new Error('Só o Recebimento ou o Fiscal conferem produtos.');
+    const i = (d.itens || []).find((x) => x.id === itemId);
+    if (!i) throw new Error('Produto não encontrado.');
+    const lido = String(eanLido || '').replace(/\D/g, '');
+    if (lido && i.ean && lido.replace(/^0+/, '') !== i.ean.replace(/^0+/, '')) throw new Error(`O código lido (${lido}) não é o deste produto (${i.ean}).`);
+    if (!lido && !foto) throw new Error('Tire a foto do produto para conferir sem o código.');
+    Object.assign(i, { conferido_perfil: p.id, conferido_por: p.nome, conferido_em: agora(), ean_lido: lido || null, sem_codigo: !lido, foto: foto || i.foto });
+    salvar();
+    const da = d.itens.filter((x) => x.nota_id === i.nota_id);
+    return { conferidos: da.filter((x) => x.conferido_em).length, total: da.length };
+  },
+
+  async urlFotoProduto(caminho) {
+    if (!fotosDemo.has(caminho)) throw new Error('No modo demonstração a foto some quando a página é recarregada.');
+    return fotosDemo.get(caminho);
+  },
+
+  async limparFotosAntigas() { return 0; },
 
   async urlFotoBoleto(caminho) {
     if (!fotosDemo.has(caminho)) throw new Error('No modo demonstração a foto some quando a página é recarregada.');

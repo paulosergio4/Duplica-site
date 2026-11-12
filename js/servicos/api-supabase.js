@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=91dee6c';
-import { normalizarLogin } from '../util/formato.js?v=91dee6c';
+import { CONFIG } from '../config.js?v=9d7b914';
+import { normalizarLogin } from '../util/formato.js?v=9d7b914';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -111,7 +111,9 @@ export const apiSupabase = {
         .not('chave', 'is', null).gte('emissao', de).order('emissao', { ascending: false }));
       for (const n of doXml) if (!notas.has(n.id)) notas.set(n.id, n);
     }
-    return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias, recebimentos };
+    // conferência de produtos: quantos itens de cada nota já foram conferidos
+    const conferencia = emp.data?.recebimento_desde ? await this.resumoConferencia(emp.data.recebimento_desde).catch(() => []) : [];
+    return { empresa: emp.data, filiais, perfis, notas: [...notas.values()], boletos, recorrencias, recebimentos, conferencia };
   },
 
   /** Relatório: todos os boletos do período (pagos, não pagos, cancelados), com a nota de cada um.
@@ -168,10 +170,56 @@ export const apiSupabase = {
     return data;
   },
 
-  async importarNota(dados) {
+  async importarNota({ itens = [], ...dados }) {
     const { data, error } = await sb.rpc('importar_nota', { dados });
     falha(error);
+    if (itens.length && ['importada', 'importada_sem_vencimento', 'importada_sem_boleto', 'duplicada'].includes(data)) {
+      await sb.rpc('salvar_itens_nota', { chave: dados.chave, itens });   // produtos: se falhar, a nota já entrou
+    }
     return data;
+  },
+
+  // ---------- conferência de produtos ----------
+  async itensDaNota(notaId) {
+    const { data, error } = await sb.from('nota_itens').select('*').eq('nota_id', notaId).order('n_item');
+    falha(error);
+    return data;
+  },
+
+  async resumoConferencia(desde) {
+    const { data, error } = await sb.rpc('resumo_conferencia', { desde });
+    falha(error);
+    return data || [];
+  },
+
+  async enviarFotoProduto(itemId, blob) {
+    const p = await meuPerfil();
+    const caminho = `${p.empresa_id}/${itemId}-${Date.now()}.jpg`;
+    const { error } = await sb.storage.from('produtos-fotos').upload(caminho, blob, { contentType: 'image/jpeg' });
+    falha(error);
+    return caminho;
+  },
+
+  async conferirItem(itemId, eanLido, foto) {
+    const { data, error } = await sb.rpc('conferir_item', { p_item: itemId, p_ean_lido: eanLido || null, p_foto: foto || null });
+    falha(error);
+    return data;
+  },
+
+  async urlFotoProduto(caminho) {
+    const { data, error } = await sb.storage.from('produtos-fotos').createSignedUrl(caminho, 600);
+    falha(error);
+    return data.signedUrl;
+  },
+
+  /** Apaga as fotos de produto com mais de 3 meses (fica só quem conferiu e quando) */
+  async limparFotosAntigas() {
+    const { data: caminhos, error } = await sb.rpc('fotos_produto_vencidas');
+    falha(error);
+    if (!caminhos?.length) return 0;
+    falha((await sb.storage.from('produtos-fotos').remove(caminhos)).error);
+    const { data } = await sb.rpc('fotos_produto_apagadas', { caminhos });
+    return data || 0;
   },
 
   async avancar(ids, pessoa) {

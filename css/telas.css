@@ -200,3 +200,10 @@
 /* ler boleto: botão da câmera (só faz sentido no celular, mas aparece em qualquer tela) */
 .ler-camera{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px}
 @media (max-width:760px){.ler-boleto .ler-camera{order:-1;flex:1 1 100%;height:50px;font-size:15px}.ler-boleto button[type=submit],.ler-boleto [data-acao=ler-limpar]{flex:1 1 0}}
+
+/* ---------- conferência de produtos ---------- */
+.conf-topo{display:flex;flex-direction:column;gap:12px;padding:16px 20px;border-bottom:1px solid var(--linha)}
+.conf-progresso{height:10px;border-radius:99px;background:var(--linha);overflow:hidden}
+.conf-progresso span{display:block;height:100%;border-radius:99px;background:var(--musgo);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.conf-pronto{margin:0;font-weight:700;color:var(--musgo)}
+.conf-quem{color:var(--terra);font-size:12px}

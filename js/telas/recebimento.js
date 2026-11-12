@@ -9,13 +9,14 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=91dee6c';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=91dee6c';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=91dee6c';
-import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=91dee6c';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=91dee6c';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=91dee6c';
-import { abrirCamera, bip } from '../util/camera.js?v=91dee6c';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=9d7b914';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=9d7b914';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=9d7b914';
+import { cabecalho, toastHtml, vazio, docNota } from '../componentes/comuns.js?v=9d7b914';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=9d7b914';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=9d7b914';
+import { abrirCamera, bip } from '../util/camera.js?v=9d7b914';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=9d7b914';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -41,7 +42,7 @@ export const telaRecebimento = {
           </form>
           ${u ? resultadoHtml(u) : ''}
         </section>`;
-    return topo + (conferente ? listaConferente() : listaNotas());
+    return topo + (estado.conferindo ? conferenciaHtml() : conferente ? listaConferente() : listaNotas());
   },
 };
 
@@ -102,7 +103,13 @@ function resultadoHtml(r) {
         <div class="tem-boleto-b">${botaoFoto('Sim, tirar foto', 'bp')}<button class="bg" type="button" data-acao="rec-sem-boleto">Não tem</button></div>
         ${r.erroFoto ? `<small style="color:var(--alerta)">${esc(r.erroFoto)}</small>` : ''}</div>`;
   }
-  return `<div class="receber-resultado" style="border-color:${cor}" role="status"><b style="color:${cor}">${titulo}</b><small>${corpo}</small>${boleto}</div>`;
+  let produtos = '';
+  if (r.nota_id && r.situacao !== 'erro' && !(estado.conferindo?.notaId === r.nota_id)) {
+    const rs = resumoDaNota(r.nota_id);
+    produtos = `<div class="tem-boleto"><b>Conferência de produtos${rs ? ` · <span class="num">${rs.conferidos} de ${rs.total}</span>` : ''}</b>
+      <div class="tem-boleto-b"><button class="${rs && rs.conferidos >= rs.total ? 'bg' : 'bp'}" type="button" data-acao="conf-abrir" data-id="${r.nota_id}">${rs && rs.conferidos >= rs.total ? 'Ver conferência' : 'Conferir produtos (EAN)'}</button></div></div>`;
+  }
+  return `<div class="receber-resultado" style="border-color:${cor}" role="status"><b style="color:${cor}">${titulo}</b><small>${corpo}</small>${boleto}${produtos}</div>`;
 }
 
 /** Botão que abre a câmera do celular para a foto (no computador, abre a escolha de arquivo) */
@@ -121,22 +128,23 @@ function linhaNota(n, r) {
     !r && n ? `<button class="bp" type="button" data-acao="rec-marcar" data-id="${n.id}">Marcar que chegou</button>` : '',
     r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
     r && r.tem_boleto !== true && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
+    r && n && resumoDaNota(n.id) ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
   ].join('');
   return `<div class="linha"><div class="kv" style="flex:1 1 240px;min-width:0"><b style="color:var(--petroleo)">${n ? esc(n.fornecedor) : 'Nota ainda sem XML'}</b>
       <small>${n ? `${docNota(n)} · ${esc(f?.nome || '')}` : `NF ${esc(numeroDaChave(r.chave))}`}</small></div>
     ${n ? `<div class="kv" style="width:96px"><small>Emissão</small><b class="num">${dataBR(n.emissao)}</b></div>
     <div class="kv" style="width:120px"><small>Valor da nota</small><b class="num">${brl(n.valor)}</b></div>` : ''}
     ${r ? `<div class="kv" style="width:190px"><small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)} · <span class="num">${dataHoraBR(r.feito_em)}</span></b></div>` : ''}
-    ${chegou}${boleto}${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>`;
+    ${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}${acoes ? `<div class="acoes">${acoes}</div>` : ''}</div>`;
 }
 
 /** Janela com as fotos do boleto */
 export function modalFotosBoletoHtml() {
   const m = estado.modal;
   return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal modal-largo" role="dialog" aria-modal="true" aria-labelledby="m-t">
-    <h2 id="m-t">Foto do boleto</h2>
+    <h2 id="m-t">${esc(m.cabecalho || 'Foto do boleto')}</h2>
     ${m.titulo ? `<p class="dica-campo" style="margin:0;font-size:13px">${esc(m.titulo)}</p>` : ''}
-    ${m.urls ? m.urls.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="Foto do boleto" style="width:100%;border-radius:12px;display:block"></a>`).join('') : '<p style="margin:0">Carregando…</p>'}
+    ${m.urls ? m.urls.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="${esc(m.cabecalho || 'Foto do boleto')}" style="width:100%;border-radius:12px;display:block"></a>`).join('') : '<p style="margin:0">Carregando…</p>'}
     <div class="botoes"><button class="bg" type="button" data-acao="fechar-modal" style="height:46px;flex:1">Fechar</button></div>
   </div></div>`;
 }
@@ -182,6 +190,7 @@ export async function receber(texto, manual = false) {
   }
   try {
     const r = await estado.api.receberNota(chave, manual);
+    estado.conferindo = null;
     bip(r.situacao === 'casada' || r.situacao === 'pendente');
     estado.ultimoRecebimento = { ...r, chave };
     await recarregar();

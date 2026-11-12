@@ -5,19 +5,20 @@
 //   2. carrega os dados
 //   3. desenha o menu + a tela aberta + os detalhes do boleto e a janela (se houver)
 // =====================================================================
-import { estado } from './nucleo/estado.js?v=91dee6c';
-import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=91dee6c';
-import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=91dee6c';
-import { obterApi } from './servicos/api.js?v=91dee6c';
-import { TELAS, telasDe, telaInicial } from './telas/index.js?v=91dee6c';
-import { menuHtml } from './componentes/menu.js?v=91dee6c';
-import { modalHtml } from './componentes/modal-pessoa.js?v=91dee6c';
-import { painelHtml } from './componentes/painel-boleto.js?v=91dee6c';
-import { esc, dataBR, hojeISO } from './util/formato.js?v=91dee6c';
-import { CONFIG } from './config.js?v=91dee6c';
-import { prepararInstalacao } from './util/instalar.js?v=91dee6c';
-import { bip } from './util/camera.js?v=91dee6c';
-import { numeroDaChave } from './util/chave.js?v=91dee6c';
+import { estado } from './nucleo/estado.js?v=9d7b914';
+import { ligarEventos, registrarAcoes, avisar } from './nucleo/eventos.js?v=9d7b914';
+import { definirDesenho, recarregar } from './nucleo/desenhar.js?v=9d7b914';
+import { obterApi } from './servicos/api.js?v=9d7b914';
+import { TELAS, telasDe, telaInicial } from './telas/index.js?v=9d7b914';
+import { menuHtml } from './componentes/menu.js?v=9d7b914';
+import { modalHtml } from './componentes/modal-pessoa.js?v=9d7b914';
+import { painelHtml } from './componentes/painel-boleto.js?v=9d7b914';
+import { esc, dataBR, hojeISO } from './util/formato.js?v=9d7b914';
+import { CONFIG } from './config.js?v=9d7b914';
+import { prepararInstalacao } from './util/instalar.js?v=9d7b914';
+import { bip } from './util/camera.js?v=9d7b914';
+import { numeroDaChave } from './util/chave.js?v=9d7b914';
+import { limparFotosProduto } from './telas/conferencia.js?v=9d7b914';
 
 const raiz = document.getElementById('app');
 const inicioCarga = performance.now();
@@ -125,6 +126,7 @@ async function iniciar() {
   try { await estado.api.gerarRecorrentes(); } catch (e) { console.warn('Contas fixas:', e.message); }
   await recarregar(logoPronto);
   esconderSplash();
+  limparFotosProduto();   // fotos de produto com mais de 3 meses (Fiscal/Admin, 1x por dia)
   // Fiscal e Admin: aviso na hora quando alguém bipa uma nota no recebimento
   if (estado.perfil.papel === 'gerente' || estado.perfil.setor === 'Fiscal') {
     try { estado.api.ouvirRecebimentos(avisoRecebimento); } catch (e) { console.warn('Avisos de recebimento:', e.message); }

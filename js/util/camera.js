@@ -16,7 +16,7 @@
 // redesenho das telas, para o vídeo não piscar.
 // =====================================================================
 const ZXING = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm';
-const FORMATOS = ['code_128', 'itf', 'ean_13', 'qr_code'];
+const FORMATOS = ['code_128', 'itf', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code'];
 
 let aberto = null;   // { parar }
 let leitorZxing = null;
@@ -36,7 +36,7 @@ async function prepararLeitor() {
   if (!leitorZxing) {
     const { BrowserMultiFormatReader, BarcodeFormat } = await import(ZXING);
     // 2 = POSSIBLE_FORMATS, 3 = TRY_HARDER (DecodeHintType da ZXing)
-    const dicas = new Map([[2, [BarcodeFormat.CODE_128, BarcodeFormat.ITF, BarcodeFormat.QR_CODE]], [3, true]]);
+    const dicas = new Map([[2, [BarcodeFormat.CODE_128, BarcodeFormat.ITF, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.QR_CODE]], [3, true]]);
     leitorZxing = new BrowserMultiFormatReader(dicas);
   }
   return async (fonte) => {
@@ -69,8 +69,10 @@ function recortar(video, mira, tela) {
 }
 
 /**
- * Abre a câmera em tela cheia e chama aoLer(texto) com cada código lido.
- * aoLer devolve true para fechar a câmera (código aceito) ou false para continuar.
+ * Abre a câmera em tela cheia e chama aoLer(texto, { foto }) com cada código lido.
+ *   foto() devolve a imagem (JPEG) do momento da leitura, para guardar.
+ * aoLer devolve true para fechar a câmera (código aceito), false para continuar,
+ * ou um texto: mostra o texto e continua (ex.: conferência de vários produtos).
  */
 export async function abrirCamera({ titulo = 'Aponte para o código de barras', dica = 'Encaixe o código de barras inteiro no retângulo, bem iluminado.', aoLer }) {
   fecharCamera();
@@ -102,11 +104,25 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   aberto = { parar };
   caixa.querySelector('.camera-fechar').addEventListener('click', parar);
 
-  let ocupado = false, recusados = 0;
+  let ocupado = false, recusados = 0, ultimo = '', ultimoEm = 0;
+  // foto do momento da leitura: quadro do vídeo (ou a foto tirada), no máximo 1280 px
+  const fotoDe = (fonte) => () => new Promise((ok, erro) => {
+    const w = fonte.videoWidth || fonte.width, h = fonte.videoHeight || fonte.height, k = Math.min(1, 1280 / Math.max(w, h));
+    const t = document.createElement('canvas');
+    t.width = Math.round(w * k); t.height = Math.round(h * k);
+    t.getContext('2d').drawImage(fonte, 0, 0, t.width, t.height);
+    t.toBlob((b) => (b ? ok(b) : erro(new Error('Não consegui guardar a foto.'))), 'image/jpeg', 0.8);
+  });
+  let fonteAtual = null;
   const entregar = async (textos) => {
     for (const texto of textos) {
       if (parado || !texto) return;
-      if (await aoLer(texto)) { parar(); return; }
+      // o mesmo código continua na frente da câmera: não repete por 2,5 s
+      if (texto === ultimo && Date.now() - ultimoEm < 2500) continue;
+      ultimo = texto; ultimoEm = Date.now();
+      const r = await aoLer(texto, { foto: fotoDe(fonteAtual || video) });
+      if (r === true) { parar(); return; }
+      if (typeof r === 'string') { dizer(r); continue; }
       recusados++;
       const n = String(texto).replace(/\D/g, '').length;
       dizer(recusados > 2 ? `Li um código com ${n} números, que não é o certo. Aponte para o código de barras grande.` : 'Lendo… segure firme.');
@@ -139,10 +155,12 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
         tentativas.push(t);
       }
       for (const fonte of tentativas) {
+        fonteAtual = img;
         const lidos = await ler(fonte).catch(() => []);
         if (lidos.length) { await entregar(lidos); if (parado) return; }
       }
-      if (!parado) dizer('Não achei o código na foto. Tire de novo mais perto, com o código reto e nítido.');
+      fonteAtual = null;
+      if (!parado && status.textContent === 'Lendo a foto…') dizer('Não achei o código na foto. Tire de novo mais perto, com o código reto e nítido.');
     } catch {
       dizer('Não consegui abrir a foto. Tente de novo.');
     } finally { ocupado = false; }
