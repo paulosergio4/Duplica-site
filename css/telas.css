@@ -148,13 +148,13 @@
 .receber-resultado small{font-size:14px;line-height:1.5;color:var(--cafe)}
 
 /* janela da câmera (fica no <body>, fora do redesenho) */
-.camera{position:fixed;inset:0;z-index:200;background:#0d000d;display:flex;flex-direction:column;color:#FFFFFF}
+.camera{position:fixed;inset:0;z-index:200;background:#081A2B;display:flex;flex-direction:column;color:#FFFFFF}
 .camera-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(14px,env(safe-area-inset-top,0px)) 16px 14px}
 .camera-topo b{font-size:16px}
 .camera-topo .bg{height:40px;background:#FFFFFF}
 .camera-video{position:relative;flex:1;overflow:hidden}
 .camera-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.camera-mira{position:absolute;left:6%;right:6%;top:38%;height:24%;border:3px solid #F5F7FA;border-radius:14px;box-shadow:0 0 0 2000px rgba(13,0,13,.45)}
+.camera-mira{position:absolute;left:6%;right:6%;top:38%;height:24%;border:3px solid #F5F7FA;border-radius:14px;box-shadow:0 0 0 2000px rgba(8,26,43,.5)}
 .camera-dica{margin:0;padding:14px 16px max(18px,env(safe-area-inset-bottom,0px));font-size:14px;text-align:center;color:#F5F7FA}
 
 /* ---------- celular: sem rolagem lateral; cada linha vira um cartão com os botões embaixo ---------- */
@@ -181,3 +181,7 @@
 .tem-boleto-b{display:flex;gap:8px;flex-wrap:wrap}
 .tem-boleto-b>*{flex:1 1 140px;min-height:52px;font-size:16px;justify-content:center}
 .botao-foto{display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+
+/* ler boleto: botão da câmera (só faz sentido no celular, mas aparece em qualquer tela) */
+.ler-camera{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px}
+@media (max-width:760px){.ler-boleto .ler-camera{order:-1;flex:1 1 100%;height:50px;font-size:15px}.ler-boleto button[type=submit],.ler-boleto [data-acao=ler-limpar]{flex:1 1 0}}

@@ -2,19 +2,20 @@
 // DUPLICA · componentes/ler-boleto.js
 // Campo "Ler boleto" (Fiscal e Financeiro).
 //   Bipe o código de barras com o leitor USB (ele "digita" os números e
-//   aperta Enter) ou digite a linha digitável.
+//   aperta Enter), leia pela câmera do celular ou digite a linha digitável.
 //   1. util/boleto.js tira do código: banco, valor e vencimento;
 //   2. aqui procuramos os boletos com o MESMO valor (e vencimento igual,
 //      vazio ou até 7 dias de diferença);
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=543c57a';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=543c57a';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=543c57a';
-import { pillEtapa, docNota } from './comuns.js?v=543c57a';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=543c57a';
-import { esc, brl, dataBR } from '../util/formato.js?v=543c57a';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=0dc39a4';
+import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=0dc39a4';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=0dc39a4';
+import { pillEtapa, docNota } from './comuns.js?v=0dc39a4';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=0dc39a4';
+import { abrirCamera, bip } from '../util/camera.js?v=0dc39a4';
+import { esc, brl, dataBR } from '../util/formato.js?v=0dc39a4';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
@@ -99,6 +100,7 @@ export function leitorHtml(tela) {
         <div class="field" style="flex:1 1 360px"><label for="ler-codigo">Ler boleto: bipe o código de barras ou digite a linha digitável</label>
           <input class="inp num" id="ler-codigo" inputmode="numeric" autocomplete="off" placeholder="00000.00000 00000.000000 00000.000000 0 00000000000000" value="${esc(l?.texto || '')}"></div>
         <button class="bp" type="submit" style="height:46px">Ler</button>
+        <button class="bg ler-camera" type="button" data-acao="ler-camera"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ler com a câmera</button>
         ${l ? '<button class="bg" type="button" data-acao="ler-limpar" style="height:46px">Limpar</button>' : ''}
       </div>${resultado}</form></section>`;
 }
@@ -111,6 +113,24 @@ registrarFormulario('form-ler-boleto', () => {
 });
 
 registrarAcoes({
+  // lê o código de barras do boleto pela câmera do celular
+  'ler-camera': async () => {
+    const tela = estado.tela;
+    try {
+      await abrirCamera({
+        titulo: 'Aponte para o código de barras do boleto',
+        dica: 'Deite o celular (de lado) e encaixe o código de barras do boleto inteiro no retângulo, bem iluminado.',
+        aoLer: (texto) => {
+          const res = lerBoleto(texto);
+          if (!res.ok) return false;             // leitura incompleta: continua tentando
+          bip(true);
+          estado.leitura = { tela, texto: res.linha || res.barras, res };
+          desenhar();
+          return true;
+        },
+      });
+    } catch (e) { avisar(e.message, true); }
+  },
   'ler-limpar': () => { estado.leitura = null; desenhar(); document.getElementById('ler-codigo')?.focus(); },
 
   // guarda o código no boleto escolhido e já abre a próxima janela

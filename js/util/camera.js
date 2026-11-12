@@ -15,13 +15,13 @@ let aberto = null;   // { parar }
  * Abre a câmera em tela cheia e chama aoLer(texto) com cada código lido.
  * aoLer devolve true para fechar a câmera (código aceito) ou false para continuar.
  */
-export async function abrirCamera({ titulo = 'Aponte para o código de barras', aoLer }) {
+export async function abrirCamera({ titulo = 'Aponte para o código de barras', dica = 'Deixe o código de barras da nota inteiro dentro do retângulo, bem iluminado.', aoLer }) {
   fecharCamera();
   const caixa = document.createElement('div');
   caixa.className = 'camera';
   caixa.innerHTML = `<div class="camera-topo"><b>${titulo}</b><button type="button" class="bg camera-fechar">Fechar</button></div>
     <div class="camera-video"><video playsinline muted></video><div class="camera-mira"></div></div>
-    <p class="camera-dica">Deixe o código de barras da nota inteiro dentro do retângulo, bem iluminado.</p>`;
+    <p class="camera-dica">${dica}</p>`;
   document.body.appendChild(caixa);
   const video = caixa.querySelector('video');
   let parado = false, stream = null, controleZxing = null;
@@ -46,7 +46,7 @@ export async function abrirCamera({ titulo = 'Aponte para o código de barras', 
   try {
     if ('BarcodeDetector' in window) {
       const formatos = await window.BarcodeDetector.getSupportedFormats();
-      if (formatos.includes('code_128')) {
+      if (formatos.includes('code_128') || formatos.includes('itf')) {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false });
         video.srcObject = stream;
         await video.play();
