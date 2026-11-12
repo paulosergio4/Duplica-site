@@ -163,6 +163,25 @@
 .camera-linha{position:absolute;left:4%;right:4%;top:50%;height:2px;background:#12A150;box-shadow:0 0 10px #12A150;opacity:.85;animation:camera-linha 1.6s ease-in-out infinite alternate}
 @keyframes camera-linha{from{top:12%}to{top:88%}}
 @media (prefers-reduced-motion:reduce){.camera-linha{animation:none}}
+.camera-deitado{display:none}
+/* celular deitado (paisagem): faixa larga para o código, textos por cima do vídeo */
+@media (orientation:landscape) and (max-height:600px){
+  .camera-topo{position:absolute;top:0;left:0;right:0;z-index:2;padding:max(10px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(8,26,43,.85),rgba(8,26,43,0))}
+  .camera-topo .bg{height:36px}
+  .camera-mira{left:8%;right:8%;top:24%;height:42%}
+  .camera-baixo{position:absolute;left:0;right:0;bottom:0;z-index:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:center;gap:6px 14px;padding:8px 16px max(10px,env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(8,26,43,0),rgba(8,26,43,.9))}
+  .camera-dica{font-size:13px}
+  .camera-botoes .bg{height:38px}
+}
+/* não deu para virar a tela sozinho: tudo desenhado deitado (ler com o celular virado para a esquerda) */
+.camera.deitado .camera-topo b,.camera.deitado .camera-dica,.camera.deitado .camera-status{display:none}
+.camera.deitado .camera-topo{justify-content:flex-end}
+.camera.deitado .camera-mira{left:30%;right:30%;top:5%;height:auto;bottom:5%}
+.camera.deitado .camera-linha{top:4%;bottom:4%;left:50%;right:auto;width:2px;height:auto;animation-name:camera-linha-v}
+@keyframes camera-linha-v{from{left:12%}to{left:88%}}
+.camera.deitado .camera-deitado{display:flex;position:absolute;top:5%;bottom:5%;right:5%;width:22%;writing-mode:vertical-rl;flex-direction:column;justify-content:center;gap:10px;color:#F5F7FA;font-size:14px;line-height:1.35;text-align:center}
+.camera.deitado .camera-deitado b{font-size:16px}
+.camera.deitado .camera-deitado em{font-style:normal;color:#9FD9B8;font-size:13px}
 
 /* ---------- celular: sem rolagem lateral; cada linha vira um cartão com os botões embaixo ---------- */
 @media (max-width:760px){

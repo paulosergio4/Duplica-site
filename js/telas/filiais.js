@@ -3,11 +3,11 @@
 // Empresa e filiais (só o Admin).
 // O CNPJ de cada filial é o que liga o XML à loja certa.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=2ef8d9d';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=2ef8d9d';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=2ef8d9d';
-import { cabecalho, toastHtml } from '../componentes/comuns.js?v=2ef8d9d';
-import { esc, cnpjFormatado, cnpjValido, mascaraCnpj, plural } from '../util/formato.js?v=2ef8d9d';
+import { estado } from '../nucleo/estado.js?v=e0df3f1';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=e0df3f1';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=e0df3f1';
+import { cabecalho, toastHtml } from '../componentes/comuns.js?v=e0df3f1';
+import { esc, cnpjFormatado, cnpjValido, mascaraCnpj, plural } from '../util/formato.js?v=e0df3f1';
 
 export const telaFiliais = {
   id: 'filiais',
