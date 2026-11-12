@@ -9,15 +9,15 @@
 //   3. a pessoa confirma qual é. O código fica guardado no boleto
 //      (api.vincularCodigo) e já abre a janela "Chegou" / "Dar visto".
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=ca8aa5f';
-import { registrarAcoes, registrarFormulario, avisar, executar } from '../nucleo/eventos.js?v=ca8aa5f';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=ca8aa5f';
-import { pillEtapa, docNota } from './comuns.js?v=ca8aa5f';
-import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=ca8aa5f';
-import { abrirCamera, bip } from '../util/camera.js?v=ca8aa5f';
-import { chaveValida, numeroDaChave } from '../util/chave.js?v=ca8aa5f';
-import { receber } from '../telas/recebimento.js?v=ca8aa5f';
-import { esc, brl, dataBR } from '../util/formato.js?v=ca8aa5f';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=19141b7';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=19141b7';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=19141b7';
+import { pillEtapa, docNota } from './comuns.js?v=19141b7';
+import { lerBoleto, linhaFormatada } from '../util/boleto.js?v=19141b7';
+import { abrirCamera, bip } from '../util/camera.js?v=19141b7';
+import { chaveValida, numeroDaChave } from '../util/chave.js?v=19141b7';
+import { receber } from '../telas/recebimento.js?v=19141b7';
+import { esc, brl, dataBR } from '../util/formato.js?v=19141b7';
 
 const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
 
@@ -89,8 +89,10 @@ export function leitorHtml(tela) {
                 <small>${docNota(n)} · ${esc(f?.nome || '')} · parcela ${b.parcela}/${b.total_parcelas}${aviso}</small></div>
               ${pillEtapa(b)}${botao(b, tela)}</div>`;
           }).join('')
+          + '<button class="bg" type="button" data-acao="ler-associar" style="align-self:flex-start">Não é nenhum desses · Associar a uma nota</button>'
         : `<div class="lote" style="border-radius:12px"><small>Nenhum boleto em aberto com esse valor${r.vencimento ? ' e vencimento' : ''}. Pode ser de uma nota que ainda não entrou no sistema, ou o valor do boleto é diferente do da nota.</small>
-            <button class="bg" type="button" data-acao="ler-avulso">Lançar como boleto avulso</button></div>`);
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bp" type="button" data-acao="ler-associar">Associar a uma nota</button>
+            <button class="bg" type="button" data-acao="ler-avulso">Lançar como boleto avulso</button></div></div>`);
       // notas que vieram sem parcelas: o boleto lido pode ser uma parcela delas
       const sp = lista.length ? [] : semParcelas(r);
       if (sp.length) {
@@ -197,6 +199,23 @@ registrarAcoes({
     desenhar();
   },
 
+  // nenhum boleto bateu: escolher a nota e o boleto lido vira mais uma parcela dela
+  'ler-associar': () => {
+    estado.modal = { tipo: 'associar', busca: '', erro: '' };
+    desenhar();
+    document.getElementById('as-busca')?.focus();
+  },
+  'ler-associar-nota': (el) => executar(async () => {
+    const r = estado.leitura.res, n = notaDe(el.dataset.id);
+    try {
+      await estado.api.associarBoletoNota(el.dataset.id, { barras: r.barras, linha: r.linha, valor: r.valor, vencimento: r.vencimento });
+    } catch (e) { estado.modal.erro = e.message; desenhar(); return; }
+    estado.modal = null;
+    estado.leitura = null;
+    avisar(`Boleto de ${brl(r.valor)} associado à ${n ? `${n.fornecedor} · NF ${n.numero}` : 'nota'} como "Chegou".`);
+    await recarregar();
+  }),
+
   // nenhum boleto bateu: abre o boleto avulso já com valor e vencimento
   'ler-avulso': () => {
     const r = estado.leitura.res;
@@ -209,6 +228,31 @@ registrarAcoes({
     document.getElementById('av-forn')?.focus();
   },
 });
+
+/** Janela "Associar a uma nota": escolher a nota do boleto lido */
+export function modalAssociarHtml() {
+  const m = estado.modal, r = estado.leitura?.res;
+  if (!r) return '';
+  const busca = (m.busca || '').trim().toLowerCase();
+  const notas = estado.notas
+    .filter((n) => !busca || `${n.fornecedor} ${n.numero} ${n.fornecedor_cnpj || ''}`.toLowerCase().includes(busca))
+    .map((n) => ({ n, qtd: estado.boletos.filter((b) => b.nota_id === n.id && b.etapa !== 'cancelado').length }))
+    // primeiro as notas sem boleto nenhum, depois as mais recentes
+    .sort((a, b) => (Boolean(a.qtd) - Boolean(b.qtd)) || ((b.n.emissao || '') > (a.n.emissao || '') ? 1 : -1))
+    .slice(0, 40);
+  return `<div class="modal-fundo" data-fechar-fundo="fechar-modal"><div class="modal modal-largo" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <h2 id="m-t">Associar a uma nota</h2>
+    <p style="margin:0">Boleto de <b class="num">${brl(r.valor)}</b>${r.vencimento ? `, vence <b class="num">${dataBR(r.vencimento)}</b>` : ''} (${esc(r.bancoNome)}). De qual nota ele é?</p>
+    <input class="inp" id="as-busca" placeholder="Buscar fornecedor, número da nota ou CNPJ" value="${esc(m.busca || '')}" autocomplete="off">
+    <div class="qual-lista">${notas.map(({ n, qtd }) => `<button class="bg qual-item" type="button" data-acao="ler-associar-nota" data-id="${n.id}">
+        <b>${esc(n.fornecedor)}</b><small>${docNota(n)} · ${esc(filialDe(n.filial_id)?.nome || '')} · emissão <span class="num">${dataBR(n.emissao)}</span> · nota <span class="num">${brl(n.valor)}</span> · ${qtd ? `${qtd} boleto${qtd > 1 ? 's' : ''} no sistema` : 'sem boleto no sistema'}</small></button>`).join('')
+      || '<p style="margin:0">Nenhuma nota com essa busca.</p>'}</div>
+    ${m.erro ? `<p class="erro" role="alert" style="margin:0">${esc(m.erro)}</p>` : ''}
+    <div class="botoes"><button class="bg" type="button" data-acao="fechar-modal" style="flex:1;height:46px">Cancelar</button></div>
+  </div></div>`;
+}
+
+registrarCampo('as-busca', (el) => { if (estado.modal?.tipo === 'associar') { estado.modal.busca = el.value; desenhar(); } });
 
 /** Linha digitável nos Detalhes do boleto, com botão de copiar */
 export function linhaDigitavelHtml(b) {

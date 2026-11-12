@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=ca8aa5f';
-import { normalizarLogin } from '../util/formato.js?v=ca8aa5f';
+import { CONFIG } from '../config.js?v=19141b7';
+import { normalizarLogin } from '../util/formato.js?v=19141b7';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;
@@ -151,6 +151,13 @@ export const apiSupabase = {
   /** Bipou o código de barras do boleto no recebimento: preenche valor, vencimento e linha do boleto criado */
   async recebimentoCodigoBoleto(id, { barras, linha, valor, vencimento }) {
     const { data, error } = await sb.rpc('recebimento_codigo_boleto', { p_id: id, p_barras: barras, p_linha: linha || null, p_valor: valor, p_vencimento: vencimento || null });
+    falha(error);
+    return data;
+  },
+
+  /** Boleto lido que não bateu com nenhum: vira mais uma parcela da nota escolhida */
+  async associarBoletoNota(notaId, { barras, linha, valor, vencimento }) {
+    const { data, error } = await sb.rpc('associar_boleto_nota', { p_nota: notaId, p_barras: barras, p_linha: linha || null, p_valor: valor, p_vencimento: vencimento || null });
     falha(error);
     return data;
   },

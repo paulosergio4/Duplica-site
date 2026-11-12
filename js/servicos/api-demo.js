@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=ca8aa5f';
-import { dvChave } from '../util/chave.js?v=ca8aa5f';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=19141b7';
+import { dvChave } from '../util/chave.js?v=19141b7';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -270,6 +270,19 @@ export const apiDemo = {
     salvar();
     ouvintes.forEach((f) => setTimeout(() => f(r, true), 300));
     return { marcados, criado, precisa_codigo: criado };
+  },
+
+  async associarBoletoNota(notaId, { barras, linha, valor, vencimento }) {
+    const p = eu(), d = carregar();
+    if (!(p.papel === 'gerente' || ['Fiscal', 'Financeiro', 'Contabilidade'].includes(p.setor))) throw new Error('Seu setor não lança boletos.');
+    if (d.boletos.some((b) => b.codigo_barras === barras && b.etapa !== 'cancelado')) throw new Error('Esse boleto já está no sistema.');
+    const da = d.boletos.filter((b) => b.nota_id === notaId && b.etapa !== 'cancelado');
+    const b = { id: id(), nota_id: notaId, parcela: da.length + 1, total_parcelas: da.length + 1, vencimento, valor, etapa: 'chegou', recebido_por: p.nome,
+      chegou_marcado_por: p.nome, chegou_em: agora(), codigo_barras: barras, linha_digitavel: linha, anotacao: null, foto_path: null };
+    da.forEach((x) => { x.total_parcelas = da.length + 1; });
+    d.boletos.push(b); reg(b.id, 'Código do boleto lido', 'boleto lido e associado à nota por ' + p.nome, p);
+    salvar();
+    return b.id;
   },
 
   async recebimentoCodigoBoleto(idRec, { barras, linha, valor, vencimento }) {

@@ -5,7 +5,7 @@
 // arquivos do site só para abrir rápido e mostrar um aviso quando estiver
 // sem internet. Nada do Supabase passa por aqui.
 // =====================================================================
-const CACHE = 'duplica-ca8aa5f';
+const CACHE = 'duplica-19141b7';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (ev) => {
