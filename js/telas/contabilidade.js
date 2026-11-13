@@ -9,12 +9,12 @@
 //      O valor previsto é o da última guia do mesmo imposto, quando existe.
 //   2. Boletos que já têm visto do financeiro (consulta).
 // =====================================================================
-import { estado, notaDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=7c22e1d';
-import { registrarAcoes } from '../nucleo/eventos.js?v=7c22e1d';
-import { desenhar } from '../nucleo/desenhar.js?v=7c22e1d';
-import { cabecalho, sobretituloHoje, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=7c22e1d';
-import { esc, brl, dataBR, dataHoraBR, hojeISO, diasAte, MESES, plural } from '../util/formato.js?v=7c22e1d';
-import { IMPOSTOS_LUCRO_REAL, IMPOSTOS_EVENTUAIS, vencimentoImposto, competenciaDe } from '../util/impostos.js?v=7c22e1d';
+import { estado, notaDe, naLoja, ordenarPorVencimento } from '../nucleo/estado.js?v=a3d7d3b';
+import { registrarAcoes } from '../nucleo/eventos.js?v=a3d7d3b';
+import { desenhar } from '../nucleo/desenhar.js?v=a3d7d3b';
+import { cabecalho, sobretituloHoje, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=a3d7d3b';
+import { esc, brl, dataBR, dataHoraBR, hojeISO, diasAte, MESES, plural } from '../util/formato.js?v=a3d7d3b';
+import { IMPOSTOS_LUCRO_REAL, IMPOSTOS_EVENTUAIS, vencimentoImposto, competenciaDe } from '../util/impostos.js?v=a3d7d3b';
 
 const podeLancarGuia = () => estado.perfil.papel === 'gerente' || ['Fiscal', 'Financeiro', 'Contabilidade'].includes(estado.perfil.setor);
 

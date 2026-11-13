@@ -4,7 +4,7 @@
 // A regra que vale de verdade está no banco (sql/02_funcoes.sql);
 // se mudar uma regra lá, mude aqui também.
 // =====================================================================
-import { estado } from './estado.js?v=7c22e1d';
+import { estado } from './estado.js?v=a3d7d3b';
 
 const eu = () => estado.perfil || {};
 

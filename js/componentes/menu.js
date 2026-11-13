@@ -2,14 +2,14 @@
 // DUPLICA · componentes/menu.js
 // Menu lateral: marca, empresa, telas que a pessoa pode ver e botão Sair.
 // =====================================================================
-import { estado } from '../nucleo/estado.js?v=7c22e1d';
-import { NOME_PAPEL } from '../nucleo/regras.js?v=7c22e1d';
-import { registrarAcoes } from '../nucleo/eventos.js?v=7c22e1d';
-import { desenhar } from '../nucleo/desenhar.js?v=7c22e1d';
-import { telasDe } from '../telas/index.js?v=7c22e1d';
-import { ICONE } from './icones.js?v=7c22e1d';
-import { esc } from '../util/formato.js?v=7c22e1d';
-import { temaAtual, alternarTema, LUA, SOL } from '../util/tema.js?v=7c22e1d';
+import { estado } from '../nucleo/estado.js?v=a3d7d3b';
+import { NOME_PAPEL } from '../nucleo/regras.js?v=a3d7d3b';
+import { registrarAcoes } from '../nucleo/eventos.js?v=a3d7d3b';
+import { desenhar } from '../nucleo/desenhar.js?v=a3d7d3b';
+import { telasDe } from '../telas/index.js?v=a3d7d3b';
+import { ICONE } from './icones.js?v=a3d7d3b';
+import { esc } from '../util/formato.js?v=a3d7d3b';
+import { temaAtual, alternarTema, LUA, SOL } from '../util/tema.js?v=a3d7d3b';
 
 export function menuHtml() {
   const p = estado.perfil;

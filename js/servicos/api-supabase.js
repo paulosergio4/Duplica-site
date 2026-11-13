@@ -7,8 +7,8 @@
 // Usuários → função "usuarios" no servidor          (supabase/functions/usuarios)
 // =====================================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { CONFIG } from '../config.js?v=7c22e1d';
-import { normalizarLogin } from '../util/formato.js?v=7c22e1d';
+import { CONFIG } from '../config.js?v=a3d7d3b';
+import { normalizarLogin } from '../util/formato.js?v=a3d7d3b';
 
 // login guardado só nesta aba (sessionStorage): fechou a aba ou o navegador, pede usuário e senha de novo
 let guarda;

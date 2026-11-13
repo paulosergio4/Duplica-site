@@ -9,15 +9,15 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=7c22e1d';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=7c22e1d';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=7c22e1d';
-import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=7c22e1d';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=7c22e1d';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=7c22e1d';
-import { abrirCamera, bip } from '../util/camera.js?v=7c22e1d';
-import { lerBoleto } from '../util/boleto.js?v=7c22e1d';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=7c22e1d';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=a3d7d3b';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a3d7d3b';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a3d7d3b';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=a3d7d3b';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=a3d7d3b';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=a3d7d3b';
+import { abrirCamera, bip } from '../util/camera.js?v=a3d7d3b';
+import { lerBoleto } from '../util/boleto.js?v=a3d7d3b';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=a3d7d3b';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -41,7 +41,7 @@ export const telaRecebimento = {
             <label for="rc-chave">Ou digite a chave (44 números) / use o leitor USB</label>
             <div style="display:flex;gap:8px"><input class="inp num" id="rc-chave" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 ..." style="flex:1;min-width:0"><button class="bg" type="submit" style="height:48px">OK</button></div>
           </form>
-          ${u ? resultadoHtml(u) : ''}
+          ${u && !u.noTicket ? resultadoHtml(u) : ''}
         </section>`;
     return topo + (estado.conferindo ? conferenciaHtml() : conferente ? listaConferente() : listaNotas());
   },
@@ -52,7 +52,7 @@ function listaConferente() {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const minhas = (estado.recebimentos || []).filter((r) => r.perfil_id === estado.perfil.id && new Date(r.feito_em) >= hoje);
   const fin = estado.recFiltro === 'finalizadas';
-  const lista = minhas.filter((r) => Boolean(r.finalizado_em) === fin);
+  const lista = minhas.filter((r) => Boolean(r.finalizado_em) === fin || ehAtivo(null, r));
   const abertas = minhas.filter((r) => !r.finalizado_em).length;
   const chip = (id, txt, q) => `<button type="button" aria-pressed="${fin === (id === 'finalizadas')}" data-acao="rec-filtro" data-id="${id}">${txt} <span class="num">${q}</span></button>`;
   return `<section class="secao"><div class="secao-h"><h2>Você recebeu hoje</h2><span class="pill p-breve num">${plural(minhas.length, 'nota', 'notas')}</span></div>
@@ -72,7 +72,7 @@ function listaNotas() {
   const total = itens.length, chegaram = itens.filter((i) => i.r).length, finalizadas = itens.filter((i) => i.r?.finalizado_em).length;
   const situacao = (i) => (!i.r ? 'falta' : i.r.finalizado_em ? 'finalizadas' : 'chegou');
   const lista = itens
-    .filter((i) => estado.recFiltro === 'todas' || estado.recFiltro === situacao(i))
+    .filter((i) => estado.recFiltro === 'todas' || estado.recFiltro === situacao(i) || ehAtivo(i.n, i.r))
     .filter((i) => !busca || `${i.n?.fornecedor || ''} ${i.n?.numero || numeroDaChave(i.r.chave)} ${i.r?.nome || ''}`.toLowerCase().includes(busca))
     .sort((a, b) => (Boolean(a.r) - Boolean(b.r)) || ((b.r?.feito_em || b.n?.emissao || '') > (a.r?.feito_em || a.n?.emissao || '') ? 1 : -1));
   const chip = (id, txt, q) => `<button type="button" aria-pressed="${estado.recFiltro === id}" data-acao="rec-filtro" data-id="${id}">${txt} <span class="num">${q}</span></button>`;
@@ -136,6 +136,13 @@ function resultadoHtml(r) {
 /** Botão que abre a câmera do celular para a foto (no computador, abre a escolha de arquivo) */
 const botaoFoto = (texto, classe) => `<label class="${classe} botao-foto">${iconeCamera()}${texto}<input type="file" id="rec-foto" accept="image/*" capture="environment" hidden></label>`;
 
+/** A nota cujo cartão (boleto, conferência, terminar) está aberto dentro do próprio ticket */
+function ehAtivo(n, r) {
+  const u = estado.ultimoRecebimento;
+  if (!u?.noTicket) return false;
+  return Boolean((r && u.recebimento_id != null && String(u.recebimento_id) === String(r.id)) || (n && u.nota_id && u.nota_id === n.id));
+}
+
 function linhaNota(n, r) {
   const f = n ? filialDe(n.filial_id) : null;
   const temBoletoNoSistema = n && estado.boletos.some((b) => b.nota_id === n.id);
@@ -163,7 +170,8 @@ function linhaNota(n, r) {
     <div class="kv rec-col">${n ? `<small>Valor da nota</small><b class="num">${brl(n.valor)}</b>` : ''}</div>
     <div class="kv rec-col rec-quem">${r ? `<small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)}</b><small class="num">${dataHoraBR(r.feito_em)}</small>${r.finalizado_em ? `<small>Finalizada por ${esc(r.finalizado_por || '')}</small>` : ''}` : ''}</div>
     <div class="rec-selos">${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}</div>
-    <div class="acoes rec-acoes">${acoes}</div></div>`;
+    <div class="acoes rec-acoes">${ehAtivo(n, r) && n ? `<button class="bg" type="button" data-acao="rec-ver-nota" data-id="${n.id}">Ver nota</button>` : acoes}</div>
+    ${ehAtivo(n, r) ? `<div class="rec-banner" id="rec-banner">${resultadoHtml(estado.ultimoRecebimento)}</div>` : ''}</div>`;
 }
 
 /** Janela "Ver nota": tudo da nota (dados, boletos, produtos) e os mesmos botões do ticket */
@@ -272,6 +280,11 @@ export async function receber(texto, manual = false) {
   return true;
 }
 
+/** Rola só o necessário para o cartão aberto dentro do ticket ficar visível */
+function mostrarBanner() {
+  requestAnimationFrame(() => document.getElementById('rec-banner')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+}
+
 registrarFormulario('form-chave', async () => {
   const campo = document.getElementById('rc-chave');
   const ok = await receber(campo.value);
@@ -363,7 +376,12 @@ registrarAcoes({
   'rec-marcar': async (el) => {
     estado.modal = null;
     const n = notaDe(el.dataset.id);
-    if (n && await receber(n.chave, true)) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!n) return;
+    await receber(n.chave, true);
+    if (estado.ultimoRecebimento && estado.ultimoRecebimento.situacao !== 'erro') {
+      Object.assign(estado.ultimoRecebimento, { noTicket: true, nota_id: estado.ultimoRecebimento.nota_id || n.id });
+      desenhar(); mostrarBanner();
+    } else window.scrollTo({ top: 0, behavior: 'smooth' });
   },
   // Fiscal anexa o boleto de uma nota que já chegou
   'rec-anexar': (el) => {
@@ -371,9 +389,8 @@ registrarAcoes({
     const r = estado.recebimentos.find((x) => String(x.id) === el.dataset.id), n = r?.nota_id ? notaDe(r.nota_id) : null;
     if (!r) return;
     estado.ultimoRecebimento = { situacao: 'ja', recebimento_id: r.id, tem_boleto: null, recebido_por: r.nome, recebido_em: r.feito_em, chave: r.chave,
-      fornecedor: n?.fornecedor, numero: n?.numero, filial: n ? filialDe(n.filial_id)?.nome : '' };
-    desenhar();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      fornecedor: n?.fornecedor, numero: n?.numero, filial: n ? filialDe(n.filial_id)?.nome : '', nota_id: r.nota_id, noTicket: true };
+    desenhar(); mostrarBanner();
   },
   'rec-ver-fotos': (el) => verFotosBoleto(el.dataset.id),
   'receber-camera': async () => {
