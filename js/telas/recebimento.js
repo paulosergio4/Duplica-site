@@ -9,15 +9,15 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=19141b7';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=19141b7';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=19141b7';
-import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=19141b7';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=19141b7';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=19141b7';
-import { abrirCamera, bip } from '../util/camera.js?v=19141b7';
-import { lerBoleto } from '../util/boleto.js?v=19141b7';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=19141b7';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=7c22e1d';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=7c22e1d';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=7c22e1d';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=7c22e1d';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=7c22e1d';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=7c22e1d';
+import { abrirCamera, bip } from '../util/camera.js?v=7c22e1d';
+import { lerBoleto } from '../util/boleto.js?v=7c22e1d';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=7c22e1d';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -50,9 +50,15 @@ export const telaRecebimento = {
 /** Conferente: só o que ele mesmo recebeu hoje */
 function listaConferente() {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-  const lista = (estado.recebimentos || []).filter((r) => r.perfil_id === estado.perfil.id && new Date(r.feito_em) >= hoje);
-  return `<section class="secao"><div class="secao-h"><h2>Você recebeu hoje</h2><span class="pill p-breve num">${plural(lista.length, 'nota', 'notas')}</span></div>
-    ${lista.length ? `<div class="rec-tickets">${lista.map((r) => linhaNota(r.nota_id ? notaDe(r.nota_id) : null, r)).join('')}</div>` : vazio('Nenhuma nota recebida hoje.')}</section>`;
+  const minhas = (estado.recebimentos || []).filter((r) => r.perfil_id === estado.perfil.id && new Date(r.feito_em) >= hoje);
+  const fin = estado.recFiltro === 'finalizadas';
+  const lista = minhas.filter((r) => Boolean(r.finalizado_em) === fin);
+  const abertas = minhas.filter((r) => !r.finalizado_em).length;
+  const chip = (id, txt, q) => `<button type="button" aria-pressed="${fin === (id === 'finalizadas')}" data-acao="rec-filtro" data-id="${id}">${txt} <span class="num">${q}</span></button>`;
+  return `<section class="secao"><div class="secao-h"><h2>Você recebeu hoje</h2><span class="pill p-breve num">${plural(minhas.length, 'nota', 'notas')}</span></div>
+    <div style="padding:14px 20px;border-bottom:1px solid var(--linha)"><div class="chips">${chip('abertas', 'Em andamento', abertas)}${chip('finalizadas', 'Finalizadas', minhas.length - abertas)}</div></div>
+    ${lista.length ? `<div class="rec-tickets">${lista.map((r) => linhaNota(r.nota_id ? notaDe(r.nota_id) : null, r)).join('')}</div>`
+      : vazio(fin ? 'Nenhuma nota finalizada hoje.' : minhas.length ? 'Tudo terminado por hoje.' : 'Nenhuma nota recebida hoje.')}</section>`;
 }
 
 /** Fiscal e Admin: todas as notas (XML) desde empresas.recebimento_desde, chegou ou não */
@@ -63,18 +69,19 @@ function listaNotas() {
     .map((n) => ({ n, r: recebimentoDaNota(n.id) }));
   // notas bipadas que ainda não têm XML
   for (const r of estado.recebimentos || []) if (r.situacao === 'pendente') itens.push({ n: null, r });
-  const total = itens.length, chegaram = itens.filter((i) => i.r).length;
+  const total = itens.length, chegaram = itens.filter((i) => i.r).length, finalizadas = itens.filter((i) => i.r?.finalizado_em).length;
+  const situacao = (i) => (!i.r ? 'falta' : i.r.finalizado_em ? 'finalizadas' : 'chegou');
   const lista = itens
-    .filter((i) => estado.recFiltro === 'todas' || (estado.recFiltro === 'chegou') === Boolean(i.r))
+    .filter((i) => estado.recFiltro === 'todas' || estado.recFiltro === situacao(i))
     .filter((i) => !busca || `${i.n?.fornecedor || ''} ${i.n?.numero || numeroDaChave(i.r.chave)} ${i.r?.nome || ''}`.toLowerCase().includes(busca))
     .sort((a, b) => (Boolean(a.r) - Boolean(b.r)) || ((b.r?.feito_em || b.n?.emissao || '') > (a.r?.feito_em || a.n?.emissao || '') ? 1 : -1));
   const chip = (id, txt, q) => `<button type="button" aria-pressed="${estado.recFiltro === id}" data-acao="rec-filtro" data-id="${id}">${txt} <span class="num">${q}</span></button>`;
   return `<section class="secao"><div class="secao-h"><h2>Notas desde ${dataBR(desde)}</h2><span class="pill p-breve num">${plural(total - chegaram, 'não chegou', 'não chegaram')}</span></div>
     <div style="padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--linha)">
-      <div class="chips">${chip('falta', 'Não chegaram', total - chegaram)}${chip('chegou', 'Chegaram', chegaram)}${chip('todas', 'Todas', total)}</div>
+      <div class="chips">${chip('falta', 'Não chegaram', total - chegaram)}${chip('chegou', 'Chegaram', chegaram - finalizadas)}${chip('finalizadas', 'Finalizadas', finalizadas)}${chip('todas', 'Todas', total)}</div>
       <input class="inp" id="rec-busca" placeholder="Buscar fornecedor, nota ou quem recebeu" value="${esc(estado.recBusca)}" style="flex:1 1 240px;min-width:0;height:40px"></div>
     ${lista.length ? `<div class="rec-tickets">${lista.map((i) => linhaNota(i.n, i.r)).join('')}</div>`
-      : vazio(estado.recFiltro === 'falta' ? 'Nenhuma nota esperando: todas chegaram.' : 'Nenhuma nota aqui.')}</section>`;
+      : vazio(estado.recFiltro === 'falta' ? 'Nenhuma nota esperando: todas chegaram.' : estado.recFiltro === 'chegou' ? 'Nenhuma nota em andamento: as que chegaram já foram terminadas.' : 'Nenhuma nota aqui.')}</section>`;
 }
 
 const iconeCamera = () => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
@@ -104,7 +111,7 @@ function resultadoHtml(r) {
         ${r.erroCodigo ? `<small style="color:var(--alerta)">${esc(r.erroCodigo)}</small>` : ''}</div>`;
     else if (r.tem_boleto === true) boleto = `<div class="tem-boleto"><b style="color:var(--musgo)">Boleto anexado${fotos ? ` (${plural(fotos, 'foto', 'fotos')})` : ''}${r.marcados ? ` · ${plural(r.marcados, 'boleto marcado', 'boletos marcados')} como "Chegou"` : ''}</b>
         ${r.codigoLido ? `<small>${r.criado ? 'Boleto criado na aba Fiscal' : 'Boleto guardado'}: <b class="num">${brl(r.codigoLido.valor)}</b>${r.codigoLido.vencimento ? `, vence <b class="num">${dataBR(r.codigoLido.vencimento)}</b>` : ''}.</small>` : r.criado ? '<small>Esse boleto não estava no sistema: foi criado na aba Fiscal com o valor da nota (confira o vencimento lá).</small>' : ''}
-        <div class="tem-boleto-b">${botaoFoto('Tirar mais uma foto', 'bg')}<button class="bg" type="button" data-acao="rec-concluir">Concluir</button></div></div>`;
+        <div class="tem-boleto-b">${botaoFoto('Tirar mais uma foto', 'bg')}<button class="bg" type="button" data-acao="rec-concluir">Fechar</button></div></div>`;
     else if (r.tem_boleto === false) boleto = '<div class="tem-boleto"><b>Sem boleto junto com a nota.</b></div>';
     else boleto = `<div class="tem-boleto"><b>Tem boleto junto com a nota?</b>
         <div class="tem-boleto-b">${botaoFoto('Sim, tirar foto', 'bp')}<button class="bg" type="button" data-acao="rec-sem-boleto">Não tem</button></div>
@@ -116,7 +123,14 @@ function resultadoHtml(r) {
     produtos = `<div class="tem-boleto"><b>Conferência de produtos${rs ? ` · <span class="num">${rs.conferidos} de ${rs.total}</span>` : ''}</b>
       <div class="tem-boleto-b"><button class="${rs && rs.conferidos >= rs.total ? 'bg' : 'bp'}" type="button" data-acao="conf-abrir" data-id="${r.nota_id}">${rs && rs.conferidos >= rs.total ? 'Ver conferência' : 'Conferir produtos (EAN)'}</button></div></div>`;
   }
-  return `<div class="receber-resultado" style="border-color:${cor}" role="status"><b style="color:${cor}">${titulo}</b><small>${corpo}</small>${boleto}${produtos}</div>`;
+  const rec = r.recebimento_id ? (estado.recebimentos || []).find((x) => x.id === r.recebimento_id) : null;
+  const terminar = r.recebimento_id && r.situacao !== 'erro' && !r.enviando
+    ? (rec?.finalizado_em
+      ? `<div class="tem-boleto"><b style="color:var(--musgo)">Nota finalizada por ${esc(rec.finalizado_por || '')}</b><div class="tem-boleto-b"><button class="bg" type="button" data-acao="rec-concluir">Fechar</button></div></div>`
+      : `<div class="tem-boleto"><div class="tem-boleto-b"><button class="bp" type="button" data-acao="rec-terminar" data-id="${r.recebimento_id}">Terminar nota</button></div>
+          <small>A nota sai de “Chegaram” e vai para “Finalizadas”.</small></div>`)
+    : '';
+  return `<div class="receber-resultado" style="border-color:${cor}" role="status"><b style="color:${cor}">${titulo}</b><small>${corpo}</small>${boleto}${produtos}${terminar}</div>`;
 }
 
 /** Botão que abre a câmera do celular para a foto (no computador, abre a escolha de arquivo) */
@@ -127,6 +141,7 @@ function linhaNota(n, r) {
   const temBoletoNoSistema = n && estado.boletos.some((b) => b.nota_id === n.id);
   const chegou = !r ? '<span class="pill p-esperado">Não chegou</span>'
     : r.situacao === 'pendente' ? '<span class="pill p-breve">Recebida · aguardando XML</span>'
+    : r.finalizado_em ? '<span class="pill p-pago">Finalizada</span>'
     : '<span class="pill p-visto">Chegou</span>';
   const boleto = !r ? '' : r.tem_boleto === true ? '<span class="pill p-chegou">Com boleto</span>'
     : r.tem_boleto === false ? '<span class="pill p-esperado">Sem boleto</span>'
@@ -137,6 +152,8 @@ function linhaNota(n, r) {
     r?.fotos?.length ? `<button class="bg" type="button" data-acao="rec-ver-fotos" data-id="${r.id}">Ver ${plural(r.fotos.length, 'foto', 'fotos')} do boleto</button>` : '',
     r && (r.tem_boleto !== true || (n && !temBoletoNoSistema)) && estado.perfil.setor !== 'Recebimento' ? `<button class="bg" type="button" data-acao="rec-anexar" data-id="${r.id}">Anexar boleto</button>` : '',
     r && n && resumoDaNota(n.id) ? `<button class="bg" type="button" data-acao="conf-abrir" data-id="${n.id}">Conferência</button>` : '',
+    r && !r.finalizado_em ? `<button class="bp" type="button" data-acao="rec-terminar" data-id="${r.id}">Terminar nota</button>` : '',
+    r?.finalizado_em ? `<button class="bg" type="button" data-acao="rec-reabrir" data-id="${r.id}">Reabrir</button>` : '',
   ].join('');
   // colunas fixas (sempre as mesmas, mesmo vazias) para tudo ficar alinhado de um ticket para o outro
   return `<div class="linha rec-ticket ${!r ? 'falta' : r.situacao === 'pendente' ? 'aguarda' : 'chegou'}">
@@ -144,7 +161,7 @@ function linhaNota(n, r) {
       <small>${n ? `${docNota(n)} · ${esc(f?.nome || '')}` : `NF ${esc(numeroDaChave(r.chave))}`}</small></div>
     <div class="kv rec-col">${n ? `<small>Emissão</small><b class="num">${dataBR(n.emissao)}</b>` : ''}</div>
     <div class="kv rec-col">${n ? `<small>Valor da nota</small><b class="num">${brl(n.valor)}</b>` : ''}</div>
-    <div class="kv rec-col rec-quem">${r ? `<small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)}</b><small class="num">${dataHoraBR(r.feito_em)}</small>` : ''}</div>
+    <div class="kv rec-col rec-quem">${r ? `<small>${r.manual ? 'Marcado por' : 'Recebido por'}</small><b>${esc(r.nome)}</b><small class="num">${dataHoraBR(r.feito_em)}</small>${r.finalizado_em ? `<small>Finalizada por ${esc(r.finalizado_por || '')}</small>` : ''}` : ''}</div>
     <div class="rec-selos">${chegou}${boleto}${n && r ? seloConferencia(n.id) : ''}</div>
     <div class="acoes rec-acoes">${acoes}</div></div>`;
 }
@@ -292,6 +309,23 @@ registrarAcoes({
     await recarregar();
   }),
   'rec-concluir': () => { estado.ultimoRecebimento = null; desenhar(); },
+  // Terminar nota: sai de "Chegaram" e vai para "Finalizadas"
+  'rec-terminar': (el) => executar(async () => {
+    const r = (estado.recebimentos || []).find((x) => String(x.id) === el.dataset.id);
+    if (!r) return;
+    const rs = r.nota_id ? resumoDaNota(r.nota_id) : null;
+    if (rs && rs.conferidos < rs.total && !window.confirm(`Faltam ${rs.total - rs.conferidos} de ${rs.total} produtos para conferir. Terminar a nota mesmo assim?`)) return;
+    await estado.api.terminarRecebimento(r.id, true);
+    if (String(estado.ultimoRecebimento?.recebimento_id) === el.dataset.id) estado.ultimoRecebimento = null;
+    estado.conferindo = null;
+    await recarregar();
+    avisar('Nota terminada: foi para “Finalizadas”.');
+  }),
+  'rec-reabrir': (el) => executar(async () => {
+    await estado.api.terminarRecebimento(Number(el.dataset.id) || el.dataset.id, false);
+    await recarregar();
+    avisar('Nota reaberta: voltou para “Chegaram”.');
+  }),
   // boleto que não estava no sistema: lê o código de barras para preencher valor e vencimento
   'rec-codigo-boleto': async () => {
     const u = estado.ultimoRecebimento;

@@ -14,8 +14,8 @@
 //   salvarFilial(nome, cnpj)          renomearFilial(id, novoNome)
 //   lancarAvulso(dados)               salvarRecorrencia(dados)        gerarRecorrentes()
 // =====================================================================
-import { soDigitos, normalizarLogin } from '../util/formato.js?v=19141b7';
-import { dvChave } from '../util/chave.js?v=19141b7';
+import { soDigitos, normalizarLogin } from '../util/formato.js?v=7c22e1d';
+import { dvChave } from '../util/chave.js?v=7c22e1d';
 
 const CHAVE = 'duplica-demo-v1';
 const SESSAO = 'duplica-demo-sessao';
@@ -244,6 +244,14 @@ export const apiDemo = {
     const caminho = `demo/${recebimentoId}-${Date.now()}.jpg`;
     fotosDemo.set(caminho, URL.createObjectURL(blob));
     return caminho;
+  },
+
+  async terminarRecebimento(idRec, terminar = true) {
+    const p = eu(), d = carregar();
+    const r = (d.recebimentos || []).find((x) => x.id === idRec);
+    if (!r) throw new Error('Recebimento não encontrado.');
+    Object.assign(r, terminar ? { finalizado_em: agora(), finalizado_por: p.nome, finalizado_perfil: p.id } : { finalizado_em: null, finalizado_por: null, finalizado_perfil: null });
+    salvar();
   },
 
   async recebimentoBoleto(idRec, tem, fotos = []) {
