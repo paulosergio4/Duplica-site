@@ -9,15 +9,15 @@
 // Fiscal/Admin veem TODAS as notas (XML) desde empresas.recebimento_desde,
 // "Não chegou" / "Chegou", e podem marcar na tela que chegou.
 // =====================================================================
-import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=a3d7d3b';
-import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a3d7d3b';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a3d7d3b';
-import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=a3d7d3b';
-import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=a3d7d3b';
-import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=a3d7d3b';
-import { abrirCamera, bip } from '../util/camera.js?v=a3d7d3b';
-import { lerBoleto } from '../util/boleto.js?v=a3d7d3b';
-import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=a3d7d3b';
+import { estado, notaDe, filialDe } from '../nucleo/estado.js?v=b874cc2';
+import { registrarAcoes, registrarFormulario, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=b874cc2';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=b874cc2';
+import { cabecalho, toastHtml, vazio, docNota, pillEtapa } from '../componentes/comuns.js?v=b874cc2';
+import { esc, plural, brl, dataBR, dataHoraBR } from '../util/formato.js?v=b874cc2';
+import { chaveValida, chaveFormatada, numeroDaChave } from '../util/chave.js?v=b874cc2';
+import { abrirCamera, bip } from '../util/camera.js?v=b874cc2';
+import { lerBoleto } from '../util/boleto.js?v=b874cc2';
+import { conferenciaHtml, seloConferencia, resumoDaNota } from './conferencia.js?v=b874cc2';
 
 /** Recebimento (o primeiro, não repetido) de cada nota */
 function recebimentoDaNota(notaId) {
@@ -74,7 +74,7 @@ function listaNotas() {
   const lista = itens
     .filter((i) => estado.recFiltro === 'todas' || estado.recFiltro === situacao(i) || ehAtivo(i.n, i.r))
     .filter((i) => !busca || `${i.n?.fornecedor || ''} ${i.n?.numero || numeroDaChave(i.r.chave)} ${i.r?.nome || ''}`.toLowerCase().includes(busca))
-    .sort((a, b) => (Boolean(a.r) - Boolean(b.r)) || ((b.r?.feito_em || b.n?.emissao || '') > (a.r?.feito_em || a.n?.emissao || '') ? 1 : -1));
+    .sort((a, b) => (chegouParaOrdem(a) - chegouParaOrdem(b)) || (dataParaOrdem(b) > dataParaOrdem(a) ? 1 : -1));
   const chip = (id, txt, q) => `<button type="button" aria-pressed="${estado.recFiltro === id}" data-acao="rec-filtro" data-id="${id}">${txt} <span class="num">${q}</span></button>`;
   return `<section class="secao"><div class="secao-h"><h2>Notas desde ${dataBR(desde)}</h2><span class="pill p-breve num">${plural(total - chegaram, 'não chegou', 'não chegaram')}</span></div>
     <div style="padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--linha)">
@@ -142,6 +142,11 @@ function ehAtivo(n, r) {
   if (!u?.noTicket) return false;
   return Boolean((r && u.recebimento_id != null && String(u.recebimento_id) === String(r.id)) || (n && u.nota_id && u.nota_id === n.id));
 }
+
+// A nota marcada agora na lista continua no mesmo lugar (não pula para o fim junto com as que chegaram)
+const congelada = (i) => ehAtivo(i.n, i.r) && estado.ultimoRecebimento?.eraFalta;
+const chegouParaOrdem = (i) => (congelada(i) ? 0 : Number(Boolean(i.r)));
+const dataParaOrdem = (i) => (congelada(i) ? i.n?.emissao || '' : i.r?.feito_em || i.n?.emissao || '');
 
 function linhaNota(n, r) {
   const f = n ? filialDe(n.filial_id) : null;
@@ -258,7 +263,7 @@ async function reduzirFoto(arquivo) {
 }
 
 /** Manda a chave para o banco e mostra o resultado */
-export async function receber(texto, manual = false) {
+export async function receber(texto, manual = false, extra = null) {
   const chave = String(texto).replace(/\D/g, '');
   if (!chaveValida(chave)) {
     bip(false);
@@ -270,7 +275,7 @@ export async function receber(texto, manual = false) {
     const r = await estado.api.receberNota(chave, manual);
     estado.conferindo = null;
     bip(r.situacao === 'casada' || r.situacao === 'pendente');
-    estado.ultimoRecebimento = { ...r, chave };
+    estado.ultimoRecebimento = { ...r, chave, ...(extra && r.situacao !== 'erro' ? extra : {}) };
     await recarregar();
   } catch (e) {
     bip(false);
@@ -377,11 +382,9 @@ registrarAcoes({
     estado.modal = null;
     const n = notaDe(el.dataset.id);
     if (!n) return;
-    await receber(n.chave, true);
-    if (estado.ultimoRecebimento && estado.ultimoRecebimento.situacao !== 'erro') {
-      Object.assign(estado.ultimoRecebimento, { noTicket: true, nota_id: estado.ultimoRecebimento.nota_id || n.id });
-      desenhar(); mostrarBanner();
-    } else window.scrollTo({ top: 0, behavior: 'smooth' });
+    await receber(n.chave, true, { noTicket: true, eraFalta: true, nota_id: n.id });
+    if (estado.ultimoRecebimento?.noTicket) mostrarBanner();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   },
   // Fiscal anexa o boleto de uma nota que já chegou
   'rec-anexar': (el) => {

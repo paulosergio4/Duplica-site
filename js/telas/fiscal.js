@@ -4,17 +4,17 @@
 // marcação "Chegou" / "Enviar ao financeiro" (um a um ou todos da nota)
 // e importação de XML.
 // =====================================================================
-import { leitorHtml } from '../componentes/ler-boleto.js?v=a3d7d3b';
-import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=a3d7d3b';
-import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=a3d7d3b';
-import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=a3d7d3b';
-import { desenhar, recarregar } from '../nucleo/desenhar.js?v=a3d7d3b';
-import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=a3d7d3b';
-import '../componentes/modal-avulso.js?v=a3d7d3b';
-import { ICONE } from '../componentes/icones.js?v=a3d7d3b';
-import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=a3d7d3b';
-import { lerXmlNfe } from '../util/xml-nfe.js?v=a3d7d3b';
-import { botaoRelatorio } from '../componentes/relatorio.js?v=a3d7d3b';
+import { leitorHtml } from '../componentes/ler-boleto.js?v=b874cc2';
+import { estado, naLoja, precisaAtencao } from '../nucleo/estado.js?v=b874cc2';
+import { podeFiscal, podeCancelar, proximaAcao, podePagarFiscal } from '../nucleo/regras.js?v=b874cc2';
+import { registrarAcoes, registrarCampo, avisar, executar } from '../nucleo/eventos.js?v=b874cc2';
+import { desenhar, recarregar } from '../nucleo/desenhar.js?v=b874cc2';
+import { cabecalho, sobretituloHoje, toastHtml, faixaFiliais, pillEtapa, pillPrazo, docNota, pillTipo } from '../componentes/comuns.js?v=b874cc2';
+import '../componentes/modal-avulso.js?v=b874cc2';
+import { ICONE } from '../componentes/icones.js?v=b874cc2';
+import { esc, brl, dataBR, diasAte, plural, hojeISO } from '../util/formato.js?v=b874cc2';
+import { lerXmlNfe } from '../util/xml-nfe.js?v=b874cc2';
+import { botaoRelatorio } from '../componentes/relatorio.js?v=b874cc2';
 
 const FILTROS = [['todos', 'Todos'], ['esperado', 'Não chegou'], ['chegou', 'Chegou'], ['enviado', 'No financeiro'], ['visto', 'Com visto'], ['cancelado', 'Cancelados'], ['alerta', 'Atenção']];
 
